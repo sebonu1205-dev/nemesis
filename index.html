@@ -1034,8 +1034,8 @@ async function H(s){const h=await crypto.subtle.digest('SHA-256',new TextEncoder
 const flip2=a=>[a[1],a[0]];
 function normLog(L,s){if(s===0)return L;return{notes:L.notes,names:flip2(L.names),r:L.r,cards:flip2(L.cards),sc0:flip2(L.sc0),n:flip2(L.n),pre:flip2(L.pre),w:L.w===-1?-1:1-L.w,sc:L.sc}}
 /* --- Supabaseとの通信(匿名ログイン+関数呼び出し) --- */
-let SS=null;try{SS=JSON.parse(sessionStorage.getItem('sbs')||'null')}catch(e){}
-function setSS(j){SS={at:j.access_token,rt:j.refresh_token,exp:j.expires_at||Math.floor(Date.now()/1000)+(j.expires_in||3600)};try{sessionStorage.setItem('sbs',JSON.stringify(SS))}catch(e){}}
+let SS=null;/* ログイン情報はこのページを開いている間だけ保持(タブごとに別のプレイヤーになる) */
+function setSS(j){SS={at:j.access_token,rt:j.refresh_token,exp:j.expires_at||Math.floor(Date.now()/1000)+(j.expires_in||3600)}}
 const fatal=(code)=>{const e=new Error(code);e.fatal=code;return e};
 async function sbAuth(){
   if(SS&&SS.exp>Date.now()/1000+60)return SS;
@@ -1140,6 +1140,12 @@ async function doPoll(gen){
     if(gen!==NET.gen)return;
     if(q&&q.ok&&q.code!==NET.code){NET.code=q.code;NET.seat=q.seat;NET.after=0;NET.R=newR(0);await sendMsg('hello',{name:myName()});NET.R.hello[NET.seat]=myName()}
   }
+  if(R&&R.phase==='lobby'&&R.hello[1-NET.seat]==null&&NET.oppOn){
+    const w=Date.now()-NET.since;
+    if(NET.seat===1&&w>8000)netBanner('相手の準備を待っています(あなたはゲスト側です)。部屋のコードが合っているか確かめてください。');
+    else if(NET.seat===0&&j.guest&&w>8000)netBanner('相手が入室しました。接続を確かめています…');
+    else if(!j.guest)netBanner('')
+  }else if(R&&R.phase!=='lobby'&&NET.oppOn&&NETB.textContent.startsWith('相手'))netBanner('');
   if(NET.mode==='random'&&R&&R.phase==='lobby'&&!j.guest&&Date.now()-NET.since>120000){netEnd('対戦相手が見つかりませんでした。しばらくしてから、もう一度お試しください。')}
 }
 /* --- 受信したメッセージの処理 --- */
@@ -1387,6 +1393,8 @@ $s.addEventListener('contextmenu',e=>{if(!isIn(e))e.preventDefault()});
 document.addEventListener('selectstart',e=>{if(!isIn(e))e.preventDefault()});
 document.getElementById('rotok').addEventListener('click',()=>{const r=document.getElementById('rot');r.dataset.skip=1;r.hidden=true});
 fit();renderTitle();
+/*ENDUI*/
+
 /*ENDUI*/
 
 /*ENDUI*/
