@@ -1038,9 +1038,15 @@ const flip2=a=>[a[1],a[0]];
 function normLog(L,s){if(s===0)return L;return{notes:L.notes,names:flip2(L.names),r:L.r,cards:flip2(L.cards),sc0:flip2(L.sc0),n:flip2(L.n),pre:flip2(L.pre),w:L.w===-1?-1:1-L.w,sc:L.sc}}
 /* --- Supabaseとの通信(匿名ログイン+関数呼び出し) --- */
 /* ログイン情報: 友達ルームは「このページを開いている間だけ」(タブごとに別のプレイヤー)、レート戦は端末に保存(同じ人としてレートを引き継ぐ) */
-let SSm=null,SSp=null;try{SSp=JSON.parse(localStorage.getItem('sbp')||'null')}catch(e){}
+/* ?p=2 のようにURLに付けると、同じブラウザでも別のプレイヤーとして扱う(1台で2人分を試すとき用) */
+const SLOT=(new URLSearchParams(location.search).get('p')||'').replace(/[^A-Za-z0-9]/g,'').slice(0,6),SKEY='sbp'+SLOT,LKEY='nmlock'+SLOT,TABID=Math.random().toString(36).slice(2);
+function lockOther(){try{const v=JSON.parse(localStorage.getItem(LKEY)||'null');return !!(v&&v.t!==TABID&&Date.now()-v.ts<6000)}catch(e){return false}}
+function lockSet(){try{localStorage.setItem(LKEY,JSON.stringify({t:TABID,ts:Date.now()}))}catch(e){}}
+function lockClear(){try{const v=JSON.parse(localStorage.getItem(LKEY)||'null');if(v&&v.t===TABID)localStorage.removeItem(LKEY)}catch(e){}}
+setInterval(()=>{if(NET.active&&NET.mode==='random')lockSet()},2000);
+let SSm=null,SSp=null;try{SSp=JSON.parse(localStorage.getItem(SKEY)||'null')}catch(e){}
 const getSS=sl=>sl==='p'?SSp:SSm;
-function setSS(j,sl){const v={at:j.access_token,rt:j.refresh_token,exp:j.expires_at||Math.floor(Date.now()/1000)+(j.expires_in||3600)};if(sl==='p'){SSp=v;try{localStorage.setItem('sbp',JSON.stringify(v))}catch(e){}}else SSm=v;return v}
+function setSS(j,sl){const v={at:j.access_token,rt:j.refresh_token,exp:j.expires_at||Math.floor(Date.now()/1000)+(j.expires_in||3600)};if(sl==='p'){SSp=v;try{localStorage.setItem(SKEY,JSON.stringify(v))}catch(e){}}else SSm=v;return v}
 const fatal=(code)=>{const e=new Error(code);e.fatal=code;return e};
 async function sbAuth(sl){
   let c=getSS(sl);
@@ -1066,6 +1072,7 @@ const NETB=document.createElement('div');NETB.id='netb';NETB.hidden=true;
 const netBanner=t=>{NETB.textContent=t||'';NETB.hidden=!t};
 function netOff(){
   const was=NET.active,code=NET.code,R=NET.R,mode=NET.mode,sl=NET.slot;
+  if(mode==='random')lockClear();
   NET.gen++;NET.active=false;NET.code=null;NET.R=null;NET.mode='';clearTimeout(NET.tm);NET.tm=null;NET.fails=0;NET.oppOn=true;netBanner('');
   if(was&&code){
     NET.leaving=(async()=>{
@@ -1097,6 +1104,7 @@ function view(){const R=NET.R,S=R.S,s=NET.seat,me=S.p[s],op=S.p[1-s];
 function startRoom(kind,code){
   netOff();
   if(!(window.crypto&&crypto.subtle)){netEnd(FATAL_MSG.NOCRYPTO);return}
+  if(kind==='random'){if(lockOther()){netEnd('このブラウザの別のタブで、すでにレート戦を探しています(同じプレイヤーとして扱われるため、自分同士では対戦できません)。別の端末か別のブラウザで開いてください。1台で2人分を試すときは、片方のURLの末尾に「?p=2」を付けて開くと、別のプレイヤーになります。');return}lockSet()}
   NET.slot=kind==='random'?'p':'m';NET.rateInfo=null;NET.rateShown=false;NET.orateShown=false;
   NET.active=true;NET.mode=kind;NET.after=0;NET.fails=0;NET.oppOn=true;NET.fast=0;NET.since=Date.now();NET.qmAt=Date.now();NET.q=Promise.resolve();
   const gen=++NET.gen;
@@ -1446,6 +1454,8 @@ $s.addEventListener('contextmenu',e=>{if(!isIn(e))e.preventDefault()});
 document.addEventListener('selectstart',e=>{if(!isIn(e))e.preventDefault()});
 document.getElementById('rotok').addEventListener('click',()=>{const r=document.getElementById('rot');r.dataset.skip=1;r.hidden=true});
 fit();renderTitle();
+/*ENDUI*/
+
 /*ENDUI*/
 
 /*ENDUI*/
