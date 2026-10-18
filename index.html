@@ -907,6 +907,7 @@ function renderFinalBody(){
    </div>`,'bgH','grid-template-columns:1fr 1fr;grid-template-rows:36px minmax(0,1fr);gap:0 16px');
   if(G.rated&&NET.rateInfo)showRate(NET.rateInfo);
   bindQuit();
+  if(G.mode==='online'&&NET.oppGone)applyGone();
   on('again',el=>{if(G.rated){startRoom('random');return}if(G.mode==='online'){netSend({t:'again'});el.disabled=true;el.textContent='相手を待っています…';return}startGame(G.mode,G.level)});on('title',renderTitle);
 }
 
@@ -1239,7 +1240,17 @@ function netOff(){
   }
 }
 function netErr(msg){const s=$s.querySelector('.scr');if(!s)return;const m=modal(`<h3 class="ttl" style="font-size:17px">お知らせ</h3><p style="font-size:13px;line-height:1.6;margin:6px 0">${esc(msg)}</p><div class="row" style="justify-content:flex-end"><button class="btn gold" data-act="x">閉じる</button></div>`);m.querySelector('[data-act="x"]').onclick=()=>m.remove()}
-function netEnd(why){renderTitle();setTimeout(()=>netErr(why),60)}
+function netEnd(why){
+  /* 試合が終わってリザルトを見ているときは、相手の退出や部屋の終了でタイトルへ戻さない */
+  if(G&&G.mode==='online'&&G.fin&&(G.splashing||document.getElementById('againhint'))&&/退出|閉じ|接続が戻らなかった|いったん画面を離れた/.test(String(why))){oppLeft();return}
+  renderTitle();setTimeout(()=>netErr(why),60)}
+/* 試合が終わったあとに相手が退出しても、リザルト画面はそのまま見られるようにする */
+const finishedNow=()=>!!(NET.R&&NET.R.fin&&G&&G.mode==='online');
+function applyGone(){
+  const h=document.getElementById('againhint');if(h)h.textContent='相手が退出しました';
+  if(G&&!G.rated){const b=document.querySelector('[data-act="again"]');if(b){b.disabled=true;b.textContent='もう一度遊べません(相手が退出)'}}
+}
+function oppLeft(){if(NET.oppGone)return;NET.oppGone=true;netBanner('');SFX.play('blip');applyGone()}
 const enq=fn=>{const g=NET.gen;NET.q=NET.q.then(()=>g===NET.gen?fn():0).catch(e=>{if(g===NET.gen)netFail(e)})};
 const myName=()=>cn(NICK)||(NET.seat?'ゲスト':'ホスト');
 function newR(g,keep){return{g,hello:keep?keep.hello:[null,null],pi:keep?keep.pi:[null,null],phase:keep?'build':'lobby',dk:[null,null],dkMine:false,sentDr:false,od:null,myDeck:null,mySalt:'',deck:null,sc:[null,null],scMine:false,mySwap:null,S:null,mp:null,sentPr:false,pc:{},opr:{},log:[],sr:null,fin:false,ag:[false,false],fut:[],rdy:[{},{}]}}
@@ -1252,7 +1263,7 @@ async function sendMsg(kind,data){
   for(let i=0;i<6;i++){
     if(gen!==NET.gen)return false;
     try{const r=await rpc('nm_send',{p_room:NET.code,p_kind:kind,p_data:data});if(r&&r.ok){NET.fast=4;return true}
-      if(r&&(r.err==='closed'||r.err==='member')){netEnd('部屋が閉じられました');return false}return false}
+      if(r&&(r.err==='closed'||r.err==='member')){if(finishedNow()){oppLeft();return false}netEnd('部屋が閉じられました');return false}return false}
     catch(e){if(e&&e.fatal){netFail(e);return false}await sleep(700)}
   }
   netFail(new Error('net'));return false;
@@ -1264,7 +1275,7 @@ function startRoom(kind,code){
   netOff();
   if(!(window.crypto&&crypto.subtle)){netEnd(FATAL_MSG.NOCRYPTO);return}
   if(kind==='random'){if(lockOther()){netEnd('このブラウザの別のタブで、すでにレート戦を探しています(同じプレイヤーとして扱われるため、自分同士では対戦できません)。別の端末か別のブラウザで開いてください。1台で2人分を試すときは、片方のURLの末尾に「?p=2」を付けて開くと、別のプレイヤーになります。');return}lockSet()}
-  NET.slot=kind==='random'?'p':'m';NET.orate=null;NET.rateInfo=null;NET.rateShown=false;NET.orateShown=false;
+  NET.slot=kind==='random'?'p':'m';NET.oppGone=false;NET.closedSeen=false;NET.orate=null;NET.rateInfo=null;NET.rateShown=false;NET.orateShown=false;
   NET.active=true;wakeOn();NET.gone=false;NET.bot=null;NET.botBusy=false;NET.botAt=(BOT_MIN+Math.random()*BOT_RNG)*1000;NET.mode=kind;NET.after=0;NET.fails=0;NET.oppOn=true;NET.fast=0;NET.since=Date.now();NET.qmAt=Date.now();NET.q=Promise.resolve();
   const gen=++NET.gen;
   newOnline(['あなた','相手']);waitScr('サーバーに接続しています','');
@@ -1301,6 +1312,11 @@ function pollLoop(){
     if(gen===NET.gen)pollLoop();
   },d);
 }
+async function closedEnd(){
+  const R0=NET.R;
+  if(NET.mode==='random'&&R0&&R0.phase!=='lobby'&&!R0.fin&&!R0.reported){R0.reported=true;try{await rpc('nm_report',{p_room:NET.code,p_result:0,p_forfeit:true})}catch(e){}netEnd('相手が退出しました。不戦勝として扱われます。');return}
+  netEnd(R0&&R0.phase!=='lobby'?'相手が退出しました':'部屋が閉じられました');
+}
 async function doPoll(gen){
   if(NET.bot)return;
   const j=await rpc('nm_poll',{p_room:NET.code,p_after:NET.after});
@@ -1308,6 +1324,12 @@ async function doPoll(gen){
   if(NET.fails>=3&&NET.oppOn)netBanner('');
   NET.fails=0;
   if(j.closed){
+    if(j.rate&&!NET.rateShown){NET.rateShown=true;NET.rateInfo=j.rate;onNet({t:'rate',rate:j.rate})}
+    if(NET.closedSeen)return;
+    NET.closedSeen=true;NET.after=j.last;for(const m of j.msgs)enq(()=>handle(m));
+    enq(async()=>{if(finishedNow()){oppLeft();return}await closedEnd()});
+    return}
+  if(false){
     const R0=NET.R;
     if(NET.mode==='random'&&R0&&R0.phase!=='lobby'&&!R0.fin&&!R0.reported){R0.reported=true;try{await rpc('nm_report',{p_room:NET.code,p_result:0,p_forfeit:true})}catch(e){}netEnd('相手が退出しました。不戦勝として扱われます。');return}
     netEnd(R0&&R0.phase!=='lobby'?'相手が退出しました':'部屋が閉じられました');return}
@@ -1317,8 +1339,9 @@ async function doPoll(gen){
   for(const m of j.msgs)enq(()=>handle(m));
   if(j.guest&&j.age!=null){
     const on=j.age<15;
-    if(on!==NET.oppOn){NET.oppOn=on;if(!on)SFX.play('blip');netBanner(on?'':'相手の接続が切れました。戻るのを待っています…')}
-    if(j.age>60){const R1=NET.R;if(NET.mode==='random'&&R1&&R1.phase!=='lobby'&&!R1.fin&&!R1.reported){R1.reported=true;try{await rpc('nm_report',{p_room:NET.code,p_result:0,p_forfeit:true})}catch(e){}netEnd('相手の接続が戻らなかったため、不戦勝として扱われます。');return}netEnd('相手の接続が戻らなかったため、部屋を閉じました');return}
+    if(on!==NET.oppOn){NET.oppOn=on;if(!on)SFX.play('blip');if(!finishedNow())netBanner(on?'':'相手の接続が切れました。戻るのを待っています…')}
+    if(j.age>60&&finishedNow()){oppLeft()}
+    else if(j.age>60){const R1=NET.R;if(NET.mode==='random'&&R1&&R1.phase!=='lobby'&&!R1.fin&&!R1.reported){R1.reported=true;try{await rpc('nm_report',{p_room:NET.code,p_result:0,p_forfeit:true})}catch(e){}netEnd('相手の接続が戻らなかったため、不戦勝として扱われます。');return}netEnd('相手の接続が戻らなかったため、部屋を閉じました');return}
   }
   /* ランダムマッチ: 待っている間は数秒おきに探し直す(先に待っていた人がいれば、そちらに合流する) */
   const R=NET.R;
