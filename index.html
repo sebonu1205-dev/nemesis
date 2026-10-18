@@ -556,31 +556,46 @@ const SFX=(()=>{
 document.addEventListener('pointerdown',()=>SFX.unlock(),{passive:true});
 /* ---- BGM(音楽ファイルは bgm/ フォルダ。<audio>で流すので端末のメモリをほとんど使わない) ---- */
 const BGM=(()=>{
+  /* Web Audio で鳴らす(<audio>を使うと、iPhoneのダイナミックアイランドやロック画面に「再生中」が出てしまうため) */
   const TR={title:{src:'bgm/title.mp3',loop:true,g:1},battle:{src:'bgm/battle.mp3',loop:true,g:1},match:{src:'bgm/match.mp3',loop:false,g:1.15},victory:{src:'bgm/victory.mp3',loop:true,g:1},defeat:{src:'bgm/defeat.mp3',loop:true,g:1}};
   const G4=[0,.22,.4,.65];let ctx=null,master=null,want=null,vol=2,ok=false;
   try{const v=localStorage.getItem('bgmv');if(v!==null&&+v>=0&&+v<=3)vol=+v}catch(e){}
-  const mk=k=>{const t=TR[k];if(t.el||!ctx)return;try{const el=new Audio();el.preload='auto';el.loop=t.loop;el.src=t.src;const g=ctx.createGain();g.gain.value=0;ctx.createMediaElementSource(el).connect(g);g.connect(master);t.el=el;t.g0=g}catch(e){t.bad=true}};
-  const fade=(t,to,s)=>{const p=t.g0.gain,n=ctx.currentTime;p.cancelScheduledValues(n);p.setValueAtTime(p.value,n);p.linearRampToValueAtTime(to,n+s)};
+  const raw=k=>{const t=TR[k];return t.raw||(t.raw=fetch(t.src).then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()}).catch(e=>{t.raw=null;throw e}))};
+  const dec=ab=>new Promise((res,rej)=>{try{const p=ctx.decodeAudioData(ab,res,rej);if(p&&p.then)p.then(res,rej)}catch(e){rej(e)}});
+  const buf=k=>{const t=TR[k];if(t.buf)return Promise.resolve(t.buf);return t.dp||(t.dp=raw(k).then(ab=>dec(ab.slice(0))).then(b=>{t.buf=b;t.dp=null;return b}).catch(e=>{t.dp=null;throw e}))};
+  const fade=(t,to,s)=>{const p=t.gn.gain,n=ctx.currentTime;p.cancelScheduledValues(n);p.setValueAtTime(p.value,n);p.linearRampToValueAtTime(to,n+s)};
+  function start(k){
+    const t=TR[k];if(t.run||t.bad)return;t.run=true;
+    buf(k).then(b=>{
+      if(!t.run||want!==k||!ctx)return;
+      const gn=ctx.createGain();gn.gain.value=0;gn.connect(master);const sr=ctx.createBufferSource();sr.buffer=b;sr.loop=t.loop;sr.connect(gn);
+      t.gn=gn;t.sr=sr;sr.onended=()=>{if(t.sr===sr){t.run=false;t.sr=null}};
+      sr.start(0);fade(t,t.g,k==='match'?.15:(k==='victory'||k==='defeat'?.4:.9));
+    }).catch(()=>{t.run=false;t.bad=true;setTimeout(()=>{t.bad=false},15000)});
+  }
+  function stop(k,quick){
+    const t=TR[k];if(!t.run)return;t.run=false;const sr=t.sr,gn=t.gn;t.sr=null;
+    if(sr){try{fade({gn},0,quick?.05:.8)}catch(e){}setTimeout(()=>{try{sr.stop()}catch(e){}try{sr.disconnect();gn.disconnect()}catch(e){}if(!t.run&&k!=='match')t.buf=null},quick?120:900)}
+  }
   function apply(){
     if(!ok||!ctx)return;
-    const on=!!vol&&!document.hidden;
-    for(const k in TR){const t=TR[k];
-      if(k===want&&on){mk(k);if(!t.el||t.bad)continue;clearTimeout(t.stop);t.stop=null;
-        if(!t.run||t.el.paused){const fresh=!t.run;t.run=true;if(fresh&&(t.el.paused||t.el.ended))try{t.el.currentTime=0}catch(e){};const p=t.el.play();if(p&&p.catch)p.catch(()=>{t.run=false})}
-        fade(t,TR[k].g,k==='match'?.15:(k==='victory'||k==='defeat'?.4:.9))}
-      else if(t.run){t.run=false;fade(t,0,on?.8:.05);clearTimeout(t.stop);t.stop=setTimeout(()=>{if(!t.run)try{t.el.pause()}catch(e){}},on?900:120)}}
+    const on=!!vol;
+    for(const k in TR){if(k===want&&on)start(k);else stop(k,!on)}
+    if(want&&on&&TR[want]&&!TR[want].buf)buf(want).catch(()=>{});
   }
   const api={
     unlock(){if(!ctx){try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;ctx=new AC();master=ctx.createGain();master.gain.value=G4[vol];master.connect(ctx.destination)}catch(e){ctx=null;return}}
-      if(ctx.state==='suspended')ctx.resume().catch(()=>{});ok=true;apply()},
+      if(ctx.state!=='running')ctx.resume().catch(()=>{});ok=true;apply();
+      if(!api._pre){api._pre=1;setTimeout(()=>{['title','battle','match','victory','defeat'].forEach(k=>raw(k).catch(()=>{}))},1500)}},
     set(k){if(k===want)return;want=k;apply()},
     get vol(){return vol},
     get now(){return want},
+    get live(){return Object.keys(TR).filter(k=>TR[k].sr)},
     get playing(){return Object.keys(TR).filter(k=>TR[k].run)},
     setVol(v){vol=v;try{localStorage.setItem('bgmv',String(v))}catch(e){}if(master)master.gain.value=G4[v];apply()},
     apply
   };
-  document.addEventListener('visibilitychange',()=>{if(ctx){if(document.hidden)apply();else{if(ctx.state==='suspended')ctx.resume().catch(()=>{});apply()}}});
+  document.addEventListener('visibilitychange',()=>{if(!ctx)return;if(document.hidden){ctx.suspend().catch(()=>{})}else{ctx.resume().catch(()=>{})}});
   return api;
 })();
 ['pointerdown','pointerup','click','keydown','touchend'].forEach(ev=>document.addEventListener(ev,()=>BGM.unlock(),{passive:true}));
