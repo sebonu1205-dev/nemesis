@@ -648,6 +648,7 @@ function renderTitle(){
     <div><span class="lbl">対戦相手</span><div><div class="seg" role="group" aria-label="対戦相手"><button data-act="mode" data-v="cpu" aria-pressed="${mode==='cpu'}">CPUと対戦</button><button data-act="mode" data-v="duo" aria-pressed="${mode==='duo'}">2人で交代</button><button data-act="mode" data-v="room" aria-pressed="${mode==='room'}">ルーム戦</button><button data-act="mode" data-v="rand" aria-pressed="${mode==='rand'}">ランダムマッチ</button></div></div></div>
     ${mode==='cpu'?`<div><span class="lbl">CPUの強さ</span><div><div class="seg" role="group" aria-label="CPUの強さ"><button data-act="lv" data-v="easy" aria-pressed="${lv==='easy'}">やさしい</button><button data-act="lv" data-v="normal" aria-pressed="${lv==='normal'}">ふつう</button></div></div></div>`:(mode==='rand'?`<div><span class="lbl">ニックネーム(8文字まで)</span><div><input id="nick" class="inp" maxlength="8" value="${esc(NICK)}" placeholder="なまえ" style="width:100%"></div></div><p class="sub" id="myrate" style="color:#f0c555;font-weight:700;margin:0">あなたのレート: 確認中…</p><p class="sub" style="margin:0;line-height:1.5">レート戦です。強い相手に勝つと大きく増え、弱い相手に負けると大きく減ります。途中で退出すると負けになります。</p><div class="row"><button class="btn" data-act="rk">ランキング</button></div>`:mode==='duo'?`<p class="sub">1台の端末を渡しながら遊びます。見せたくない場面では確認の画面が入ります。</p>`:`<div><span class="lbl">ニックネーム(8文字まで)</span><div><input id="nick" class="inp" maxlength="8" value="${esc(NICK)}" placeholder="なまえ" style="width:100%"></div></div><div class="row" style="flex-wrap:nowrap"><button class="btn gold" data-act="mk" style="flex:1">部屋を作る</button><input id="rcode" class="inp" maxlength="4" value="${esc(PRE)}" placeholder="コード" style="width:84px;text-transform:uppercase;text-align:center;letter-spacing:.15em" aria-label="ルームコード" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" name="nm-room-code-x"><button class="btn" data-act="jn">入る</button></div>`)}
     <button class="btn" data-act="tut" style="width:100%;border-color:#d9a93f;color:#f0c555">チュートリアル(はじめての方はこちら)</button>
+    <button class="btn" data-act="myd" style="width:100%">マイデッキ(${MYD_N}つまで保存)</button>
     <div class="row" style="justify-content:flex-end"><button class="btn" data-act="rules">ルール</button><button class="btn" data-act="snd" aria-label="音の設定">音</button>${mode==='room'?'':mode==='rand'?'<button class="btn gold" data-act="rm">相手を探す</button>':'<button class="btn gold" data-act="go">対戦を始める</button>'}</div>
    </div></div>`,'bgA','grid-template-rows:1fr')};
   const bind=()=>{
@@ -666,7 +667,7 @@ function renderTitle(){
      <div class="row" style="justify-content:flex-end"><button class="btn gold" data-act="close">閉じる</button></div>`);
      m.querySelector('[data-act="close"]').onclick=()=>m.remove()});
     on('go',()=>startGame(mode,lv));
-    on('tut',startTutorial);
+    on('tut',startTutorial);on('myd',renderMyDecks);
     const ni=document.getElementById('nick');if(ni)ni.oninput=()=>{NICK=ni.value;try{localStorage.setItem('nick',NICK)}catch(e){}};
     on('mk',()=>{if(ni){NICK=ni.value;try{localStorage.setItem('nick',NICK)}catch(e){}}startRoom('create')});
     const rj=()=>{const c=(document.getElementById('rcode').value||'').toUpperCase().trim();if(c.length!==4){netErr('コードは4文字です');return}if(ni)NICK=ni.value;startRoom('join',c)};
@@ -688,8 +689,41 @@ function pass(i,next,why){
   on('ready',next);
 }
 const showT=(h,c,st)=>{if(TM.on)TM.keep=true;show(h,c,st)};
+/* ---- マイデッキ(3つまで。この端末のブラウザに保存) ---- */
+const MYD_N=3;
+const MYD={
+  list(){let a=null;try{a=JSON.parse(localStorage.getItem('nm_myd'))}catch(e){}if(!Array.isArray(a))a=[];const r=[];for(let i=0;i<MYD_N;i++){const x=a[i];r.push(x&&Array.isArray(x.k)&&legal(x.k)?{n:String(x.n||('マイデッキ'+(i+1))).slice(0,8),k:x.k.slice().sort((p,q)=>p-q)}:null)}return r},
+  save(a){try{localStorage.setItem('nm_myd',JSON.stringify(a))}catch(e){}}
+};
+const mydChips=k=>`<div class="row" style="gap:3px">${k.map(miniH).join('')}</div>`;
+function renderMyDecks(){
+  ghide();let first=true;
+  const draw=()=>{
+    if(first){ANIM=true;first=false}
+    const L=MYD.list();
+    show(`<div class="hd"><div class="hl"><span class="ttl">マイデッキ</span><span class="sub">よく使うデッキを${MYD_N}つまで保存できます。対戦前のデッキ編成で「マイデッキから選ぶ」から呼び出せます。</span></div><button class="btn" data-act="home" style="height:28px;padding:0 14px">戻る</button></div>
+    <div class="row" style="gap:12px;align-items:stretch;flex-wrap:nowrap;grid-column:1/-1;min-height:0">
+    ${L.map((x,i)=>`<div class="panel col" style="flex:1;min-width:0;gap:8px;justify-content:space-between">
+      <div class="col" style="gap:6px"><div class="row" style="justify-content:space-between;flex-wrap:nowrap"><b style="font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${x?esc(x.n):'マイデッキ'+(i+1)}</b><span class="chip" style="font-size:11px">${i+1} / ${MYD_N}</span></div>
+      ${x?`${mydChips(x.k)}<div class="sub" style="font-size:12px">数値の合計 <b>${sumDeck(x.k)}</b></div>`:'<div class="sub" style="padding:22px 0;text-align:center;color:#8a745a">まだ作られていません</div>'}</div>
+      <div class="row" style="gap:6px;flex-wrap:nowrap"><button class="btn gold" data-act="mde" data-i="${i}" style="flex:1;padding:0;font-size:12px">${x?'編集':'つくる'}</button>${x?`<button class="btn" data-act="mdn" data-i="${i}" style="flex:1;padding:0;font-size:12px">名前</button><button class="btn" data-act="mdx" data-i="${i}" style="flex:1;padding:0;font-size:12px">削除</button>`:''}</div>
+    </div>`).join('')}</div>`,'bgH','grid-template-rows:36px minmax(0,1fr);gap:8px 12px');
+    on('home',renderTitle);
+    on('mde',el=>{const i=+el.dataset.i,x=MYD.list()[i];G={mode:'cpu',level:'easy',names:['あなた','CPU'],decks:[null,null],orig:[null,null],S:null,picks:[null,null],log:[],pool:'A',myEdit:i,myInit:x?x.k:[]};buildFor(0)});
+    on('mdn',el=>{const i=+el.dataset.i,x=MYD.list()[i];if(!x)return;
+      const m=modal(`<h3 class="ttl" style="font-size:17px">デッキの名前(8文字まで)</h3><input id="mdname" class="inp" maxlength="8" value="${esc(x.n)}" style="width:100%"><div class="row" style="justify-content:flex-end"><button class="btn" data-act="x">やめる</button><button class="btn gold" data-act="s">保存</button></div>`);
+      const inp=m.querySelector('#mdname');setTimeout(()=>{inp.focus();inp.select()},30);
+      m.querySelector('[data-act="x"]').onclick=()=>m.remove();
+      m.querySelector('[data-act="s"]').onclick=()=>{const a=MYD.list();if(a[i]){a[i].n=(inp.value.replace(/[<>]/g,'').trim()||('マイデッキ'+(i+1))).slice(0,8);MYD.save(a)}m.remove();draw()}});
+    on('mdx',el=>{const i=+el.dataset.i,x=MYD.list()[i];if(!x)return;
+      const m=modal(`<h3 class="ttl" style="font-size:17px">「${esc(x.n)}」を削除しますか</h3><p class="sub">削除すると元に戻せません。</p><div class="row" style="justify-content:flex-end"><button class="btn" data-act="x">やめる</button><button class="btn gold" data-act="d">削除する</button></div>`);
+      m.querySelector('[data-act="x"]').onclick=()=>m.remove();
+      m.querySelector('[data-act="d"]').onclick=()=>{const a=MYD.list();a[i]=null;MYD.save(a);m.remove();draw()}});
+  };
+  draw();
+}
 function buildFor(i){
-  BGM.set('battle');G.cur=i;G.sel=G.tut?TUT[0].slice():[];G.foc=null;let f1=true;
+  const ED=G.myEdit!=null;BGM.set(ED?'title':'battle');G.cur=i;G.sel=G.tut?TUT[0].slice():(ED?(G.myInit||[]).slice():[]);G.foc=null;let f1=true;
   if(G.mode==='online')TM.start(BUILD_SEC,autoBuild);
   const draw=()=>{
     G.redraw=draw;
@@ -698,9 +732,10 @@ function buildFor(i){
     const cnt=p=>d.filter(k=>CARDS[k].p===p).length;
     const slots=[...d].sort((a,b)=>a-b);
     const f=G.foc!=null?CARDS[G.foc]:null;
-    showT(`${`<div class="hd"><div class="hl"><span class="ttl">${esc(G.names[i])}のデッキ編成</span><span class="sub">3つのプールから、合わせて5枚を選びます。${G.mode==='duo'?'相手には見せないでください。':''}</span></div>${quitBtn}</div>`}
+    showT(`${`<div class="hd"><div class="hl"><span class="ttl">${ED?'マイデッキ'+(G.myEdit+1)+'の編集':esc(G.names[i])+'のデッキ編成'}</span><span class="sub">3つのプールから、合わせて5枚を選びます。${ED?'':(G.mode==='duo'?'相手には見せないでください。':'')}</span></div>${ED?'<button class="btn" data-act="mback" style="height:28px;padding:0 14px">戻る</button>':quitBtn}</div>`}
     <div class="col" style="width:148px;grid-column:1">
       ${['A','B','C'].map(p=>`<button class="tab" data-act="pool" data-v="${p}" aria-pressed="${pool===p}"><img src="${IC['pool'+p]}" alt="${p}"><span><span style="display:block;font-weight:700;font-size:12px;letter-spacing:-.04em;white-space:nowrap">${POOLN[p]}</span><span class="lbl">選択 ${cnt(p)}</span></span></button>`).join('')}
+      ${ED||G.tut?'':'<button class="btn" data-act="my" style="width:100%;height:30px;padding:0;font-size:12px">マイデッキから選ぶ</button>'}
       <div style="font-size:11px;line-height:1.5;color:#dccfb8;min-height:60px">${f?`<b class="pcol-${f.p}" style="font-size:12px">${f.n}</b><br>${esc(f.eff)}<br><span style="color:#b8a68a">${f.num<=5?'勝利時: '+esc(f.wt):'勝利時の効果なし'}</span>`:'<span style="color:#b8a68a">カードを選ぶと、効果の全文がここに出ます。</span>'}</div>
     </div>
     <div style="grid-column:2;display:grid;grid-template-columns:repeat(3,124px);grid-auto-rows:150px;gap:10px 12px;align-content:start;justify-content:center;min-width:0">
@@ -713,9 +748,13 @@ function buildFor(i){
         <div style="display:flex;justify-content:space-between"><span style="color:#b8a68a">数値の合計(22〜25)</span><span class="${d.length===5?(s>=22&&s<=25?'okc':'ngc'):''}">${s}${d.length===5&&s>=22&&s<=25?' ✓':''}</span></div>
         <div style="display:flex;justify-content:space-between"><span style="color:#b8a68a">数値1〜3(2枚まで)</span><span class="${lo>2?'ngc':'okc'}">${lo}枚${lo<=2?' ✓':''}</span></div>
       </div>
-      <div class="row" style="margin-top:auto;flex-wrap:nowrap;gap:5px"><button class="btn" style="flex:1;padding:0;font-size:12px" data-act="pre" ${G.tut?'disabled':''}>おすすめ</button><button class="btn" style="flex:1;padding:0;font-size:12px" data-act="rnd" ${G.tut?'disabled':''}>ランダム</button><button class="btn gold" style="flex:1.2;padding:0;font-size:12px" data-act="ok" ${legal(d)?'':'disabled'}>決定</button></div>
+      <div class="row" style="margin-top:auto;flex-wrap:nowrap;gap:5px"><button class="btn" style="flex:1;padding:0;font-size:12px" data-act="pre" ${G.tut?'disabled':''}>おすすめ</button><button class="btn" style="flex:1;padding:0;font-size:12px" data-act="rnd" ${G.tut?'disabled':''}>ランダム</button><button class="btn gold" style="flex:1.2;padding:0;font-size:12px" data-act="ok" ${legal(d)?'':'disabled'}>${ED?'保存':'決定'}</button></div>
     </div>`,'bgT','grid-template-columns:148px 1fr 228px;grid-template-rows:36px minmax(0,1fr)');
     bindQuit();
+    on('mback',()=>{const m=modal(`<h3 class="ttl" style="font-size:17px">編集をやめますか</h3><p class="sub">保存していない変更は消えます。</p><div class="row" style="justify-content:flex-end"><button class="btn" data-act="x">続ける</button><button class="btn gold" data-act="y">戻る</button></div>`);m.querySelector('[data-act="x"]').onclick=()=>m.remove();m.querySelector('[data-act="y"]').onclick=()=>renderMyDecks()});
+    on('my',()=>{const L=MYD.list();const m=modal(`<div class="row" style="justify-content:space-between;flex-wrap:nowrap"><h3 class="ttl" style="font-size:17px">マイデッキ</h3><span class="sub" style="flex:1;text-align:right">選ぶと、いまのデッキと置き換わります</span><button class="btn" data-act="x" style="height:26px;padding:0 12px">閉じる</button></div>${L.map((x,n)=>x?`<button class="btn" data-m="${n}" style="display:block;width:100%;height:auto;padding:6px 10px;margin-top:6px;text-align:left"><b style="font-size:13px">${esc(x.n)}</b> <span class="sub" style="font-size:11px">合計 ${sumDeck(x.k)}</span>${mydChips(x.k)}</button>`:`<div class="sub" style="margin-top:6px;padding:8px 10px;border:1px dashed #5a4630;border-radius:8px;color:#8a745a">マイデッキ${n+1}: まだ作られていません</div>`).join('')}<p class="sub" style="font-size:11px;margin:6px 0 0">マイデッキは、タイトル画面の「マイデッキ」で作れます。</p>`);
+      m.querySelector('[data-act="x"]').onclick=()=>m.remove();
+      m.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{const x=L[+b.dataset.m];if(x){G.sel=x.k.slice();G.foc=null}m.remove();draw()})});
     on('pool',el=>{G.pool=el.dataset.v;draw()});
     on('tog',el=>{const k=+el.dataset.i;if(G.tut){G.foc=k;draw();return}const x=G.sel.indexOf(k);if(x>=0)G.sel.splice(x,1);else if(G.sel.length<5)G.sel.push(k);G.foc=k;draw()});
     on('rnd',()=>{G.sel=randomLegal();G.foc=null;draw()});
@@ -724,6 +763,7 @@ function buildFor(i){
       m.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{G.sel=PRESETS[+b.dataset.p].k.slice();G.foc=null;draw()})});
     on('clr',()=>{G.sel=[];draw()});
     on('ok',()=>{
+      if(ED){const a=MYD.list(),old=a[G.myEdit];a[G.myEdit]={n:old?old.n:'マイデッキ'+(G.myEdit+1),k:G.sel.slice().sort((x,y)=>x-y)};MYD.save(a);renderMyDecks();return}
       G.decks[i]=G.sel.slice().sort((a,b)=>a-b);
       if(G.mode==='online'){netSend({t:'deck',deck:G.decks[0]});waitScr('相手のデッキ編成を待っています','決めたデッキは、両者がそろうまで相手に見えません。',BUILD_SEC+STALL_EXTRA);return}
       if(i===0){
