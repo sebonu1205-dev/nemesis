@@ -297,6 +297,48 @@ img{-webkit-user-drag:none;user-drag:none}
 .flip.done .bf{display:none}
 .flip.done .ff{backface-visibility:visible;-webkit-backface-visibility:visible}
 @media (prefers-reduced-motion:reduce){.flip{perspective:none}.flipi{transform-style:flat}.bf{display:none}.ff{backface-visibility:visible}}
+
+/* 勝敗演出 */
+.splash{display:flex!important;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;background:#0b0705}
+.splash .sp-bg{position:absolute;inset:0;opacity:0;animation:spbg .6s .05s ease-out forwards}
+.splash.win .sp-bg{background:radial-gradient(ellipse at 50% 55%,rgba(240,197,85,.42),rgba(120,70,10,.22) 45%,transparent 72%)}
+.splash.lose .sp-bg{background:radial-gradient(ellipse at 50% 55%,rgba(150,30,20,.45),rgba(60,10,8,.25) 50%,transparent 75%)}
+.splash.draw .sp-bg{background:radial-gradient(ellipse at 50% 55%,rgba(190,190,200,.28),rgba(60,60,70,.18) 50%,transparent 75%)}
+.splash .sp-rays{position:absolute;left:50%;top:54%;width:1100px;height:1100px;margin:-550px 0 0 -550px;opacity:0;animation:spbg 1s .15s ease-out forwards,sprot 24s linear infinite;
+  background:repeating-conic-gradient(from 0deg,rgba(240,197,85,.2) 0 5deg,transparent 5deg 15deg);-webkit-mask:radial-gradient(circle,#000 0,transparent 62%);mask:radial-gradient(circle,#000 0,transparent 62%)}
+.splash.lose .sp-rays{background:repeating-conic-gradient(from 0deg,rgba(200,50,35,.16) 0 4deg,transparent 4deg 20deg)}
+.splash.draw .sp-rays{background:repeating-conic-gradient(from 0deg,rgba(210,210,220,.12) 0 5deg,transparent 5deg 15deg)}
+.splash .sp-in{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.splash .sp-ic{width:84px;height:84px;opacity:0;animation:spic .7s .1s cubic-bezier(.2,1.4,.4,1) forwards;filter:drop-shadow(0 0 14px rgba(240,197,85,.6))}
+.splash.lose .sp-ic{filter:grayscale(.6) drop-shadow(0 0 10px rgba(190,40,30,.5));animation:spic .5s .1s ease-out forwards}
+.splash .sp-t{font:800 76px/1 'Shippori Mincho B1',serif;letter-spacing:.14em;margin-right:-.14em;white-space:nowrap;opacity:0}
+.splash.win .sp-t{background:linear-gradient(100deg,#8a5a12 0%,#f6d77a 30%,#fff3bf 45%,#e0a93a 60%,#8a5a12 100%) 0 0/260% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 3px 0 #2b1a04) drop-shadow(0 0 22px rgba(240,197,85,.55));animation:spwin .8s .35s cubic-bezier(.2,1.3,.4,1) forwards,spshine 1.6s 1.1s ease-in-out infinite}
+.splash.lose .sp-t{color:#b3382a;text-shadow:0 3px 0 #2a0a06,0 0 26px rgba(160,30,20,.6);animation:splose .55s .35s cubic-bezier(.5,0,.8,.4) forwards}
+.splash.lose.shake .sp-in{animation:spshake .5s .9s}
+.splash.draw .sp-t{color:#d6d6de;text-shadow:0 3px 0 #1c1c22,0 0 20px rgba(200,200,215,.35);animation:spwin .8s .35s ease-out forwards}
+.splash .sp-ln{width:0;height:2px;background:linear-gradient(90deg,transparent,#e0b04a,transparent);animation:spln .8s .9s ease-out forwards}
+.splash.lose .sp-ln{background:linear-gradient(90deg,transparent,#a8392b,transparent)}
+.splash.draw .sp-ln{background:linear-gradient(90deg,transparent,#c9c9d3,transparent)}
+.splash .sp-s{font:700 17px 'Zen Kaku Gothic New',sans-serif;letter-spacing:.2em;color:#f0e2c0;opacity:0;animation:spsub .6s 1.05s ease-out forwards}
+.splash.lose .sp-s{color:#d9b5ad}
+.splash .sp-sk{position:absolute;right:16px;bottom:10px;font-size:11px;color:#8a745a;opacity:0;animation:spsub .5s 1.6s forwards}
+.splash .sp-fl{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;animation:spfl .5s .3s ease-out}
+.splash.lose .sp-fl{background:#a01c10;animation:spfl2 .6s .3s ease-out}
+.splash.out{animation:spout .45s ease-in forwards}
+@keyframes spbg{to{opacity:1}}
+@keyframes sprot{to{transform:rotate(360deg)}}
+@keyframes spic{0%{opacity:0;transform:scale(.3) translateY(14px)}100%{opacity:1;transform:none}}
+@keyframes spwin{0%{opacity:0;transform:scale(2.3);letter-spacing:.5em}60%{opacity:1}100%{opacity:1;transform:scale(1);letter-spacing:.14em}}
+@keyframes spshine{0%{background-position:130% 0}100%{background-position:-30% 0}}
+@keyframes splose{0%{opacity:0;transform:translateY(-70px) scale(1.5)}70%{opacity:1;transform:translateY(5px) scale(.98)}100%{opacity:1;transform:none}}
+@keyframes spshake{0%,100%{transform:translate(0)}20%{transform:translate(-6px,3px)}40%{transform:translate(5px,-3px)}60%{transform:translate(-3px,2px)}80%{transform:translate(2px,-1px)}}
+@keyframes spln{to{width:360px}}
+@keyframes spsub{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes spfl{0%{opacity:.85}100%{opacity:0}}
+@keyframes spfl2{0%{opacity:.6}100%{opacity:0}}
+@keyframes spout{to{opacity:0}}
+@media (prefers-reduced-motion:reduce){.splash .sp-rays{animation:spbg 1s forwards}.splash .sp-t{animation-duration:.01s!important;animation-delay:.1s!important;opacity:1}}
 </style>
 <div id="stage"></div>
 <div id="rot" hidden><p style="font:800 20px 'Shippori Mincho B1',serif">スマホを横向きにしてください</p><p style="font-size:13px;color:#b8a68a">この画面は横向きで遊ぶように作っています。</p><button id="rotok" class="btn" style="background:#261c14;color:#f1e8d6">このまま遊ぶ</button></div>
@@ -514,7 +556,7 @@ const SFX=(()=>{
 document.addEventListener('pointerdown',()=>SFX.unlock(),{passive:true});
 /* ---- BGM(音楽ファイルは bgm/ フォルダ。<audio>で流すので端末のメモリをほとんど使わない) ---- */
 const BGM=(()=>{
-  const TR={title:{src:'bgm/title.mp3',loop:true,g:1},battle:{src:'bgm/battle.mp3',loop:true,g:1},match:{src:'bgm/match.mp3',loop:false,g:1.15}};
+  const TR={title:{src:'bgm/title.mp3',loop:true,g:1},battle:{src:'bgm/battle.mp3',loop:true,g:1},match:{src:'bgm/match.mp3',loop:false,g:1.15},victory:{src:'bgm/victory.mp3',loop:true,g:1},defeat:{src:'bgm/defeat.mp3',loop:true,g:1}};
   const G4=[0,.22,.4,.65];let ctx=null,master=null,want=null,vol=2,ok=false;
   try{const v=localStorage.getItem('bgmv');if(v!==null&&+v>=0&&+v<=3)vol=+v}catch(e){}
   const mk=k=>{const t=TR[k];if(t.el||!ctx)return;try{const el=new Audio();el.preload='auto';el.loop=t.loop;el.src=t.src;const g=ctx.createGain();g.gain.value=0;ctx.createMediaElementSource(el).connect(g);g.connect(master);t.el=el;t.g0=g}catch(e){t.bad=true}};
@@ -525,7 +567,7 @@ const BGM=(()=>{
     for(const k in TR){const t=TR[k];
       if(k===want&&on){mk(k);if(!t.el||t.bad)continue;clearTimeout(t.stop);t.stop=null;
         if(!t.run||t.el.paused){const fresh=!t.run;t.run=true;if(fresh&&(t.el.paused||t.el.ended))try{t.el.currentTime=0}catch(e){};const p=t.el.play();if(p&&p.catch)p.catch(()=>{t.run=false})}
-        fade(t,TR[k].g,k==='match'?.15:.9)}
+        fade(t,TR[k].g,k==='match'?.15:(k==='victory'||k==='defeat'?.4:.9))}
       else if(t.run){t.run=false;fade(t,0,on?.8:.05);clearTimeout(t.stop);t.stop=setTimeout(()=>{if(!t.run)try{t.el.pause()}catch(e){}},on?900:120)}}
   }
   const api={
@@ -578,8 +620,8 @@ const miniH=i=>`<span class="mi p${CARDS[i].p}" data-cid="${i}"><b>${CARDS[i].nu
 function flipH(i,size,d){return `<div class="flip ${size}" style="--d:${d}s"><div class="flipi"><div class="face bf"><div class="back ${size}" style="background-image:url(${BACKS[BACK]})"></div></div><div class="face ff">${cardH(i,{size})}</div></div></div>`}
 const coin=`<img class="coin" src="${IC.coin}" alt="">`;
 const quitBtn=`<button class="menu" data-act="quit" aria-label="メニュー">☰</button>`;
-function bindQuit(){on('quit',()=>{const m=modal(`<h3 class="ttl" style="font-size:17px">対戦をやめますか</h3><p class="sub">いまの対戦は破棄され、タイトルへ戻ります。</p><div class="row" style="justify-content:flex-end"><button class="btn" data-act="snd2" style="margin-right:auto">音</button><button class="btn" data-act="no">続ける</button><button class="btn gold" data-act="yes">タイトルへ戻る</button></div>`);m.querySelector('[data-act="snd2"]').onclick=sndModal;
-  m.querySelector('[data-act="no"]').onclick=()=>m.remove();m.querySelector('[data-act="yes"]').onclick=()=>{if(G&&G.les)renderDex(G.les.k);else renderTitle()}})}
+function bindQuit(){on('quit',()=>{const gv=!GUIDE.hidden&&!!G&&!!(G.tut||G.les);if(gv)GUIDE.hidden=true;const m=modal(`<h3 class="ttl" style="font-size:17px">対戦をやめますか</h3><p class="sub">いまの対戦は破棄され、タイトルへ戻ります。</p><div class="row" style="justify-content:flex-end"><button class="btn" data-act="snd2" style="margin-right:auto">音</button><button class="btn" data-act="no">続ける</button><button class="btn gold" data-act="yes">タイトルへ戻る</button></div>`);m.querySelector('[data-act="snd2"]').onclick=sndModal;
+  m.querySelector('[data-act="no"]').onclick=()=>{m.remove();if(gv&&G&&(G.tut||G.les)&&GUIDE.innerHTML)GUIDE.hidden=false};m.querySelector('[data-act="yes"]').onclick=()=>{if(G&&G.les)renderDex(G.les.k);else renderTitle()}})}
 const scoreH=(a,b,i=0)=>`<div class="score">${i===0&&(G.mode==='cpu'||G.mode==='online')?`<img class="mav" src="${avSrc(MS.eq.av)}" alt="">`:''}<span>${esc(G.names[i])}</span>${coin}<b>${a}</b><span style="color:#8a745a">—</span><b>${b}</b>${coin}<span>${esc(G.names[1-i])}</span></div>`;
 
 function renderTitle(){
@@ -823,8 +865,27 @@ function renderResult(L){
     on('next',el=>{send();if(last||oppReady(L.r)){run();return}el.disabled=true;el.textContent='相手を待っています…'});
   }
 }
+/* 試合終了: VICTORY / DEFEAT の演出のあと、リザルト画面へ */
 function renderFinal(){
-  BGM.set(null);ANIM=true;
+  if(G.tut||G.les||G.splashing){if(!G.splashing){BGM.set(null);renderFinalBody()}return}
+  const Gc=G;let f;try{f=G.mode==='online'?{w:G.fin.w}:finalWinner(G.S)}catch(e){renderFinalBody();return}
+  const cpu=G.mode==='cpu'||G.mode==='online';
+  const kind=f.w===-1?'draw':(cpu?(f.w===0?'win':'lose'):'win');
+  const T={win:'VICTORY',lose:'DEFEAT',draw:'DRAW'}[kind];
+  const sub=f.w===-1?'引き分け':(cpu?(f.w===0?'あなたの勝ち':(G.mode==='online'?esc(G.names[1])+'の勝ち':'CPUの勝ち')):esc(G.names[f.w])+'の勝ち');
+  const icon=kind==='draw'?IC.draw:(kind==='win'?IC.win:IC.lose);
+  BGM.set(kind==='win'?'victory':(kind==='lose'?'defeat':'title'));
+  G.splashing=true;ANIM=false;
+  show(`<div class="sp-bg"></div><div class="sp-rays"></div><div class="sp-in"><img class="sp-ic" src="${icon}" alt=""><div class="sp-t">${T}</div><div class="sp-ln"></div><div class="sp-s">${sub}</div></div><div class="sp-fl"></div><div class="sp-sk">タップでスキップ</div>`,'splash '+kind+(kind==='lose'?' shake':''),'');
+  if(kind==='draw')SFX.at(250,'finDraw');
+  const el=$s.querySelector('.splash');let done=false;
+  const go=()=>{if(done)return;done=true;clearTimeout(t1);clearTimeout(t2);if(G!==Gc||$s.querySelector('.splash')!==el)return;Gc.splashing=false;SFX.clear();renderFinalBody()};
+  const t1=setTimeout(()=>{if(el.isConnected)el.classList.add('out')},3000),t2=setTimeout(go,3400);
+  el.addEventListener('click',()=>{if(performance.now()-t0>700)go()});
+  const t0=performance.now();
+}
+function renderFinalBody(){
+  G.splashing=false;ANIM=true;
   mGame();
   if(G.mode==='online'&&G.fin){G.decks=G.fin.decks.map(d=>d.slice());G.orig=G.fin.orig.map(d=>d.slice())}
   const S=G.S,f=G.mode==='online'?{w:G.fin.w,why:G.fin.why}:finalWinner(S),cpu=G.mode==='cpu'||G.mode==='online';
@@ -845,7 +906,7 @@ function renderFinal(){
      ${[0,1].map(p=>`<div class="row" style="gap:4px"><span class="sub" style="width:76px;white-space:nowrap">${esc(G.names[p])}</span>${G.decks[p].map(miniH).join('')}${G.decks[p].join()!==G.orig[p].join()?'<span class="chip">入れ替えあり</span>':''}</div>`).join('')}
    </div>`,'bgH','grid-template-columns:1fr 1fr;grid-template-rows:36px minmax(0,1fr);gap:0 16px');
   if(G.rated&&NET.rateInfo)showRate(NET.rateInfo);
-  bindQuit();SFX.at(300,f.w===-1?'finDraw':(cpu?(f.w===0?'finWin':'finLose'):'finWin'));
+  bindQuit();
   on('again',el=>{if(G.rated){startRoom('random');return}if(G.mode==='online'){netSend({t:'again'});el.disabled=true;el.textContent='相手を待っています…';return}startGame(G.mode,G.level)});on('title',renderTitle);
 }
 
@@ -1199,6 +1260,7 @@ async function sendMsg(kind,data){
 function view(){const R=NET.R,S=R.S,s=NET.seat,me=S.p[s],op=S.p[1-s];
   return JSON.parse(JSON.stringify({round:S.round,me:{deck:me.deck,hand:me.hand,used:me.used,own:me.own,dec:me.dec,prev:me.prev,score:me.score},opp:{handN:op.hand.length,used:op.used,own:op.own,dec:op.dec,prev:op.prev,score:op.score}}))}
 function startRoom(kind,code){
+  BGM.set('title');
   netOff();
   if(!(window.crypto&&crypto.subtle)){netEnd(FATAL_MSG.NOCRYPTO);return}
   if(kind==='random'){if(lockOther()){netEnd('このブラウザの別のタブで、すでにレート戦を探しています(同じプレイヤーとして扱われるため、自分同士では対戦できません)。別の端末か別のブラウザで開いてください。1台で2人分を試すときは、片方のURLの末尾に「?p=2」を付けて開くと、別のプレイヤーになります。');return}lockSet()}
