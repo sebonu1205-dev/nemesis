@@ -512,12 +512,43 @@ const SFX=(()=>{
   return api;
 })();
 document.addEventListener('pointerdown',()=>SFX.unlock(),{passive:true});
+/* ---- BGM(音楽ファイルは bgm/ フォルダ。<audio>で流すので端末のメモリをほとんど使わない) ---- */
+const BGM=(()=>{
+  const TR={title:{src:'bgm/title.mp3',loop:true,g:1},battle:{src:'bgm/battle.mp3',loop:true,g:1},match:{src:'bgm/match.mp3',loop:false,g:1.15}};
+  const G4=[0,.22,.4,.65];let ctx=null,master=null,want=null,vol=2,ok=false;
+  try{const v=localStorage.getItem('bgmv');if(v!==null&&+v>=0&&+v<=3)vol=+v}catch(e){}
+  const mk=k=>{const t=TR[k];if(t.el||!ctx)return;try{const el=new Audio();el.preload='auto';el.loop=t.loop;el.src=t.src;const g=ctx.createGain();g.gain.value=0;ctx.createMediaElementSource(el).connect(g);g.connect(master);t.el=el;t.g0=g}catch(e){t.bad=true}};
+  const fade=(t,to,s)=>{const p=t.g0.gain,n=ctx.currentTime;p.cancelScheduledValues(n);p.setValueAtTime(p.value,n);p.linearRampToValueAtTime(to,n+s)};
+  function apply(){
+    if(!ok||!ctx)return;
+    const on=!!vol&&!document.hidden;
+    for(const k in TR){const t=TR[k];
+      if(k===want&&on){mk(k);if(!t.el||t.bad)continue;clearTimeout(t.stop);t.stop=null;
+        if(!t.run){t.run=true;if(t.el.paused||t.el.ended)try{t.el.currentTime=0}catch(e){};const p=t.el.play();if(p&&p.catch)p.catch(()=>{t.run=false})}
+        fade(t,TR[k].g,k==='match'?.15:.9)}
+      else if(t.run){t.run=false;fade(t,0,on?.8:.05);clearTimeout(t.stop);t.stop=setTimeout(()=>{if(!t.run)try{t.el.pause()}catch(e){}},on?900:120)}}
+  }
+  const api={
+    unlock(){if(!ctx){try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;ctx=new AC();master=ctx.createGain();master.gain.value=G4[vol];master.connect(ctx.destination)}catch(e){ctx=null;return}}
+      if(ctx.state==='suspended')ctx.resume().catch(()=>{});const was=ok;ok=true;if(!was)apply()},
+    set(k){if(k===want)return;want=k;apply()},
+    get vol(){return vol},
+    get now(){return want},
+    get playing(){return Object.keys(TR).filter(k=>TR[k].run)},
+    setVol(v){vol=v;try{localStorage.setItem('bgmv',String(v))}catch(e){}if(master)master.gain.value=G4[v];apply()},
+    apply
+  };
+  document.addEventListener('visibilitychange',()=>{if(ctx){if(document.hidden)apply();else{if(ctx.state==='suspended')ctx.resume().catch(()=>{});apply()}}});
+  return api;
+})();
+['pointerdown','keydown','touchend'].forEach(ev=>document.addEventListener(ev,()=>BGM.unlock(),{passive:true}));
 const SMAP={play:'select',tog:'select',pos:'select',cand:'select',pick:'select',opt:'select',eq:'select',fix:'confirm',ok:'confirm',go:'confirm',mk:'confirm',jn:'confirm',tut:'confirm',les:'confirm'};
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('button');if(!b||b.disabled)return;SFX.play(SMAP[b.dataset.act]||'click')},true);
 const SNDN=['切','小','中','大'];
 function sndModal(){
-  const m=modal(`<h3 class="ttl" style="font-size:17px">音の設定</h3><div class="seg" role="group" aria-label="効果音の大きさ" style="align-self:flex-start">${SNDN.map((n,i)=>`<button data-v="${i}" aria-pressed="${SFX.vol===i}" style="min-width:56px">${n}</button>`).join('')}</div><p class="sub">効果音の大きさです。ボタンを押すと、音の例が鳴ります。</p><div class="row" style="justify-content:flex-end"><button class="btn gold" data-act="x">閉じる</button></div>`);
-  m.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{SFX.set(+b.dataset.v);m.querySelectorAll('.seg button').forEach(x=>x.setAttribute('aria-pressed',String(+x.dataset.v===SFX.vol)));setTimeout(()=>SFX.play('confirm'),30)});
+  const m=modal(`<h3 class="ttl" style="font-size:17px">音の設定</h3><div class="seg" role="group" aria-label="効果音の大きさ" style="align-self:flex-start">${SNDN.map((n,i)=>`<button data-v="${i}" aria-pressed="${SFX.vol===i}" style="min-width:56px">${n}</button>`).join('')}</div><p class="sub">効果音の大きさです。ボタンを押すと、音の例が鳴ります。</p><div class="lbl" style="margin-top:6px">BGMの大きさ</div><div class="seg" role="group" aria-label="BGMの大きさ" id="bgmseg" style="align-self:flex-start">${SNDN.map((n,i)=>`<button data-b="${i}" aria-pressed="${BGM.vol===i}" style="min-width:56px">${n}</button>`).join('')}</div><div class="row" style="justify-content:flex-end"><button class="btn gold" data-act="x">閉じる</button></div>`);
+  m.querySelectorAll('.seg button[data-v]').forEach(b=>b.onclick=()=>{SFX.set(+b.dataset.v);m.querySelectorAll('.seg button[data-v]').forEach(x=>x.setAttribute('aria-pressed',String(+x.dataset.v===SFX.vol)));setTimeout(()=>SFX.play('confirm'),30)});
+  m.querySelectorAll('.seg button[data-b]').forEach(b=>b.onclick=()=>{BGM.setVol(+b.dataset.b);m.querySelectorAll('.seg button[data-b]').forEach(x=>x.setAttribute('aria-pressed',String(+x.dataset.b===BGM.vol)))});
   m.querySelector('[data-act="x"]').onclick=()=>m.remove();
 }
 let ANIM=false;
@@ -552,7 +583,7 @@ function bindQuit(){on('quit',()=>{const m=modal(`<h3 class="ttl" style="font-si
 const scoreH=(a,b,i=0)=>`<div class="score">${i===0&&(G.mode==='cpu'||G.mode==='online')?`<img class="mav" src="${avSrc(MS.eq.av)}" alt="">`:''}<span>${esc(G.names[i])}</span>${coin}<b>${a}</b><span style="color:#8a745a">—</span><b>${b}</b>${coin}<span>${esc(G.names[1-i])}</span></div>`;
 
 function renderTitle(){
-  tutOff();BACK=MS.eq.back;netOff();
+  BGM.set('title');tutOff();BACK=MS.eq.back;netOff();
   let mode=(PRE&&!PRE_USED)?'room':'cpu',lv='normal',t1=true;PRE_USED=true;
   const draw=()=>{if(t1){ANIM=true;t1=false}return show(`<div class="title">
    <div class="tl"><img class="logo" src="${IC.app}" alt=""><h1><span class="en">NEMESIS</span><span class="jp">ネメシス</span></h1><p>ギリシャ神話 試作版 / 5枚のデッキで、5ラウンドの読み合い</p>${profH()}</div>
@@ -573,7 +604,8 @@ function renderTitle(){
      <li>勝った方のカードが数値1〜5なら、勝利時の効果が働きます。効果は次のラウンドだけ有効です。</li>
      <li>合計得点が同点のときは、デッキの数値の合計が小さい方の勝ちです。</li>
      <li>ルーム戦・ランダムマッチには制限時間があります(デッキ編成120秒、入れ替え60秒、各ラウンド45秒、ラウンド結果20秒)。時間切れになると自動で選ばれます(入れ替えは「しない」になります)。ラウンド結果は、両者が「次のラウンドへ」を押すか、20秒たつと次へ進みます。</li>
-     <li>処理順: スフィンクス・パンドラなどの無効化 → 数値の増減 → 暫定結果 → 勝ち確定・引き分けへの書き換え → 勝利時の効果。</li></ul>
+     <li>処理順: スフィンクス・パンドラなどの無効化 → 数値の増減 → 暫定結果 → 勝ち確定・引き分けへの書き換え → 勝利時の効果。</li>
+     <li>ランダムマッチで、しばらく相手が見つからないときは、コンピューターの相手と対戦することがあります。その試合もレートに反映されます(変動は通常の半分。反映されるのは1日8試合まで)。</li></ul>
      <div class="row" style="justify-content:flex-end"><button class="btn gold" data-act="close">閉じる</button></div>`);
      m.querySelector('[data-act="close"]').onclick=()=>m.remove()});
     on('go',()=>startGame(mode,lv));
@@ -600,7 +632,7 @@ function pass(i,next,why){
 }
 const showT=(h,c,st)=>{if(TM.on)TM.keep=true;show(h,c,st)};
 function buildFor(i){
-  G.cur=i;G.sel=G.tut?TUT[0].slice():[];G.foc=null;let f1=true;
+  BGM.set('battle');G.cur=i;G.sel=G.tut?TUT[0].slice():[];G.foc=null;let f1=true;
   if(G.mode==='online')TM.start(BUILD_SEC,autoBuild);
   const draw=()=>{
     G.redraw=draw;
@@ -792,7 +824,7 @@ function renderResult(L){
   }
 }
 function renderFinal(){
-  ANIM=true;
+  BGM.set(null);ANIM=true;
   mGame();
   if(G.mode==='online'&&G.fin){G.decks=G.fin.decks.map(d=>d.slice());G.orig=G.fin.orig.map(d=>d.slice())}
   const S=G.S,f=G.mode==='online'?{w:G.fin.w,why:G.fin.why}:finalWinner(S),cpu=G.mode==='cpu'||G.mode==='online';
@@ -1083,7 +1115,7 @@ const PRE=(new URLSearchParams(location.search).get('room')||'').toUpperCase().r
 let NICK='';try{NICK=localStorage.getItem('nick')||''}catch(e){}
 /* ルーム戦(Supabase・サーバーなし)。勝敗の計算は両方の端末が同じ手順で行い、出す前に「封印(ハッシュ)」して後から開く方式で後出しを防ぐ */
 const SB={url:'https://comonbywveilncxhrdut.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvbW9uYnl3dmVpbG5jeGhyZHV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIyMzQ3NzcsImV4cCI6MjEwNzgxMDc3N30.iS8qSFHaK5gHmy5Isslc5JqBySQBoeaWoLnhVisdbFc'};
-const POLL_MS=900,BUILD='r5';
+const POLL_MS=900,BUILD='r5',BOT_MIN=15,BOT_RNG=15,MATCH_INTRO_MS=7500;
 function uid4(){try{const t=(getSS(NET.slot)||{}).at||'';const j=JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));return String(j.sub).slice(-4)}catch(e){return String((getSS(NET.slot)||{}).at||'----').slice(-4)}}
 const diag=()=>`探し中… ${Math.floor((Date.now()-NET.since)/1000)}秒 / あなたのID ${uid4()} / 版 ${BUILD}(同じIDの画面が2つあると、自分同士になり対戦できません)`;
 const NET={slot:'m',leaving:null,rateInfo:null,rateShown:false,orateShown:false,active:false,code:null,seat:0,after:0,tm:null,fails:0,gen:0,R:null,q:Promise.resolve(),mode:'',oppOn:true,fast:0,qmAt:0,since:0};
@@ -1132,14 +1164,17 @@ function netFail(e){if(!NET.active)return;netEnd(e&&e.fatal?FATAL_MSG[e.fatal]:'
 const NETB=document.createElement('div');NETB.id='netb';NETB.hidden=true;
 const netBanner=t=>{NETB.textContent=t||'';NETB.hidden=!t};
 function netOff(){
-  const was=NET.active,code=NET.code,R=NET.R,mode=NET.mode,sl=NET.slot;
+  const was=NET.active,code=NET.code,R=NET.R,mode=NET.mode,sl=NET.slot,bot=NET.bot;
   if(mode==='random')lockClear();
-  NET.gen++;NET.active=false;wakeOff();NET.code=null;NET.R=null;NET.mode='';clearTimeout(NET.tm);NET.tm=null;NET.fails=0;NET.oppOn=true;netBanner('');
-  if(was&&code){
+  NET.gen++;NET.active=false;wakeOff();if(NET.bot)NET.bot.dead=true;NET.bot=null;NET.botBusy=false;NET.code=null;NET.R=null;NET.mode='';clearTimeout(NET.tm);NET.tm=null;NET.fails=0;NET.oppOn=true;netBanner('');
+  if(was&&code&&!bot){
     NET.leaving=(async()=>{
       try{if(mode==='random'&&R&&R.phase!=='lobby'&&!R.fin&&!R.reported)await rpc('nm_report',{p_room:code,p_result:1,p_forfeit:true},sl)}catch(e){}
       try{await rpc('nm_leave',{p_room:code},sl)}catch(e){}
     })();
+  }else if(was&&bot&&bot.ticket&&bot.rated&&R&&!R.reported){
+    R.reported=true;const v=R.dkMine&&bot.myDeck?1:9;
+    NET.leaving=(async()=>{try{await rpc('nm_bot_report',{p_ticket:bot.ticket,p_result:v},sl)}catch(e){}})();
   }
 }
 function netErr(msg){const s=$s.querySelector('.scr');if(!s)return;const m=modal(`<h3 class="ttl" style="font-size:17px">お知らせ</h3><p style="font-size:13px;line-height:1.6;margin:6px 0">${esc(msg)}</p><div class="row" style="justify-content:flex-end"><button class="btn gold" data-act="x">閉じる</button></div>`);m.querySelector('[data-act="x"]').onclick=()=>m.remove()}
@@ -1151,6 +1186,7 @@ function names2(){const a=NET.R.hello[0]||'',b=NET.R.hello[1]||'';return a===b?[
 function nm(){const n=names2(),s=NET.seat;return[n[s],n[1-s]]}
 function bad(){netEnd('相手のデータに不整合がありました(不正の疑い)。対戦を終了します。')}
 async function sendMsg(kind,data){
+  if(NET.bot){NET.bot.recv(kind,data);return true}
   const gen=NET.gen;
   for(let i=0;i<6;i++){
     if(gen!==NET.gen)return false;
@@ -1167,7 +1203,7 @@ function startRoom(kind,code){
   if(!(window.crypto&&crypto.subtle)){netEnd(FATAL_MSG.NOCRYPTO);return}
   if(kind==='random'){if(lockOther()){netEnd('このブラウザの別のタブで、すでにレート戦を探しています(同じプレイヤーとして扱われるため、自分同士では対戦できません)。別の端末か別のブラウザで開いてください。1台で2人分を試すときは、片方のURLの末尾に「?p=2」を付けて開くと、別のプレイヤーになります。');return}lockSet()}
   NET.slot=kind==='random'?'p':'m';NET.orate=null;NET.rateInfo=null;NET.rateShown=false;NET.orateShown=false;
-  NET.active=true;wakeOn();NET.gone=false;NET.mode=kind;NET.after=0;NET.fails=0;NET.oppOn=true;NET.fast=0;NET.since=Date.now();NET.qmAt=Date.now();NET.q=Promise.resolve();
+  NET.active=true;wakeOn();NET.gone=false;NET.bot=null;NET.botBusy=false;NET.botAt=(BOT_MIN+Math.random()*BOT_RNG)*1000;NET.mode=kind;NET.after=0;NET.fails=0;NET.oppOn=true;NET.fast=0;NET.since=Date.now();NET.qmAt=Date.now();NET.q=Promise.resolve();
   const gen=++NET.gen;
   newOnline(['あなた','相手']);waitScr('サーバーに接続しています','');
   (async()=>{
@@ -1204,6 +1240,7 @@ function pollLoop(){
   },d);
 }
 async function doPoll(gen){
+  if(NET.bot)return;
   const j=await rpc('nm_poll',{p_room:NET.code,p_after:NET.after});
   if(gen!==NET.gen)return;
   if(NET.fails>=3&&NET.oppOn)netBanner('');
@@ -1236,20 +1273,21 @@ async function doPoll(gen){
     else if(NET.seat===0&&j.guest&&w>8000)netBanner('相手が入室しました。接続を確かめています…');
     else if(!j.guest)netBanner('')
   }else if(R&&R.phase!=='lobby'&&NET.oppOn&&(NETB.textContent.startsWith('相手')||NETB.textContent.startsWith('探し中')))netBanner('');
-  if(NET.mode==='random'&&R&&R.phase==='lobby'&&!j.guest&&Date.now()-NET.since>120000){netEnd('対戦相手が見つかりませんでした。しばらくしてから、もう一度お試しください。')}
+  if(NET.mode==='random'&&R&&R.phase==='lobby'&&!j.guest&&NET.seat===0&&R.hello[1]==null&&!NET.botBusy&&Date.now()-NET.since>NET.botAt){await startBot(gen);return}
 }
 
 /* レート戦(ランダムマッチ)の案内・ランキング */
 function showRate(r){
   const el=document.getElementById('ratebox');if(!el)return;
   if(r.outcome==='applied'){const a=r.before+r.delta;el.textContent=`レート ${r.before} → ${a}(${r.delta>=0?'+':''}${r.delta})`;SFX.play(r.delta>0?'bell':'blip')}
+  else if(r.outcome==='practice')el.textContent='今回は練習試合でした。レートは変わりません';
   else if(r.outcome==='disputed')el.textContent='お互いの結果の申告が食い違ったため、レートは変わりません';
   else el.textContent='この試合は無効です(レートは変わりません)';
 }
 async function fillRate(el){try{if(!(window.crypto&&crypto.subtle))throw fatal('NOCRYPTO');const j=await rpc('nm_me',{p_name:cn(NICK)},'p');if(el.isConnected)el.textContent=`あなたのレート: ${j.rating}(${j.games}戦 ${j.wins}勝${j.losses}敗${j.draws?j.draws+'分':''}${j.rank?'・'+j.rank+'位':''})`}catch(e){if(el.isConnected)el.textContent=(e&&e.fatal?FATAL_MSG[e.fatal]:'レートを取得できませんでした(通信状況を確かめてください)')}}
 async function ratedModal(){
   const m=modal(`<h3 class="ttl" style="font-size:17px">レート戦(ランダムマッチ)</h3>
-   <ul style="font-size:12px;line-height:1.55;margin:4px 0 6px;padding-left:18px"><li>勝敗でレート(はじめは1000)が増減します。</li><li>自分より強い相手に勝つと多く増え、負けても減りは小さめ。弱い相手に勝っても増えは小さく、負けると大きく減ります。</li><li>近いレートの人と当たりやすく、待つほど範囲が広がります。</li><li><b>試合の途中で退出すると、負けになります。</b></li></ul>
+   <ul style="font-size:12px;line-height:1.55;margin:4px 0 6px;padding-left:18px"><li>勝敗でレート(はじめは1000)が増減します。</li><li>自分より強い相手に勝つと多く増え、負けても減りは小さめ。弱い相手に勝っても増えは小さく、負けると大きく減ります。</li><li>近いレートの人と当たりやすく、待つほど範囲が広がります。</li><li><b>試合の途中で退出すると、負けになります。</b></li><li>相手が見つからないときは、コンピューターの相手と対戦することがあります(レートの変動は半分、1日8試合まで)。</li></ul>
    <p class="sub" id="myrate" style="color:#f0c555;font-weight:700;margin:0 0 6px">あなたのレート: 確認中…</p>
    <div class="row" style="justify-content:flex-end"><button class="btn" data-act="rk">ランキング</button><button class="btn" data-act="x">閉じる</button><button class="btn gold" data-act="go2">相手を探す</button></div>`);
   m.querySelector('[data-act="x"]').onclick=()=>m.remove();
@@ -1282,6 +1320,7 @@ function statTxt(j,fb){
 function profCard(label,name,av,ti,id,body){
   return `<div class="panel col" style="width:250px;align-items:center;gap:5px;padding:12px 14px;text-align:center"><span class="lbl">${label}</span><img class="pav" style="width:64px;height:64px" src="${avSrc(av)}" alt=""><div style="font:800 20px 'Shippori Mincho B1',serif;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(name)}</div><div style="min-height:20px">${ti?`<span class="chip" style="color:#f0c555;border-color:#d9a93f">${esc(ti)}</span>`:'<span class="sub">称号なし</span>'}</div><div id="${id}" style="font-size:12px;line-height:1.6;color:#dccfb8;min-height:58px">${body}</div></div>`}
 function matchIntro(){
+  BGM.set('match');
   const gen=NET.gen,R=NET.R,s=NET.seat,o=1-s,rated=NET.mode==='random',code=NET.code,tok={};
   G.mi=tok;
   const n2=nm(),op=R.pi[o]||{av:'owl',ti:''};
@@ -1293,21 +1332,108 @@ function matchIntro(){
    ${profCard('あなた',n2[0],MS.eq.av,MS.eq.title,'mi-me',body)}
    <span style="font:800 24px 'Shippori Mincho B1',serif;color:#8a745a;align-self:center">VS</span>
    ${profCard('対戦相手',n2[1],op.av,op.ti,'mi-op',body)}</div>
-   <button class="btn gold" id="mi-go" data-act="go">デッキ編成へ(5)</button></div>`,'bgM','grid-template-rows:36px minmax(0,1fr)');
+   <div class="sub" id="mi-go" style="font-size:13px;color:#f0c555">まもなくデッキ編成へ(8)</div></div>`,'bgM','grid-template-rows:36px minmax(0,1fr)');
   bindQuit();
-  let left=5;
+  const end=Date.now()+MATCH_INTRO_MS;
   const go=()=>{clearInterval(iv);if(alive())buildFor(0)};
-  const iv=setInterval(()=>{if(!alive()){clearInterval(iv);return}left--;if(left<=0)go();else{const e=document.getElementById('mi-go');if(e)e.textContent=`デッキ編成へ(${left})`}},1000);
-  document.getElementById('mi-go').onclick=go;
+  const iv=setInterval(()=>{if(!alive()){clearInterval(iv);return}const ms=end-Date.now();if(ms<=0)go();else{const e=document.getElementById('mi-go');if(e)e.textContent=`まもなくデッキ編成へ(${Math.ceil(ms/1000)})`}},250);
   if(rated){
     const safe=p=>p.then(x=>x,()=>null);
-    Promise.all([safe(rpc('nm_me',{p_name:cn(NICK)})),safe(rpc('nm_opp',{p_room:code}))]).then(([a,b])=>{
+    Promise.all([safe(rpc('nm_me',{p_name:cn(NICK)})),(NET.bot?Promise.resolve(NET.bot.prof):safe(rpc('nm_opp',{p_room:code})))]).then(([a,b])=>{
       if(!alive())return;
       const e1=document.getElementById('mi-me'),e2=document.getElementById('mi-op');
       if(e1)e1.innerHTML=statTxt(a);
       if(e2)e2.innerHTML=statTxt(b&&b.ok?b:null,NET.orate);
     });
   }
+}
+/* ---- 人のように動くボット(マッチングが長引いたとき用)。通信の約束事をそのまま真似るので、画面側は人間相手と同じに動く ---- */
+const BOT_NAMES=['ユウタ','そら','ミカン','リク','ハル','カイト','ひなた','レン','アオイ','ミズキ','タクミ','さくら','ユウキ','リョウ','なつ','ソウタ','ミナト','ヒロ','あかり','けんた','ゆうと','ココア','ダイキ','マオ','しょうた','かな','ケイ','ムギ'];
+const rb=(a,b)=>a+Math.random()*(b-a);
+function botSwapChoice(human,mine){
+  const ev=d=>{let w=0;for(let m=0;m<120;m++)w+=rollout(mkState([human,d]),1);return w/120};
+  const base=ev(mine);let best=null,bv=base+0.03;
+  for(const o of swapOptions(mine)){const d=mine.slice();d[o.pos]=o.card;const v=ev(d);if(v>bv){bv=v;best=o}}
+  return best;
+}
+function mkBot(gen,me,tk){
+  const my=me&&Number.isFinite(+me.rating)?+me.rating:1000;
+  const titles=MIS.filter(m=>m.rw[0]==='title').map(m=>m.rw[1]);
+  const total=Math.floor(rb(10,140)),draws=Math.random()<.4?Math.floor(rb(1,4)):0;
+  const p=Math.min(.62,Math.max(.38,.5+(my-1000)/2000+rb(-.06,.06)));
+  const wins=Math.round((total-draws)*p),losses=Math.max(0,total-draws-wins);
+  const prof={ok:true,name:rand(BOT_NAMES.filter(x=>x!==cn(NICK))),av:Math.random()<.45?'owl':rand(AVSET),ti:Math.random()<.4?rand(titles):'',
+    rating:tk?tk.bot_rating:Math.max(0,Math.round(my+rb(-60,60))),games:wins+losses+draws,wins,losses,draws};
+  const B={dead:false,prof,ticket:tk?tk.ticket:null,rated:!!(tk&&tk.rated),g:0,hdc:false,hdeck:null,hpc:{},hpr:{},pcSent:{},sentPr:{},done:{},sentDr:false,myDeck:null,salt:'',swap:null,myFinal:null,scSent:false,hsc:false,started:false,swapStarted:false,BS:null,mp:null};
+  const alive=()=>!B.dead&&NET.gen===gen&&NET.bot===B&&NET.active;
+  const after=(sec,fn)=>setTimeout(()=>{if(alive())fn()},sec*1000);
+  const out=(kind,data)=>enq(()=>handle({seat:1,kind,data}));
+  const think=r=>r>=5?rb(1.5,4.5):(r===1?rb(6,20):rb(4,15)+(Math.random()<.12?rb(6,14):0));
+  const tryDr=()=>{if(B.myDeck&&B.hdc&&!B.sentDr){B.sentDr=true;out('dr',{g:B.g,deck:B.myDeck,salt:B.salt})}};
+  const commitDeck=async()=>{
+    let d=(Math.random()<.5?rand(PRESETS).k:randomLegal()).slice().sort((a,b)=>a-b);if(!legal(d))d=randomLegal();
+    B.myDeck=d;B.salt=rs();
+    const h=await H(`D|${B.g}|${d.join(',')}|${B.salt}`);
+    if(!alive())return;
+    out('dc',{g:B.g,h});tryDr();
+  };
+  const doSwap=async()=>{
+    if(B.swapStarted||!B.myDeck)return;B.swapStarted=true;
+    let ch=null;try{ch=botSwapChoice(B.hdeck,B.myDeck)}catch(e){}
+    if(ch&&Math.random()<.25)ch=null;
+    const fin=B.myDeck.slice();if(ch)fin[ch.pos]=ch.card;fin.sort((a,b)=>a-b);
+    B.myFinal=fin;B.swap={pos:ch?ch.pos:null,card:ch?ch.card:null,salt:rs()};
+    const h=await H(`S|${B.g}|${B.swap.pos==null?'n':B.swap.pos}|${B.swap.card==null?'n':B.swap.card}|${B.swap.salt}`);
+    if(!alive())return;
+    B.scSent=true;out('sc',{g:B.g,h});tryStart();
+  };
+  const tryStart=()=>{if(B.scSent&&B.hsc&&!B.started){B.started=true;B.BS=mkState([B.hdeck,B.myFinal]);after(think(1),()=>pickCard(1))}};
+  const pickCard=async r=>{
+    if(!B.BS||B.BS.round!==r||B.mp)return;
+    const hand=B.BS.p[1].hand;let c;
+    if(hand.length===1||Math.random()<.12)c=rand(hand);
+    else{try{c=cpuChoose({S:B.BS,orig:[B.hdeck,B.myFinal],level:'normal'})}catch(e){c=rand(hand)}}
+    if(!hand.includes(c))c=rand(hand);
+    const salt=rs();B.mp={r,card:c,salt};
+    const h=await H(`P|${B.g}|${r}|${c}|${salt}`);
+    if(!alive())return;
+    B.pcSent[r]=true;out('pc',{g:B.g,r,h});tryReveal(r);
+  };
+  const tryReveal=r=>{if(B.pcSent[r]&&B.hpc[r]&&!B.sentPr[r]&&B.mp&&B.mp.r===r){B.sentPr[r]=true;out('pr',{g:B.g,r,card:B.mp.card,salt:B.mp.salt});tryResolve(r)}};
+  const tryResolve=r=>{
+    if(!(B.sentPr[r]&&B.hpr[r]!==undefined&&!B.done[r]&&B.mp&&B.mp.r===r))return;
+    B.done[r]=true;const S=B.BS,hc=B.hpr[r],ph=S.p[0];
+    if(!ph.hand.includes(hc)){ph.hand.pop();ph.hand.push(hc)}
+    ph.deck=[...new Set([...ph.deck,hc])].sort((a,b)=>a-b);
+    resolve(S,[hc,B.mp.card],null);S.round++;B.mp=null;
+    if(S.round>5)after(rb(1,3),()=>out('sr',{g:B.g,pos:B.swap.pos,card:B.swap.card,salt:B.swap.salt}));
+    else{const d=rb(3,12);after(d,()=>out('rd',{g:B.g,r}));after(d+think(r+1),()=>pickCard(r+1))}
+  };
+  B.recv=(kind,data)=>{
+    if(!alive()||!data)return;
+    if(kind==='dc'){B.hdc=true;tryDr()}
+    else if(kind==='dr'){if(!B.hdeck&&Array.isArray(data.deck)){B.hdeck=data.deck.slice().sort((a,b)=>a-b);after(rb(5,22),doSwap)}}
+    else if(kind==='sc'){B.hsc=true;tryStart()}
+    else if(kind==='pc'){B.hpc[data.r]=true;tryReveal(data.r)}
+    else if(kind==='pr'){B.hpr[data.r]=data.card;tryResolve(data.r)}
+  };
+  B.start=()=>{B.g=NET.R.g;out('hello',{name:prof.name,av:prof.av,ti:prof.ti});after(rb(8,28),commitDeck)};
+  return B;
+}
+async function startBot(gen){
+  if(NET.bot||NET.botBusy)return;NET.botBusy=true;
+  const code=NET.code;let me=null,tk=null,old=false;
+  try{me=await rpc('nm_me',{p_name:cn(NICK)})}catch(e){}
+  if(gen!==NET.gen)return;
+  try{tk=await rpc('nm_bot_start',{p_room:code})}
+  catch(e){if(e&&e.fatal==='NOSQL')old=true;else{NET.botBusy=false;NET.botAt+=5000;return}}
+  if(gen!==NET.gen)return;
+  if(!old&&!(tk&&tk.ok)){NET.botBusy=false;NET.botAt+=5000;return}   /* まだ早い・相手が見つかった等。しばらくして、もう一度 */
+  if(old){try{await rpc('nm_leave',{p_room:code})}catch(e){}tk=null}  /* SQL未更新のとき: レートに反映しない練習試合として動かす */
+  if(gen!==NET.gen)return;
+  const bot=mkBot(gen,me,tk);
+  NET.bot=bot;NET.code='BOT0';NET.seat=0;NET.after=0;NET.R=newR(0);NET.R.hello[0]=myName();
+  netBanner('');bot.start();
 }
 /* --- 受信したメッセージの処理 --- */
 async function handle(m){
@@ -1402,12 +1528,15 @@ async function advance(){
       if(ok&&await H(`S|${R.g}|${pn?'n':d.pos}|${cn2?'n':d.card}|${d.salt}`)!==R.sc[o])ok=false;
       if(ok&&!pn){if(swapOptions(R.od).some(x=>x.pos===d.pos&&x.card===d.card)){odf[d.pos]=d.card;odf.sort((a,b)=>a-b)}else ok=false}
       const dec=[null,null];dec[s]=R.deck.slice();dec[o]=odf;const S2=mkState(dec);
-      if(ok){for(const L of R.log){if(!S2.p[0].hand.includes(L.cards[0])||!S2.p[1].hand.includes(L.cards[1])){ok=false;break}resolve(S2,L.cards,{notes:[],names:L.names})}}
+      if(ok){for(const L of R.log){if(!S2.p[0].hand.includes(L.cards[0])||!S2.p[1].hand.includes(L.cards[1])){ok=false;break}resolve(S2,L.cards,{notes:[],names:L.names});S2.round++}}
       if(ok)ok=S2.p[0].score===R.S.p[0].score&&S2.p[1].score===R.S.p[1].score;
       const mine=R.deck.slice(),orig=[R.myDeck.slice(),R.od.slice()];
       if(!ok)onNet({t:'final',fin:{w:-1,why:'相手の申告と試合の記録が一致しません(不正の疑い)。この試合は無効です',decks:[mine,R.od.slice()],orig}});
       else{const f=finalWinner(S2);onNet({t:'final',fin:{w:f.w===-1?-1:(f.w===s?0:1),why:f.why,decks:[mine,odf],orig}});R.myRes=f.w===-1?-1:(f.w===s?0:1)}
-      if(NET.mode==='random'&&!R.reported){R.reported=true;const v=ok?R.myRes:9;for(let t=0;t<4;t++){try{const rr=await rpc('nm_report',{p_room:NET.code,p_result:v,p_forfeit:false});if(rr&&(rr.ok||rr.err))break}catch(e){await sleep(800)}}}
+      if(NET.bot){if(!R.reported){R.reported=true;const B=NET.bot;let info={outcome:'practice'};
+        if(B.ticket&&B.rated){let rr=null;for(let t=0;t<4;t++){try{rr=await rpc('nm_bot_report',{p_ticket:B.ticket,p_result:ok?R.myRes:9});if(rr&&(rr.ok||rr.err))break}catch(e){await sleep(800)}}
+          info=(rr&&rr.ok&&rr.outcome==='applied')?{outcome:'applied',before:rr.before,delta:rr.delta}:{outcome:(rr&&rr.outcome==='practice')?'practice':'void'}}
+        NET.rateShown=true;NET.rateInfo=info;onNet({t:'rate',rate:info})}}else if(NET.mode==='random'&&!R.reported){R.reported=true;const v=ok?R.myRes:9;for(let t=0;t<4;t++){try{const rr=await rpc('nm_report',{p_room:NET.code,p_result:v,p_forfeit:false});if(rr&&(rr.ok||rr.err))break}catch(e){await sleep(800)}}}
     }
     if(R.ag[0]&&R.ag[1]){
       const fut=R.fut;NET.R=newR(R.g+1,{hello:R.hello,pi:R.pi});NET.R.phase='build';NET.R.fut=[];
@@ -1435,7 +1564,7 @@ function autoPick(){
 function autoNote(t){netBanner(t);setTimeout(()=>{if(NETB.textContent===t)netBanner('')},3500)}
 async function oppStalled(){
   const R=NET.R;let msg='相手が時間内に操作しなかったため、対戦を終了しました。';
-  if(NET.mode==='random'&&R&&R.phase!=='lobby'&&!R.fin&&!R.reported){R.reported=true;try{await rpc('nm_report',{p_room:NET.code,p_result:0,p_forfeit:true})}catch(e){}msg='相手が時間内に操作しなかったため、あなたの勝ちとして申告しました。相手から異議がなければ、レートに反映されます。'}
+  if(!NET.bot&&NET.mode==='random'&&R&&R.phase!=='lobby'&&!R.fin&&!R.reported){R.reported=true;try{await rpc('nm_report',{p_room:NET.code,p_result:0,p_forfeit:true})}catch(e){}msg='相手が時間内に操作しなかったため、あなたの勝ちとして申告しました。相手から異議がなければ、レートに反映されます。'}
   netEnd(msg);
 }
 function waitScr(t,sub,stall){ANIM=true;show(`<div class="hd"><div class="hl"></div>${quitBtn}</div><div class="center" style="grid-column:1/-1"><div class="panel center" style="padding:14px 28px"><img class="avt" src="${IC.helmet}" alt=""><h2 class="ttl">${esc(t)}<span class="dots"></span></h2><p class="sub">${esc(sub||'')}</p></div></div>`,'bgT','grid-template-rows:38px minmax(0,1fr)');bindQuit();if(stall){const g=NET.gen;TM.sw=setTimeout(()=>{if(g===NET.gen&&NET.active)oppStalled()},stall*1000)}}
@@ -1600,6 +1729,7 @@ function netBye(){
   const c=getSS(NET.slot);if(!c||!c.at)return;
   const R=NET.R,code=NET.code,mode=NET.mode;NET.gone=true;
   const post=(fn,args)=>{try{fetch(`${SB.url}/rest/v1/rpc/${fn}`,{method:'POST',keepalive:true,headers:{apikey:SB.key,Authorization:'Bearer '+c.at,'Content-Type':'application/json'},body:JSON.stringify(args)}).catch(()=>{})}catch(e){}};
+  if(NET.bot){const B=NET.bot;if(B.ticket&&B.rated&&R&&!R.reported){R.reported=true;post('nm_bot_report',{p_ticket:B.ticket,p_result:R.dkMine&&B.myDeck?1:9})}return}
   if(mode==='random'&&R&&R.phase!=='lobby'&&!R.fin&&!R.reported){R.reported=true;post('nm_report',{p_room:code,p_result:1,p_forfeit:true})}
   post('nm_leave',{p_room:code});
 }
