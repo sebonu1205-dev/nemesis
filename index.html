@@ -271,6 +271,9 @@ input,textarea,.inp{-webkit-user-select:text!important;user-select:text!importan
 img{-webkit-user-drag:none;user-drag:none}
 .seg[aria-label="対戦相手"]{display:flex;width:100%}
 .seg[aria-label="対戦相手"] button{flex:1 1 auto;padding:0 4px;font-size:11px;white-space:nowrap}
+.tmr{margin-left:auto;margin-right:6px;align-self:center;font:700 12px 'Zen Kaku Gothic New',sans-serif;padding:3px 10px;border:1px solid #5a4630;border-radius:999px;color:#f0c555;background:#261c14;white-space:nowrap}
+.tmr.warn{color:#ff9a7a;border-color:#c0583a;animation:tmrp 1s ease-in-out infinite}
+@keyframes tmrp{50%{background:#4a2218}}
 </style>
 <div id="stage"></div>
 <div id="rot" hidden><p style="font:800 20px 'Shippori Mincho B1',serif">スマホを横向きにしてください</p><p style="font-size:13px;color:#b8a68a">この画面は横向きで遊ぶように作っています。</p><button id="rotok" class="btn" style="background:#261c14;color:#f1e8d6">このまま遊ぶ</button></div>
@@ -495,7 +498,19 @@ function sndModal(){
   m.querySelector('[data-act="x"]').onclick=()=>m.remove();
 }
 let ANIM=false;
-function show(html,cls='',style=''){hideTip();SFX.clear();const a=ANIM;ANIM=false;$s.innerHTML=`<div class="scr ${cls}${a?' anim':''}" style="${style}">${MEA}${html}</div>`;$s.appendChild(TIP);$s.appendChild(GUIDE);$s.appendChild(NETB);$s.appendChild(TOAST);applyHL()}
+const TMX=Math.max(0.05,+(new URLSearchParams(location.search).get('tmx')||1)||1);
+const BUILD_SEC=Math.round(120*TMX),SWAP_SEC=Math.round(60*TMX),PICK_SEC=Math.round(45*TMX),STALL_EXTRA=Math.round(25*TMX);
+const TM={on:false,keep:false,end:0,fn:null,iv:null,tick:-1,sw:null};
+TM.start=(sec,fn)=>{TM.stop();TM.on=true;TM.keep=true;TM.end=Date.now()+sec*1000;TM.fn=fn;TM.tick=-1;TM.iv=setInterval(()=>TM.upd(),250)};
+TM.stop=()=>{TM.on=false;TM.fn=null;clearInterval(TM.iv);TM.iv=null;clearTimeout(TM.sw);TM.sw=null};
+TM.attach=()=>{const hd=$s.querySelector('.hd');if(!hd||hd.querySelector('#tmr'))return;const e=document.createElement('span');e.className='tmr';e.id='tmr';hd.insertBefore(e,hd.querySelector('.menu'));TM.upd(true)};
+TM.upd=(noAct)=>{
+  if(!TM.on)return;const left=Math.max(0,Math.ceil((TM.end-Date.now())/1000));
+  const el=document.getElementById('tmr');if(el){el.textContent='残り '+left+'秒';el.classList.toggle('warn',left<=10)}
+  if(left<=5&&left>0&&left!==TM.tick){TM.tick=left;SFX.play('click')}
+  if(left<=0&&!noAct){const f=TM.fn;TM.stop();if(f)f()}
+};
+function show(html,cls='',style=''){if(TM.on&&!TM.keep)TM.stop();if(TM.sw){clearTimeout(TM.sw);TM.sw=null}TM.keep=false;hideTip();SFX.clear();const a=ANIM;ANIM=false;$s.innerHTML=`<div class="scr ${cls}${a?' anim':''}" style="${style}">${MEA}${html}</div>`;$s.appendChild(TIP);$s.appendChild(GUIDE);$s.appendChild(NETB);$s.appendChild(TOAST);applyHL();if(TM.on)TM.attach()}
 function on(act,fn){$s.querySelectorAll(`[data-act="${act}"]`).forEach(el=>el.addEventListener('click',()=>fn(el)))}
 function modal(html){const m=document.createElement('div');m.className='modal';m.innerHTML=`<div class="panel mp" role="dialog" aria-modal="true">${html}</div>`;$s.querySelector('.scr').appendChild(m);return m}
 const backH=(cls='')=>`<div class="back ${cls}" style="background-image:url(${BACKS[BACK]})" aria-hidden="true"></div>`;
@@ -533,6 +548,7 @@ function renderTitle(){
      <li>5ラウンド、毎ラウンド両者が1枚ずつ同時に出します。数値が大きい方が1点(最大3点)。同じ数値は引き分けです。</li>
      <li>勝った方のカードが数値1〜5なら、勝利時の効果が働きます。効果は次のラウンドだけ有効です。</li>
      <li>合計得点が同点のときは、デッキの数値の合計が小さい方の勝ちです。</li>
+     <li>ルーム戦・ランダムマッチには制限時間があります(デッキ編成120秒、入れ替え60秒、各ラウンド45秒)。時間切れになると自動で選ばれます(入れ替えは「しない」になります)。</li>
      <li>処理順: スフィンクス・パンドラなどの無効化 → 数値の増減 → 暫定結果 → 勝ち確定・引き分けへの書き換え → 勝利時の効果。</li></ul>
      <div class="row" style="justify-content:flex-end"><button class="btn gold" data-act="close">閉じる</button></div>`);
      m.querySelector('[data-act="close"]').onclick=()=>m.remove()});
@@ -558,15 +574,18 @@ function pass(i,next,why){
   ANIM=true;show(`<div class="center" style="grid-column:1/-1"><div class="panel center" style="padding:16px 30px"><img class="avt" src="${i===0?IC.owl:IC.helmet}" alt=""><h2 class="ttl">${esc(G.names[i])}に端末を渡してください</h2><p class="sub">${esc(why)}</p><button class="btn gold" data-act="ready">${esc(G.names[i])}です。進む</button></div></div>`,'bgT','grid-template-rows:1fr');
   on('ready',next);
 }
+const showT=(h,c,st)=>{if(TM.on)TM.keep=true;show(h,c,st)};
 function buildFor(i){
   G.cur=i;G.sel=G.tut?TUT[0].slice():[];G.foc=null;let f1=true;
+  if(G.mode==='online')TM.start(BUILD_SEC,autoBuild);
   const draw=()=>{
+    G.redraw=draw;
     if(f1){ANIM=true;f1=false;if(G.tut)setTimeout(()=>tut('deck'),60)}
     const d=G.sel,s=sumDeck(d),lo=lowCnt(d),pool=G.pool;
     const cnt=p=>d.filter(k=>CARDS[k].p===p).length;
     const slots=[...d].sort((a,b)=>a-b);
     const f=G.foc!=null?CARDS[G.foc]:null;
-    show(`${`<div class="hd"><div class="hl"><span class="ttl">${esc(G.names[i])}のデッキ編成</span><span class="sub">3つのプールから、合わせて5枚を選びます。${G.mode==='duo'?'相手には見せないでください。':''}</span></div>${quitBtn}</div>`}
+    showT(`${`<div class="hd"><div class="hl"><span class="ttl">${esc(G.names[i])}のデッキ編成</span><span class="sub">3つのプールから、合わせて5枚を選びます。${G.mode==='duo'?'相手には見せないでください。':''}</span></div>${quitBtn}</div>`}
     <div class="col" style="width:148px;grid-column:1">
       ${['A','B','C'].map(p=>`<button class="tab" data-act="pool" data-v="${p}" aria-pressed="${pool===p}"><img src="${IC['pool'+p]}" alt="${p}"><span><span style="display:block;font-weight:700;font-size:12px;letter-spacing:-.04em;white-space:nowrap">${POOLN[p]}</span><span class="lbl">選択 ${cnt(p)}</span></span></button>`).join('')}
       <div style="font-size:11px;line-height:1.5;color:#dccfb8;min-height:60px">${f?`<b class="pcol-${f.p}" style="font-size:12px">${f.n}</b><br>${esc(f.eff)}<br><span style="color:#b8a68a">${f.num<=5?'勝利時: '+esc(f.wt):'勝利時の効果なし'}</span>`:'<span style="color:#b8a68a">カードを選ぶと、効果の全文がここに出ます。</span>'}</div>
@@ -593,7 +612,7 @@ function buildFor(i){
     on('clr',()=>{G.sel=[];draw()});
     on('ok',()=>{
       G.decks[i]=G.sel.slice().sort((a,b)=>a-b);
-      if(G.mode==='online'){netSend({t:'deck',deck:G.decks[0]});waitScr('相手のデッキ編成を待っています','決めたデッキは、両者がそろうまで相手に見えません。');return}
+      if(G.mode==='online'){netSend({t:'deck',deck:G.decks[0]});waitScr('相手のデッキ編成を待っています','決めたデッキは、両者がそろうまで相手に見えません。',BUILD_SEC+STALL_EXTRA);return}
       if(i===0){
         if(G.mode==='duo')pass(1,()=>buildFor(1),'プレイヤー1のデッキは、まだ公開されません。');
         else{G.decks[1]=G.tut?TUT[1].slice():randomLegal();startSwap()}
@@ -612,7 +631,9 @@ function swapWhy(me,pos,k){const nd=me.slice();nd[pos]=k;const s=sumDeck(nd),lo=
 function renderSwap(i){
   G.swPos=null;G.swCard=null;let s1=true;
   const me=G.decks[i],opp=G.orig[1-i];
+  if(G.mode==='online')TM.start(SWAP_SEC,autoSwap);
   const draw=()=>{
+    G.redraw=draw;
     const first=s1;if(s1){ANIM=true;s1=false;if(G.tut)setTimeout(()=>tut('swap'),60)}
     const changed=G.swPos!=null&&G.swCard!=null;
     const nd=me.slice();if(changed)nd[G.swPos]=G.swCard;
@@ -625,7 +646,7 @@ function renderSwap(i){
       right=`<div class="row" style="justify-content:space-between"><b style="font-size:14px">${CARDS[base].n}の入れ替え先</b><span class="lbl">プール${pool}</span></div>
       ${cands.map(k=>{const ok=legal(me.map((c,p)=>p===G.swPos?k:c));return`<button class="cand ${G.swCard===k?'on':''} ${ok?'':'no'}" data-cid="${k}" data-act="cand" data-i="${k}" ${ok?'':'disabled'}><span class="th"><img src="${ART[CARDS[k].id]}" alt=""></span><span style="flex:1;min-width:0"><span style="display:block;font-size:13px;font-weight:700"><span class="pcol-${pool}" style="font-family:'Shippori Mincho B1',serif;margin-right:4px">${CARDS[k].num}</span>${CARDS[k].n}</span><span style="display:block;font-size:10.5px;color:#b8a68a;line-height:1.35">${swapWhy(me,G.swPos,k)}</span></span><span style="font-size:11px;font-weight:700;color:${G.swCard===k?'#e6b34a':(ok?'#8fd0a0':'#ee7b6d')}">${G.swCard===k?'選択中':(ok?'可':'不可')}</span></button>`}).join('')}`;
     }
-    show(`<div class="hd"><div class="hl"><span class="ttl">入れ替え</span><span class="sub">自分のカード1枚を、同じプールの別のカードに替えられます。相手には見えません。</span></div>${quitBtn}</div>
+    showT(`<div class="hd"><div class="hl"><span class="ttl">入れ替え</span><span class="sub">自分のカード1枚を、同じプールの別のカードに替えられます。相手には見えません。</span></div>${quitBtn}</div>
     <div class="col" style="gap:8px">
       <div class="panel col" style="gap:6px"><div class="row" style="justify-content:space-between"><span class="lbl">${esc(G.names[1-i])}のデッキ(公開)</span><span class="lbl">数値の合計 ${sumDeck(opp)}</span></div>
         <div class="row" style="gap:10px;height:104px;flex-wrap:nowrap">${opp.map((k,n)=>first?flipH(k,'s',.25+n*.13):cardH(k,{size:'s'})).join('')}</div></div>
@@ -645,7 +666,7 @@ function renderSwap(i){
   draw();
 }
 function afterSwap(i){
-  if(G.mode==='online'){waitScr('相手の入れ替えを待っています','入れ替えの内容は、最初のカードが出るまで分かりません。');return}
+  if(G.mode==='online'){waitScr('相手の入れ替えを待っています','入れ替えの内容は、最初のカードが出るまで分かりません。',SWAP_SEC+STALL_EXTRA);return}
   if(G.tut){beginRounds();return}
   if(i===0){
     if(G.mode==='duo'){pass(1,()=>renderSwap(1),'入れ替えを選びます。');return}
@@ -663,12 +684,14 @@ function statusChips(p){const q=G.S.p[p],c=[];
   return c}
 function renderPick(i){
   G.chosen=null;G.fresh=false;let p1=true;const S=G.S,o=1-i,P=S.p[i],Q=S.p[o];
+  if(G.mode==='online')TM.start(PICK_SEC,autoPick);
   const draw=()=>{
+    G.redraw=draw;
     if(p1){ANIM=true;p1=false;if(G.tut)setTimeout(()=>tut('pick',S.round),60);if(G.les)setTimeout(()=>lesEv('pick'),60)}
     const ch=G.chosen!=null?CARDS[G.chosen]:null;
     const mine=statusChips(i);
     const rest=G.orig[o].filter(c=>!Q.used.includes(c));
-    show(`<div class="hd"><div class="hl"><span class="lbl">ラウンド</span><span style="font:800 22px 'Shippori Mincho B1',serif">${S.round}<span style="font-size:13px;color:#b8a68a"> / 5</span></span></div>${scoreH(P.score,Q.score,i)}${quitBtn}</div>
+    showT(`<div class="hd"><div class="hl"><span class="lbl">ラウンド</span><span style="font:800 22px 'Shippori Mincho B1',serif">${S.round}<span style="font-size:13px;color:#b8a68a"> / 5</span></span></div>${scoreH(P.score,Q.score,i)}${quitBtn}</div>
     <div class="panel col" style="width:176px;gap:6px;overflow:auto;min-height:0">
       <div class="row" style="flex-wrap:nowrap"><img src="${o===1?IC.helmet:IC.owl}" width="34" height="34" alt="" style="border-radius:50%"><div><div style="font-weight:700;font-size:14px">${esc(G.names[o])}</div><div class="lbl">${G.les?'れんしゅう':(G.mode==='cpu'?(G.level==='easy'?'やさしい':'ふつう'):'プレイヤー')}</div></div></div>
       <div><div class="lbl">手札 ${Q.hand.length}枚</div><div class="row opp" style="gap:3px;margin-top:3px">${Q.hand.map(()=>backH('sm')).join('')}</div></div>
@@ -695,7 +718,7 @@ function renderPick(i){
     on('play',el=>{const k=+el.dataset.i;if(G.tut&&k!==TUT_R[S.round-1].me){tut('wrong');return}if(G.les&&k!==G.les.k){lesEv('wrong');return}G.fresh=G.chosen!==k;G.chosen=k;draw();G.fresh=false;if(G.tut)tut('chosen');if(G.les)lesEv('chosen')});
     on('fix',()=>{
       G.picks[i]=G.chosen;
-      if(G.mode==='online'){netSend({t:'pick',card:G.chosen});waitScr('相手の選択を待っています','両者が選ぶと、同時にカードが開きます。');return}
+      if(G.mode==='online'){netSend({t:'pick',card:G.chosen});waitScr('相手の選択を待っています','両者が選ぶと、同時にカードが開きます。',PICK_SEC+STALL_EXTRA);return}
       if(G.mode==='duo'&&i===0){pass(1,()=>renderPick(1),'出すカードを選びます。');return}
       if(G.mode==='cpu'){G.picks[1]=G.les?G.les.oc:(G.tut?TUT_R[S.round-1].opp:cpuChoose(G))}
       if(G.tut||G.les)ghide();
@@ -1316,7 +1339,27 @@ async function advance(){
 }
 
 function newOnline(names){G={mode:'online',level:'',names:names.slice(),decks:[null,null],orig:[null,null],S:null,picks:[null,null],log:[],pool:'A'}}
-function waitScr(t,sub){ANIM=true;show(`<div class="hd"><div class="hl"></div>${quitBtn}</div><div class="center" style="grid-column:1/-1"><div class="panel center" style="padding:14px 28px"><img class="avt" src="${IC.helmet}" alt=""><h2 class="ttl">${esc(t)}<span class="dots"></span></h2><p class="sub">${esc(sub||'')}</p></div></div>`,'bgT','grid-template-rows:38px minmax(0,1fr)');bindQuit()}
+function autoBuild(){
+  if(!G||G.mode!=='online')return;
+  if(!legal(G.sel)){G.sel=randomLegal();G.foc=null}
+  if(G.redraw)G.redraw();const b=$s.querySelector('[data-act="ok"]');if(b&&!b.disabled){autoNote('時間切れのため、デッキを自動で決めました');b.click()}
+}
+function autoSwap(){
+  if(!G||G.mode!=='online')return;
+  G.swPos=null;G.swCard=null;if(G.redraw)G.redraw();const b=$s.querySelector('[data-act="keep"]');if(b){autoNote('時間切れのため、入れ替えなしになりました');b.click()}
+}
+function autoPick(){
+  if(!G||G.mode!=='online'||!G.S)return;
+  if(G.chosen==null){const h=G.S.p[0].hand;G.chosen=h[Math.floor(Math.random()*h.length)]}
+  if(G.redraw)G.redraw();const b=$s.querySelector('[data-act="fix"]');if(b&&!b.disabled){autoNote('時間切れのため、カードを自動で選びました');b.click()}
+}
+function autoNote(t){netBanner(t);setTimeout(()=>{if(NETB.textContent===t)netBanner('')},3500)}
+async function oppStalled(){
+  const R=NET.R;let msg='相手が時間内に操作しなかったため、対戦を終了しました。';
+  if(NET.mode==='random'&&R&&R.phase!=='lobby'&&!R.fin&&!R.reported){R.reported=true;try{await rpc('nm_report',{p_room:NET.code,p_result:0,p_forfeit:true})}catch(e){}msg='相手が時間内に操作しなかったため、あなたの勝ちとして申告しました。相手から異議がなければ、レートに反映されます。'}
+  netEnd(msg);
+}
+function waitScr(t,sub,stall){ANIM=true;show(`<div class="hd"><div class="hl"></div>${quitBtn}</div><div class="center" style="grid-column:1/-1"><div class="panel center" style="padding:14px 28px"><img class="avt" src="${IC.helmet}" alt=""><h2 class="ttl">${esc(t)}<span class="dots"></span></h2><p class="sub">${esc(sub||'')}</p></div></div>`,'bgT','grid-template-rows:38px minmax(0,1fr)');bindQuit();if(stall){const g=NET.gen;TM.sw=setTimeout(()=>{if(g===NET.gen&&NET.active)oppStalled()},stall*1000)}}
 function renderLobby(){
   const url=location.origin+location.pathname+'?room='+NET.code;
   ANIM=true;show(`<div class="hd"><div class="hl"><span class="ttl">ルームを作りました</span></div>${quitBtn}</div><div class="center" style="grid-column:1/-1"><div class="panel center" style="padding:14px 30px;gap:6px"><span class="lbl">ルームコード</span><div class="rcode">${esc(NET.code)}</div><p class="sub">コードを友達に伝えるか、リンクを送ってください。</p><div class="row" style="justify-content:center"><button class="btn" data-act="cp">リンクをコピー</button></div><h2 class="ttl" style="font-size:15px">相手を待っています<span class="dots"></span></h2></div></div>`,'bgM','grid-template-rows:38px minmax(0,1fr)');
@@ -1457,6 +1500,8 @@ $s.addEventListener('contextmenu',e=>{if(!isIn(e))e.preventDefault()});
 document.addEventListener('selectstart',e=>{if(!isIn(e))e.preventDefault()});
 document.getElementById('rotok').addEventListener('click',()=>{const r=document.getElementById('rot');r.dataset.skip=1;r.hidden=true});
 fit();renderTitle();
+/*ENDUI*/
+
 /*ENDUI*/
 
 /*ENDUI*/
