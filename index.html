@@ -1025,7 +1025,9 @@ const PRE=(new URLSearchParams(location.search).get('room')||'').toUpperCase().r
 let NICK='';try{NICK=localStorage.getItem('nick')||''}catch(e){}
 /* ルーム戦(Supabase・サーバーなし)。勝敗の計算は両方の端末が同じ手順で行い、出す前に「封印(ハッシュ)」して後から開く方式で後出しを防ぐ */
 const SB={url:'https://comonbywveilncxhrdut.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvbW9uYnl3dmVpbG5jeGhyZHV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIyMzQ3NzcsImV4cCI6MjEwNzgxMDc3N30.iS8qSFHaK5gHmy5Isslc5JqBySQBoeaWoLnhVisdbFc'};
-const POLL_MS=900;
+const POLL_MS=900,BUILD='r5';
+function uid4(){try{const t=(getSS(NET.slot)||{}).at||'';const j=JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));return String(j.sub).slice(-4)}catch(e){return String((getSS(NET.slot)||{}).at||'----').slice(-4)}}
+const diag=()=>`探し中… ${Math.floor((Date.now()-NET.since)/1000)}秒 / あなたのID ${uid4()} / 版 ${BUILD}(同じIDの画面が2つあると、自分同士になり対戦できません)`;
 const NET={slot:'m',leaving:null,rateInfo:null,rateShown:false,orateShown:false,active:false,code:null,seat:0,after:0,tm:null,fails:0,gen:0,R:null,q:Promise.resolve(),mode:'',oppOn:true,fast:0,qmAt:0,since:0};
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const cn=s=>String(s||'').replace(/[\u0000-\u001f<>]/g,'').trim().slice(0,8);
@@ -1170,10 +1172,11 @@ async function doPoll(gen){
   }
   if(R&&R.phase==='lobby'&&R.hello[1-NET.seat]==null&&NET.oppOn){
     const w=Date.now()-NET.since;
-    if(NET.seat===1&&w>8000)netBanner('相手の準備を待っています(あなたはゲスト側です)。部屋のコードが合っているか確かめてください。');
+    if(NET.mode==='random')netBanner(diag());
+    else if(NET.seat===1&&w>8000)netBanner('相手の準備を待っています(あなたはゲスト側です)。部屋のコードが合っているか確かめてください。');
     else if(NET.seat===0&&j.guest&&w>8000)netBanner('相手が入室しました。接続を確かめています…');
     else if(!j.guest)netBanner('')
-  }else if(R&&R.phase!=='lobby'&&NET.oppOn&&NETB.textContent.startsWith('相手'))netBanner('');
+  }else if(R&&R.phase!=='lobby'&&NET.oppOn&&(NETB.textContent.startsWith('相手')||NETB.textContent.startsWith('探し中')))netBanner('');
   if(NET.mode==='random'&&R&&R.phase==='lobby'&&!j.guest&&Date.now()-NET.since>120000){netEnd('対戦相手が見つかりませんでした。しばらくしてから、もう一度お試しください。')}
 }
 
@@ -1454,6 +1457,10 @@ $s.addEventListener('contextmenu',e=>{if(!isIn(e))e.preventDefault()});
 document.addEventListener('selectstart',e=>{if(!isIn(e))e.preventDefault()});
 document.getElementById('rotok').addEventListener('click',()=>{const r=document.getElementById('rot');r.dataset.skip=1;r.hidden=true});
 fit();renderTitle();
+/*ENDUI*/
+
+/*ENDUI*/
+
 /*ENDUI*/
 
 /*ENDUI*/
