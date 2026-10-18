@@ -524,13 +524,13 @@ const BGM=(()=>{
     const on=!!vol&&!document.hidden;
     for(const k in TR){const t=TR[k];
       if(k===want&&on){mk(k);if(!t.el||t.bad)continue;clearTimeout(t.stop);t.stop=null;
-        if(!t.run){t.run=true;if(t.el.paused||t.el.ended)try{t.el.currentTime=0}catch(e){};const p=t.el.play();if(p&&p.catch)p.catch(()=>{t.run=false})}
+        if(!t.run||t.el.paused){const fresh=!t.run;t.run=true;if(fresh&&(t.el.paused||t.el.ended))try{t.el.currentTime=0}catch(e){};const p=t.el.play();if(p&&p.catch)p.catch(()=>{t.run=false})}
         fade(t,TR[k].g,k==='match'?.15:.9)}
       else if(t.run){t.run=false;fade(t,0,on?.8:.05);clearTimeout(t.stop);t.stop=setTimeout(()=>{if(!t.run)try{t.el.pause()}catch(e){}},on?900:120)}}
   }
   const api={
     unlock(){if(!ctx){try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;ctx=new AC();master=ctx.createGain();master.gain.value=G4[vol];master.connect(ctx.destination)}catch(e){ctx=null;return}}
-      if(ctx.state==='suspended')ctx.resume().catch(()=>{});const was=ok;ok=true;if(!was)apply()},
+      if(ctx.state==='suspended')ctx.resume().catch(()=>{});ok=true;apply()},
     set(k){if(k===want)return;want=k;apply()},
     get vol(){return vol},
     get now(){return want},
@@ -541,7 +541,7 @@ const BGM=(()=>{
   document.addEventListener('visibilitychange',()=>{if(ctx){if(document.hidden)apply();else{if(ctx.state==='suspended')ctx.resume().catch(()=>{});apply()}}});
   return api;
 })();
-['pointerdown','keydown','touchend'].forEach(ev=>document.addEventListener(ev,()=>BGM.unlock(),{passive:true}));
+['pointerdown','pointerup','click','keydown','touchend'].forEach(ev=>document.addEventListener(ev,()=>BGM.unlock(),{passive:true}));
 const SMAP={play:'select',tog:'select',pos:'select',cand:'select',pick:'select',opt:'select',eq:'select',fix:'confirm',ok:'confirm',go:'confirm',mk:'confirm',jn:'confirm',tut:'confirm',les:'confirm'};
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('button');if(!b||b.disabled)return;SFX.play(SMAP[b.dataset.act]||'click')},true);
 const SNDN=['切','小','中','大'];
