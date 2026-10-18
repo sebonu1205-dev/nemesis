@@ -693,7 +693,7 @@ function renderPick(i){
     const rest=G.orig[o].filter(c=>!Q.used.includes(c));
     showT(`<div class="hd"><div class="hl"><span class="lbl">ラウンド</span><span style="font:800 22px 'Shippori Mincho B1',serif">${S.round}<span style="font-size:13px;color:#b8a68a"> / 5</span></span></div>${scoreH(P.score,Q.score,i)}${quitBtn}</div>
     <div class="panel col" style="width:176px;gap:6px;overflow:auto;min-height:0">
-      <div class="row" style="flex-wrap:nowrap"><img src="${o===1?IC.helmet:IC.owl}" width="34" height="34" alt="" style="border-radius:50%"><div><div style="font-weight:700;font-size:14px">${esc(G.names[o])}</div><div class="lbl">${G.les?'れんしゅう':(G.mode==='cpu'?(G.level==='easy'?'やさしい':'ふつう'):'プレイヤー')}</div></div></div>
+      <div class="row" style="flex-wrap:nowrap"><img src="${G.mode==='online'&&G.oppAv?avSrc(G.oppAv):(o===1?IC.helmet:IC.owl)}" width="34" height="34" alt="" style="border-radius:50%"><div><div style="font-weight:700;font-size:14px">${esc(G.names[o])}</div><div class="lbl">${G.les?'れんしゅう':(G.mode==='cpu'?(G.level==='easy'?'やさしい':'ふつう'):esc(G.oppTi||'プレイヤー'))}</div></div></div>
       <div><div class="lbl">手札 ${Q.hand.length}枚</div><div class="row opp" style="gap:3px;margin-top:3px">${Q.hand.map(()=>backH('sm')).join('')}</div></div>
       <div><div class="lbl">公開デッキ(暗い札は使用済み)</div><div class="row" style="gap:5px;margin-top:3px">${G.orig[o].map(k=>thumbH(k,Q.used.includes(k))).join('')}</div></div>
       ${statusChips(o).length?`<div class="row" style="gap:4px">${statusChips(o).map(t=>`<span class="chip">${t}</span>`).join('')}</div>`:''}
@@ -1110,7 +1110,7 @@ function netErr(msg){const s=$s.querySelector('.scr');if(!s)return;const m=modal
 function netEnd(why){renderTitle();setTimeout(()=>netErr(why),60)}
 const enq=fn=>{const g=NET.gen;NET.q=NET.q.then(()=>g===NET.gen?fn():0).catch(e=>{if(g===NET.gen)netFail(e)})};
 const myName=()=>cn(NICK)||(NET.seat?'ゲスト':'ホスト');
-function newR(g,keep){return{g,hello:keep?keep.hello:[null,null],phase:keep?'build':'lobby',dk:[null,null],dkMine:false,sentDr:false,od:null,myDeck:null,mySalt:'',deck:null,sc:[null,null],scMine:false,mySwap:null,S:null,mp:null,sentPr:false,pc:{},opr:{},log:[],sr:null,fin:false,ag:[false,false],fut:[]}}
+function newR(g,keep){return{g,hello:keep?keep.hello:[null,null],pi:keep?keep.pi:[null,null],phase:keep?'build':'lobby',dk:[null,null],dkMine:false,sentDr:false,od:null,myDeck:null,mySalt:'',deck:null,sc:[null,null],scMine:false,mySwap:null,S:null,mp:null,sentPr:false,pc:{},opr:{},log:[],sr:null,fin:false,ag:[false,false],fut:[]}}
 function names2(){const a=NET.R.hello[0]||'',b=NET.R.hello[1]||'';return a===b?[a,b+'2']:[a,b]}
 function nm(){const n=names2(),s=NET.seat;return[n[s],n[1-s]]}
 function bad(){netEnd('相手のデータに不整合がありました(不正の疑い)。対戦を終了します。')}
@@ -1130,7 +1130,7 @@ function startRoom(kind,code){
   netOff();
   if(!(window.crypto&&crypto.subtle)){netEnd(FATAL_MSG.NOCRYPTO);return}
   if(kind==='random'){if(lockOther()){netEnd('このブラウザの別のタブで、すでにレート戦を探しています(同じプレイヤーとして扱われるため、自分同士では対戦できません)。別の端末か別のブラウザで開いてください。1台で2人分を試すときは、片方のURLの末尾に「?p=2」を付けて開くと、別のプレイヤーになります。');return}lockSet()}
-  NET.slot=kind==='random'?'p':'m';NET.rateInfo=null;NET.rateShown=false;NET.orateShown=false;
+  NET.slot=kind==='random'?'p':'m';NET.orate=null;NET.rateInfo=null;NET.rateShown=false;NET.orateShown=false;
   NET.active=true;NET.mode=kind;NET.after=0;NET.fails=0;NET.oppOn=true;NET.fast=0;NET.since=Date.now();NET.qmAt=Date.now();NET.q=Promise.resolve();
   const gen=++NET.gen;
   newOnline(['あなた','相手']);waitScr('サーバーに接続しています','');
@@ -1148,7 +1148,7 @@ function startRoom(kind,code){
       if(kind==='create'){NET.R.hello[0]=null;renderLobby()}
       else if(kind==='random'&&!res.matched)waitScr('対戦相手を探しています','見つかるまで、そのままお待ちください');
       else waitScr('接続しました','相手の準備を待っています');
-      await sendMsg('hello',{name:myName()});NET.R.hello[NET.seat]=myName();
+      await sendMsg('hello',helloData());NET.R.hello[NET.seat]=myName();
       if(gen===NET.gen)pollLoop();
     }catch(e){if(gen===NET.gen)netFail(e)}
   })();
@@ -1176,7 +1176,7 @@ async function doPoll(gen){
     const R0=NET.R;
     if(NET.mode==='random'&&R0&&R0.phase!=='lobby'&&!R0.fin&&!R0.reported){R0.reported=true;try{await rpc('nm_report',{p_room:NET.code,p_result:0,p_forfeit:true})}catch(e){}netEnd('相手が退出しました。不戦勝として扱われます。');return}
     netEnd(R0&&R0.phase!=='lobby'?'相手が退出しました':'部屋が閉じられました');return}
-  if(j.orate!=null&&!NET.orateShown&&NET.R&&NET.R.phase!=='lobby'){NET.orateShown=true;const t='レート戦  相手のレート '+j.orate;netBanner(t);setTimeout(()=>{if(NETB.textContent===t)netBanner('')},6000)}
+  if(j.orate!=null)NET.orate=j.orate;if(j.orate!=null&&!NET.orateShown&&NET.R&&NET.R.phase!=='lobby'){NET.orateShown=true;const t='レート戦  相手のレート '+j.orate;netBanner(t);setTimeout(()=>{if(NETB.textContent===t)netBanner('')},6000)}
   if(j.rate&&!NET.rateShown){NET.rateShown=true;NET.rateInfo=j.rate;onNet({t:'rate',rate:j.rate})}
   NET.after=j.last;
   for(const m of j.msgs)enq(()=>handle(m));
@@ -1191,7 +1191,7 @@ async function doPoll(gen){
     NET.qmAt=Date.now();
     const q=await rpc('nm_quick_match',{p_name:cn(NICK)});
     if(gen!==NET.gen)return;
-    if(q&&q.ok&&q.code!==NET.code){NET.code=q.code;NET.seat=q.seat;NET.after=0;NET.R=newR(0);await sendMsg('hello',{name:myName()});NET.R.hello[NET.seat]=myName()}
+    if(q&&q.ok&&q.code!==NET.code){NET.code=q.code;NET.seat=q.seat;NET.after=0;NET.R=newR(0);await sendMsg('hello',helloData());NET.R.hello[NET.seat]=myName()}
   }
   if(R&&R.phase==='lobby'&&R.hello[1-NET.seat]==null&&NET.oppOn){
     const w=Date.now()-NET.since;
@@ -1233,10 +1233,50 @@ async function rankModal(){
     el.innerHTML=j.length?`<table><thead><tr><th>順位</th><th>なまえ</th><th>レート</th><th>戦績</th></tr></thead><tbody>${j.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.name)}</td><td>${x.rating}</td><td>${x.games}戦${x.wins}勝</td></tr>`).join('')}</tbody></table>`:'まだ試合の記録がありません。';
   }catch(e){const el=m.querySelector('#rklist');if(el)el.textContent=e&&e.fatal?FATAL_MSG[e.fatal]:'取得できませんでした'}
 }
+/* 対戦相手の紹介(マッチング直後) */
+const AVSET=['owl','helmet','laurel','lyre','sandals','trident'];
+const TITLE_OK=t=>(typeof t==='string'&&MIS.some(m=>m.rw[0]==='title'&&m.rw[1]===t))?t:'';
+const helloData=()=>({name:myName(),av:MS.eq.av,ti:MS.eq.title});
+const num0=v=>Math.max(0,Math.floor(+v)||0);
+function statTxt(j,fb){
+  if(!j)return fb!=null?`レート <b style="font:800 18px 'Shippori Mincho B1',serif;color:#f0c555">${num0(fb)}</b>`:'戦績を取得できませんでした';
+  const g=num0(j.games),w=num0(j.wins),l=num0(j.losses),d=num0(j.draws);
+  return `レート <b style="font:800 18px 'Shippori Mincho B1',serif;color:#f0c555">${num0(j.rating)}</b><br>${g?`勝率 <b>${Math.round(w/g*100)}%</b><br><span style="color:#b8a68a">${g}戦 ${w}勝 ${l}敗${d?' '+d+'分':''}</span>`:'<span style="color:#b8a68a">まだ対戦記録なし</span>'}`;
+}
+function profCard(label,name,av,ti,id,body){
+  return `<div class="panel col" style="width:250px;align-items:center;gap:5px;padding:12px 14px;text-align:center"><span class="lbl">${label}</span><img class="pav" style="width:64px;height:64px" src="${avSrc(av)}" alt=""><div style="font:800 20px 'Shippori Mincho B1',serif;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(name)}</div><div style="min-height:20px">${ti?`<span class="chip" style="color:#f0c555;border-color:#d9a93f">${esc(ti)}</span>`:'<span class="sub">称号なし</span>'}</div><div id="${id}" style="font-size:12px;line-height:1.6;color:#dccfb8;min-height:58px">${body}</div></div>`}
+function matchIntro(){
+  const gen=NET.gen,R=NET.R,s=NET.seat,o=1-s,rated=NET.mode==='random',code=NET.code,tok={};
+  G.mi=tok;
+  const n2=nm(),op=R.pi[o]||{av:'owl',ti:''};
+  const body=rated?'<span style="color:#b8a68a">戦績を確認中…</span>':'<span style="color:#b8a68a">ルーム戦<br>(レートは動きません)</span>';
+  const alive=()=>NET.active&&NET.gen===gen&&NET.R===R&&R.phase==='build'&&G&&G.mi===tok;
+  ANIM=true;
+  show(`<div class="hd"><div class="hl"><span class="ttl">対戦相手が見つかりました</span><span class="sub">${rated?'レート戦':'ルーム戦'}</span></div>${quitBtn}</div>
+   <div class="center" style="grid-column:1/-1;gap:12px"><div class="row" style="flex-wrap:nowrap;gap:16px;justify-content:center;align-items:stretch">
+   ${profCard('あなた',n2[0],MS.eq.av,MS.eq.title,'mi-me',body)}
+   <span style="font:800 24px 'Shippori Mincho B1',serif;color:#8a745a;align-self:center">VS</span>
+   ${profCard('対戦相手',n2[1],op.av,op.ti,'mi-op',body)}</div>
+   <button class="btn gold" id="mi-go" data-act="go">デッキ編成へ(5)</button></div>`,'bgM','grid-template-rows:36px minmax(0,1fr)');
+  bindQuit();
+  let left=5;
+  const go=()=>{clearInterval(iv);if(alive())buildFor(0)};
+  const iv=setInterval(()=>{if(!alive()){clearInterval(iv);return}left--;if(left<=0)go();else{const e=document.getElementById('mi-go');if(e)e.textContent=`デッキ編成へ(${left})`}},1000);
+  document.getElementById('mi-go').onclick=go;
+  if(rated){
+    const safe=p=>p.then(x=>x,()=>null);
+    Promise.all([safe(rpc('nm_me',{p_name:cn(NICK)})),safe(rpc('nm_opp',{p_room:code}))]).then(([a,b])=>{
+      if(!alive())return;
+      const e1=document.getElementById('mi-me'),e2=document.getElementById('mi-op');
+      if(e1)e1.innerHTML=statTxt(a);
+      if(e2)e2.innerHTML=statTxt(b&&b.ok?b:null,NET.orate);
+    });
+  }
+}
 /* --- 受信したメッセージの処理 --- */
 async function handle(m){
   const R=NET.R;if(!R)return;const d=m.data||{},s=NET.seat,o=1-s;
-  if(m.kind==='hello'){if(R.hello[o]==null)R.hello[o]=cn(d.name)||(o?'ゲスト':'ホスト');return advance()}
+  if(m.kind==='hello'){if(R.hello[o]==null){R.hello[o]=cn(d.name)||(o?'ゲスト':'ホスト');R.pi[o]={av:AVSET.includes(d.av)?d.av:'owl',ti:TITLE_OK(d.ti)}}return advance()}
   if(d.g!==R.g){if(d.g>R.g)R.fut.push(m);return}
   switch(m.kind){
   case 'dc':if(R.dk[o]==null&&typeof d.h==='string'&&d.h.length===64)R.dk[o]=d.h;break;
@@ -1284,7 +1324,7 @@ async function act(o){
 async function advance(){
   const R=NET.R;if(!R)return;const s=NET.seat,o=1-s;
   if(R.phase==='lobby'){
-    if(R.hello[0]!=null&&R.hello[1]!=null){R.phase='build';SFX.play('ding');onNet({t:'build',names:nm()});return advance()}
+    if(R.hello[0]!=null&&R.hello[1]!=null){R.phase='build';SFX.play('ding');onNet({t:'build',names:nm(),first:true});return advance()}
     return;
   }
   if(R.phase==='build'){
@@ -1331,7 +1371,7 @@ async function advance(){
       if(NET.mode==='random'&&!R.reported){R.reported=true;const v=ok?R.myRes:9;for(let t=0;t<4;t++){try{const rr=await rpc('nm_report',{p_room:NET.code,p_result:v,p_forfeit:false});if(rr&&(rr.ok||rr.err))break}catch(e){await sleep(800)}}}
     }
     if(R.ag[0]&&R.ag[1]){
-      const fut=R.fut;NET.R=newR(R.g+1,{hello:R.hello});NET.R.phase='build';NET.R.fut=[];
+      const fut=R.fut;NET.R=newR(R.g+1,{hello:R.hello,pi:R.pi});NET.R.phase='build';NET.R.fut=[];
       onNet({t:'build',names:nm()});
       for(const m of fut)await handle(m);
     }
@@ -1375,7 +1415,7 @@ function onNet(m){
   case 'rate':showRate(m.rate);break;
   case 'opp':if(!m.on)SFX.play('blip');netBanner(m.on?'':'相手の接続が切れました。戻るのを待っています…');break;
   case 'opp_again':if(G){G.oppAgain=true;const h=document.getElementById('againhint');if(h)h.textContent='相手が「もう一度」を希望しています'}break;
-  case 'build':newOnline(m.names);G.rated=NET.mode==='random';SFX.play('ding');buildFor(0);break;
+  case 'build':{newOnline(m.names);G.rated=NET.mode==='random';const op=(NET.R&&NET.R.pi[1-NET.seat])||{};G.oppAv=op.av;G.oppTi=op.ti;SFX.play('ding');if(m.first)matchIntro();else buildFor(0);break}
   case 'reveal':G.names=m.names;G.orig=[m.orig[0].slice(),m.orig[1].slice()];G.decks=[m.orig[0].slice(),m.orig[1].slice()];renderSwap(0);break;
   case 'turn':G.S=mkS(m.view);G.decks[0]=m.view.me.deck.slice();G.log=[];G.picks=[null,null];G.fin=null;G.wantFin=false;nextPick(0);break;
   case 'result':G.S=mkS(m.view);G.log.push(m.L);renderResult(m.L);break;
