@@ -269,6 +269,8 @@ html,body,#stage,#stage *{-webkit-user-select:none;user-select:none;-webkit-touc
 html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}
 input,textarea,.inp{-webkit-user-select:text!important;user-select:text!important}
 img{-webkit-user-drag:none;user-drag:none}
+.seg[aria-label="対戦相手"]{display:flex;width:100%}
+.seg[aria-label="対戦相手"] button{flex:1 1 auto;padding:0 4px;font-size:11px;white-space:nowrap}
 </style>
 <div id="stage"></div>
 <div id="rot" hidden><p style="font:800 20px 'Shippori Mincho B1',serif">スマホを横向きにしてください</p><p style="font-size:13px;color:#b8a68a">この画面は横向きで遊ぶように作っています。</p><button id="rotok" class="btn" style="background:#261c14;color:#f1e8d6">このまま遊ぶ</button></div>
@@ -516,10 +518,10 @@ function renderTitle(){
   const draw=()=>{if(t1){ANIM=true;t1=false}return show(`<div class="title">
    <div class="tl"><img class="logo" src="${IC.app}" alt=""><h1><span class="en">NEMESIS</span><span class="jp">ネメシス</span></h1><p>ギリシャ神話 試作版 / 5枚のデッキで、5ラウンドの読み合い</p>${profH()}</div>
    <div class="panel tr">
-    <div><span class="lbl">対戦相手</span><div><div class="seg" role="group" aria-label="対戦相手"><button data-act="mode" data-v="cpu" aria-pressed="${mode==='cpu'}">CPUと対戦</button><button data-act="mode" data-v="duo" aria-pressed="${mode==='duo'}">2人で交代</button><button data-act="mode" data-v="room" aria-pressed="${mode==='room'}">ルーム戦</button></div></div></div>
-    ${mode==='cpu'?`<div><span class="lbl">CPUの強さ</span><div><div class="seg" role="group" aria-label="CPUの強さ"><button data-act="lv" data-v="easy" aria-pressed="${lv==='easy'}">やさしい</button><button data-act="lv" data-v="normal" aria-pressed="${lv==='normal'}">ふつう</button></div></div></div>`:(mode==='duo'?`<p class="sub">1台の端末を渡しながら遊びます。見せたくない場面では確認の画面が入ります。</p>`:`<div><span class="lbl">ニックネーム(8文字まで)</span><div><input id="nick" class="inp" maxlength="8" value="${esc(NICK)}" placeholder="なまえ" style="width:100%"></div></div><div class="row" style="flex-wrap:nowrap"><button class="btn gold" data-act="mk" style="flex:1">部屋を作る</button><input id="rcode" class="inp" maxlength="4" value="${esc(PRE)}" placeholder="コード" style="width:84px;text-transform:uppercase;text-align:center;letter-spacing:.15em" aria-label="ルームコード"><button class="btn" data-act="jn">入る</button></div>`)}
+    <div><span class="lbl">対戦相手</span><div><div class="seg" role="group" aria-label="対戦相手"><button data-act="mode" data-v="cpu" aria-pressed="${mode==='cpu'}">CPUと対戦</button><button data-act="mode" data-v="duo" aria-pressed="${mode==='duo'}">2人で交代</button><button data-act="mode" data-v="room" aria-pressed="${mode==='room'}">ルーム戦</button><button data-act="mode" data-v="rand" aria-pressed="${mode==='rand'}">ランダムマッチ</button></div></div></div>
+    ${mode==='cpu'?`<div><span class="lbl">CPUの強さ</span><div><div class="seg" role="group" aria-label="CPUの強さ"><button data-act="lv" data-v="easy" aria-pressed="${lv==='easy'}">やさしい</button><button data-act="lv" data-v="normal" aria-pressed="${lv==='normal'}">ふつう</button></div></div></div>`:(mode==='rand'?`<div><span class="lbl">ニックネーム(8文字まで)</span><div><input id="nick" class="inp" maxlength="8" value="${esc(NICK)}" placeholder="なまえ" style="width:100%"></div></div><p class="sub" id="myrate" style="color:#f0c555;font-weight:700;margin:0">あなたのレート: 確認中…</p><p class="sub" style="margin:0;line-height:1.5">レート戦です。強い相手に勝つと大きく増え、弱い相手に負けると大きく減ります。途中で退出すると負けになります。</p><div class="row"><button class="btn" data-act="rk">ランキング</button></div>`:mode==='duo'?`<p class="sub">1台の端末を渡しながら遊びます。見せたくない場面では確認の画面が入ります。</p>`:`<div><span class="lbl">ニックネーム(8文字まで)</span><div><input id="nick" class="inp" maxlength="8" value="${esc(NICK)}" placeholder="なまえ" style="width:100%"></div></div><div class="row" style="flex-wrap:nowrap"><button class="btn gold" data-act="mk" style="flex:1">部屋を作る</button><input id="rcode" class="inp" maxlength="4" value="${esc(PRE)}" placeholder="コード" style="width:84px;text-transform:uppercase;text-align:center;letter-spacing:.15em" aria-label="ルームコード"><button class="btn" data-act="jn">入る</button></div>`)}
     <button class="btn" data-act="tut" style="width:100%;border-color:#d9a93f;color:#f0c555">チュートリアル(はじめての方はこちら)</button>
-    <div class="row" style="justify-content:flex-end"><button class="btn" data-act="rules">ルール</button><button class="btn" data-act="snd" aria-label="音の設定">音</button>${mode==='room'?'<button class="btn gold" data-act="rm">ランダムマッチ</button>':'<button class="btn gold" data-act="go">対戦を始める</button>'}</div>
+    <div class="row" style="justify-content:flex-end"><button class="btn" data-act="rules">ルール</button><button class="btn" data-act="snd" aria-label="音の設定">音</button>${mode==='room'?'':mode==='rand'?'<button class="btn gold" data-act="rm">相手を探す</button>':'<button class="btn gold" data-act="go">対戦を始める</button>'}</div>
    </div></div>`,'bgA','grid-template-rows:1fr')};
   const bind=()=>{
     $s.querySelectorAll('[data-act="mode"]').forEach(b=>b.onclick=()=>{mode=b.dataset.v;draw();bind()});
@@ -539,7 +541,7 @@ function renderTitle(){
     const ni=document.getElementById('nick');if(ni)ni.oninput=()=>{NICK=ni.value;try{localStorage.setItem('nick',NICK)}catch(e){}};
     on('mk',()=>{if(ni){NICK=ni.value;try{localStorage.setItem('nick',NICK)}catch(e){}}startRoom('create')});
     const rj=()=>{const c=(document.getElementById('rcode').value||'').toUpperCase().trim();if(c.length!==4){netErr('コードは4文字です');return}if(ni)NICK=ni.value;startRoom('join',c)};
-    on('rm',()=>{if(ni)NICK=ni.value;try{localStorage.setItem('nick',NICK)}catch(e){}startRoom('random')});
+    on('rm',()=>{if(ni)NICK=ni.value;try{localStorage.setItem('nick',NICK)}catch(e){}startRoom('random')});on('rk',rankModal);{const mr=document.getElementById('myrate');if(mr)fillRate(mr)}
     on('jn',rj);const rc=document.getElementById('rcode');if(rc)rc.onkeydown=e=>{if(e.key==='Enter')rj()};
   };
   draw();bind();
@@ -744,16 +746,17 @@ function renderFinal(){
    <div class="col" style="justify-content:center;gap:10px">
      <div class="banner rb ${kind}" style="font-size:20px;padding:10px 14px;--bd:.3s"><img src="${icon}" alt="" style="width:44px;height:44px">${msg}</div>
      ${scoreH(S.p[0].score,S.p[1].score,0)}
-     <p class="sub">決まり手: ${esc(f.why)}</p><p class="sub" id="againhint" style="color:#e6b34a">${G.oppAgain?'相手が「もう一度」を希望しています':''}</p>
-     <div class="row"><button class="btn gold" data-act="again">もう一度遊ぶ</button><button class="btn" data-act="title">タイトルへ</button></div>
+     <p class="sub">決まり手: ${esc(f.why)}</p><p class="sub" id="againhint" style="color:#e6b34a">${G.oppAgain&&!G.rated?'相手が「もう一度」を希望しています':''}</p>${G.rated?'<p class="sub" id="ratebox" style="color:#f0c555;font-weight:700;font-size:13px">レートを集計しています…</p>':''}
+     <div class="row"><button class="btn gold" data-act="again">${G.rated?'次の対戦相手を探す':'もう一度遊ぶ'}</button><button class="btn" data-act="title">タイトルへ</button></div>
    </div>
    <div class="panel col" style="gap:6px;overflow:auto">
      <table><thead><tr><th>R</th><th>${esc(G.names[0])}</th><th>${esc(G.names[1])}</th><th>結果</th></tr></thead><tbody>${rows}</tbody></table>
      <div class="lbl">最終デッキ(入れ替え後)</div>
      ${[0,1].map(p=>`<div class="row" style="gap:4px"><span class="sub" style="width:76px;white-space:nowrap">${esc(G.names[p])}</span>${G.decks[p].map(miniH).join('')}${G.decks[p].join()!==G.orig[p].join()?'<span class="chip">入れ替えあり</span>':''}</div>`).join('')}
    </div>`,'bgH','grid-template-columns:1fr 1fr;grid-template-rows:36px minmax(0,1fr);gap:0 16px');
+  if(G.rated&&NET.rateInfo)showRate(NET.rateInfo);
   bindQuit();SFX.at(300,f.w===-1?'finDraw':(cpu?(f.w===0?'finWin':'finLose'):'finWin'));
-  on('again',el=>{if(G.mode==='online'){netSend({t:'again'});el.disabled=true;el.textContent='相手を待っています…';return}startGame(G.mode,G.level)});on('title',renderTitle);
+  on('again',el=>{if(G.rated){startRoom('random');return}if(G.mode==='online'){netSend({t:'again'});el.disabled=true;el.textContent='相手を待っています…';return}startGame(G.mode,G.level)});on('title',renderTitle);
 }
 
 
@@ -1023,7 +1026,7 @@ let NICK='';try{NICK=localStorage.getItem('nick')||''}catch(e){}
 /* ルーム戦(Supabase・サーバーなし)。勝敗の計算は両方の端末が同じ手順で行い、出す前に「封印(ハッシュ)」して後から開く方式で後出しを防ぐ */
 const SB={url:'https://comonbywveilncxhrdut.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvbW9uYnl3dmVpbG5jeGhyZHV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIyMzQ3NzcsImV4cCI6MjEwNzgxMDc3N30.iS8qSFHaK5gHmy5Isslc5JqBySQBoeaWoLnhVisdbFc'};
 const POLL_MS=900;
-const NET={active:false,code:null,seat:0,after:0,tm:null,fails:0,gen:0,R:null,q:Promise.resolve(),mode:'',oppOn:true,fast:0,qmAt:0,since:0};
+const NET={slot:'m',leaving:null,rateInfo:null,rateShown:false,orateShown:false,active:false,code:null,seat:0,after:0,tm:null,fails:0,gen:0,R:null,q:Promise.resolve(),mode:'',oppOn:true,fast:0,qmAt:0,since:0};
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const cn=s=>String(s||'').replace(/[\u0000-\u001f<>]/g,'').trim().slice(0,8);
 const rs=()=>{const a=new Uint8Array(16);crypto.getRandomValues(a);return [...a].map(x=>x.toString(16).padStart(2,'0')).join('')};
@@ -1034,21 +1037,25 @@ async function H(s){const h=await crypto.subtle.digest('SHA-256',new TextEncoder
 const flip2=a=>[a[1],a[0]];
 function normLog(L,s){if(s===0)return L;return{notes:L.notes,names:flip2(L.names),r:L.r,cards:flip2(L.cards),sc0:flip2(L.sc0),n:flip2(L.n),pre:flip2(L.pre),w:L.w===-1?-1:1-L.w,sc:L.sc}}
 /* --- Supabaseとの通信(匿名ログイン+関数呼び出し) --- */
-let SS=null;/* ログイン情報はこのページを開いている間だけ保持(タブごとに別のプレイヤーになる) */
-function setSS(j){SS={at:j.access_token,rt:j.refresh_token,exp:j.expires_at||Math.floor(Date.now()/1000)+(j.expires_in||3600)}}
+/* ログイン情報: 友達ルームは「このページを開いている間だけ」(タブごとに別のプレイヤー)、レート戦は端末に保存(同じ人としてレートを引き継ぐ) */
+let SSm=null,SSp=null;try{SSp=JSON.parse(localStorage.getItem('sbp')||'null')}catch(e){}
+const getSS=sl=>sl==='p'?SSp:SSm;
+function setSS(j,sl){const v={at:j.access_token,rt:j.refresh_token,exp:j.expires_at||Math.floor(Date.now()/1000)+(j.expires_in||3600)};if(sl==='p'){SSp=v;try{localStorage.setItem('sbp',JSON.stringify(v))}catch(e){}}else SSm=v;return v}
 const fatal=(code)=>{const e=new Error(code);e.fatal=code;return e};
-async function sbAuth(){
-  if(SS&&SS.exp>Date.now()/1000+60)return SS;
+async function sbAuth(sl){
+  let c=getSS(sl);
+  if(c&&c.exp>Date.now()/1000+60)return c;
   const hd={apikey:SB.key,'Content-Type':'application/json'};
-  if(SS&&SS.rt){const r=await fetch(SB.url+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:hd,body:JSON.stringify({refresh_token:SS.rt})});if(r.ok){setSS(await r.json());return SS}}
+  if(c&&c.rt){const r=await fetch(SB.url+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:hd,body:JSON.stringify({refresh_token:c.rt})});if(r.ok)return setSS(await r.json(),sl)}
   const r=await fetch(SB.url+'/auth/v1/signup',{method:'POST',headers:hd,body:'{}'});
   if(!r.ok){let j={};try{j=await r.json()}catch(e){}if(j.error_code==='anonymous_provider_disabled'||/anonymous/i.test(j.msg||j.message||''))throw fatal('ANON_OFF');throw fatal('AUTH')}
-  setSS(await r.json());return SS;
+  return setSS(await r.json(),sl);
 }
-async function rpc(fn,args,again){
-  const s=await sbAuth();
+async function rpc(fn,args,sl,again){
+  sl=sl||NET.slot;
+  const s=await sbAuth(sl);
   const r=await fetch(`${SB.url}/rest/v1/rpc/${fn}`,{method:'POST',headers:{apikey:SB.key,Authorization:'Bearer '+s.at,'Content-Type':'application/json'},body:JSON.stringify(args||{})});
-  if(r.status===401&&!again){SS.exp=0;return rpc(fn,args,true)}
+  if(r.status===401&&!again){const c=getSS(sl);if(c)c.exp=0;return rpc(fn,args,sl,true)}
   if(!r.ok){let t='';try{t=await r.text()}catch(e){}if(r.status===404||/Could not find the function|PGRST202/.test(t))throw fatal('NOSQL');throw new Error('http '+r.status)}
   return r.json();
 }
@@ -1058,9 +1065,14 @@ function netFail(e){if(!NET.active)return;netEnd(e&&e.fatal?FATAL_MSG[e.fatal]:'
 const NETB=document.createElement('div');NETB.id='netb';NETB.hidden=true;
 const netBanner=t=>{NETB.textContent=t||'';NETB.hidden=!t};
 function netOff(){
-  const was=NET.active,code=NET.code;
+  const was=NET.active,code=NET.code,R=NET.R,mode=NET.mode,sl=NET.slot;
   NET.gen++;NET.active=false;NET.code=null;NET.R=null;NET.mode='';clearTimeout(NET.tm);NET.tm=null;NET.fails=0;NET.oppOn=true;netBanner('');
-  if(was&&code){rpc('nm_leave',{p_room:code}).catch(()=>{})}
+  if(was&&code){
+    NET.leaving=(async()=>{
+      try{if(mode==='random'&&R&&R.phase!=='lobby'&&!R.fin&&!R.reported)await rpc('nm_report',{p_room:code,p_result:1,p_forfeit:true},sl)}catch(e){}
+      try{await rpc('nm_leave',{p_room:code},sl)}catch(e){}
+    })();
+  }
 }
 function netErr(msg){const s=$s.querySelector('.scr');if(!s)return;const m=modal(`<h3 class="ttl" style="font-size:17px">お知らせ</h3><p style="font-size:13px;line-height:1.6;margin:6px 0">${esc(msg)}</p><div class="row" style="justify-content:flex-end"><button class="btn gold" data-act="x">閉じる</button></div>`);m.querySelector('[data-act="x"]').onclick=()=>m.remove()}
 function netEnd(why){renderTitle();setTimeout(()=>netErr(why),60)}
@@ -1085,15 +1097,18 @@ function view(){const R=NET.R,S=R.S,s=NET.seat,me=S.p[s],op=S.p[1-s];
 function startRoom(kind,code){
   netOff();
   if(!(window.crypto&&crypto.subtle)){netEnd(FATAL_MSG.NOCRYPTO);return}
+  NET.slot=kind==='random'?'p':'m';NET.rateInfo=null;NET.rateShown=false;NET.orateShown=false;
   NET.active=true;NET.mode=kind;NET.after=0;NET.fails=0;NET.oppOn=true;NET.fast=0;NET.since=Date.now();NET.qmAt=Date.now();NET.q=Promise.resolve();
   const gen=++NET.gen;
   newOnline(['あなた','相手']);waitScr('サーバーに接続しています','');
   (async()=>{
     try{
+      if(NET.leaving){try{await NET.leaving}catch(e){}NET.leaving=null}
+      if(gen!==NET.gen)return;
       let res;
       if(kind==='create'){for(let i=0;i<8;i++){res=await rpc('nm_create_room',{p_code:rnd4()});if(res.ok||res.err!=='dup')break}}
       else if(kind==='join')res=await rpc('nm_join_room',{p_code:code});
-      else res=await rpc('nm_quick_match',{});
+      else res=await rpc('nm_quick_match',{p_name:cn(NICK)});
       if(gen!==NET.gen)return;
       if(!res||!res.ok){netEnd(res&&res.err==='notfound'?'その部屋は見つかりません。コードを確かめてください(部屋は、作った人が画面を開いている間だけ有効です)':res&&res.err==='full'?'その部屋はすでに満員です':'部屋に入れませんでした。もう一度お試しください');return}
       NET.code=res.code;NET.seat=res.seat;NET.R=newR(0);
@@ -1124,19 +1139,24 @@ async function doPoll(gen){
   if(gen!==NET.gen)return;
   if(NET.fails>=3&&NET.oppOn)netBanner('');
   NET.fails=0;
-  if(j.closed){netEnd(NET.R&&NET.R.phase!=='lobby'?'相手が退出しました':'部屋が閉じられました');return}
+  if(j.closed){
+    const R0=NET.R;
+    if(NET.mode==='random'&&R0&&R0.phase!=='lobby'&&!R0.fin&&!R0.reported){R0.reported=true;try{await rpc('nm_report',{p_room:NET.code,p_result:0,p_forfeit:true})}catch(e){}netEnd('相手が退出しました。不戦勝として扱われます。');return}
+    netEnd(R0&&R0.phase!=='lobby'?'相手が退出しました':'部屋が閉じられました');return}
+  if(j.orate!=null&&!NET.orateShown&&NET.R&&NET.R.phase!=='lobby'){NET.orateShown=true;const t='レート戦  相手のレート '+j.orate;netBanner(t);setTimeout(()=>{if(NETB.textContent===t)netBanner('')},6000)}
+  if(j.rate&&!NET.rateShown){NET.rateShown=true;NET.rateInfo=j.rate;onNet({t:'rate',rate:j.rate})}
   NET.after=j.last;
   for(const m of j.msgs)enq(()=>handle(m));
   if(j.guest&&j.age!=null){
     const on=j.age<15;
     if(on!==NET.oppOn){NET.oppOn=on;if(!on)SFX.play('blip');netBanner(on?'':'相手の接続が切れました。戻るのを待っています…')}
-    if(j.age>150){netEnd('相手の接続が戻らなかったため、部屋を閉じました');return}
+    if(j.age>150){const R1=NET.R;if(NET.mode==='random'&&R1&&R1.phase!=='lobby'&&!R1.fin&&!R1.reported){R1.reported=true;try{await rpc('nm_report',{p_room:NET.code,p_result:0,p_forfeit:true})}catch(e){}netEnd('相手の接続が戻らなかったため、不戦勝として扱われます。');return}netEnd('相手の接続が戻らなかったため、部屋を閉じました');return}
   }
   /* ランダムマッチ: 待っている間は数秒おきに探し直す(先に待っていた人がいれば、そちらに合流する) */
   const R=NET.R;
   if(NET.mode==='random'&&R&&R.phase==='lobby'&&R.hello[1-NET.seat]==null&&!j.guest&&Date.now()-NET.qmAt>3000){
     NET.qmAt=Date.now();
-    const q=await rpc('nm_quick_match',{});
+    const q=await rpc('nm_quick_match',{p_name:cn(NICK)});
     if(gen!==NET.gen)return;
     if(q&&q.ok&&q.code!==NET.code){NET.code=q.code;NET.seat=q.seat;NET.after=0;NET.R=newR(0);await sendMsg('hello',{name:myName()});NET.R.hello[NET.seat]=myName()}
   }
@@ -1147,6 +1167,37 @@ async function doPoll(gen){
     else if(!j.guest)netBanner('')
   }else if(R&&R.phase!=='lobby'&&NET.oppOn&&NETB.textContent.startsWith('相手'))netBanner('');
   if(NET.mode==='random'&&R&&R.phase==='lobby'&&!j.guest&&Date.now()-NET.since>120000){netEnd('対戦相手が見つかりませんでした。しばらくしてから、もう一度お試しください。')}
+}
+
+/* レート戦(ランダムマッチ)の案内・ランキング */
+function showRate(r){
+  const el=document.getElementById('ratebox');if(!el)return;
+  if(r.outcome==='applied'){const a=r.before+r.delta;el.textContent=`レート ${r.before} → ${a}(${r.delta>=0?'+':''}${r.delta})`;SFX.play(r.delta>0?'bell':'blip')}
+  else if(r.outcome==='disputed')el.textContent='お互いの結果の申告が食い違ったため、レートは変わりません';
+  else el.textContent='この試合は無効です(レートは変わりません)';
+}
+async function fillRate(el){try{if(!(window.crypto&&crypto.subtle))throw fatal('NOCRYPTO');const j=await rpc('nm_me',{p_name:cn(NICK)},'p');if(el.isConnected)el.textContent=`あなたのレート: ${j.rating}(${j.games}戦 ${j.wins}勝${j.losses}敗${j.draws?j.draws+'分':''}${j.rank?'・'+j.rank+'位':''})`}catch(e){if(el.isConnected)el.textContent=(e&&e.fatal?FATAL_MSG[e.fatal]:'レートを取得できませんでした(通信状況を確かめてください)')}}
+async function ratedModal(){
+  const m=modal(`<h3 class="ttl" style="font-size:17px">レート戦(ランダムマッチ)</h3>
+   <ul style="font-size:12px;line-height:1.55;margin:4px 0 6px;padding-left:18px"><li>勝敗でレート(はじめは1000)が増減します。</li><li>自分より強い相手に勝つと多く増え、負けても減りは小さめ。弱い相手に勝っても増えは小さく、負けると大きく減ります。</li><li>近いレートの人と当たりやすく、待つほど範囲が広がります。</li><li><b>試合の途中で退出すると、負けになります。</b></li></ul>
+   <p class="sub" id="myrate" style="color:#f0c555;font-weight:700;margin:0 0 6px">あなたのレート: 確認中…</p>
+   <div class="row" style="justify-content:flex-end"><button class="btn" data-act="rk">ランキング</button><button class="btn" data-act="x">閉じる</button><button class="btn gold" data-act="go2">相手を探す</button></div>`);
+  m.querySelector('[data-act="x"]').onclick=()=>m.remove();
+  m.querySelector('[data-act="go2"]').onclick=()=>{m.remove();startRoom('random')};
+  m.querySelector('[data-act="rk"]').onclick=()=>{m.remove();rankModal()};
+  try{
+    if(!(window.crypto&&crypto.subtle))throw fatal('NOCRYPTO');
+    const j=await rpc('nm_me',{p_name:cn(NICK)},'p');const el=m.querySelector('#myrate');
+    if(el)el.textContent=`あなたのレート: ${j.rating}(${j.games}戦 ${j.wins}勝${j.losses}敗${j.draws?j.draws+'分':''}${j.rank?'・'+j.rank+'位':''})`;
+  }catch(e){const el=m.querySelector('#myrate');if(el)el.textContent=(e&&e.fatal?FATAL_MSG[e.fatal]:'レートを取得できませんでした(通信状況を確かめてください)')}
+}
+async function rankModal(){
+  const m=modal(`<h3 class="ttl" style="font-size:17px">ランキング(上位20人)</h3><div id="rklist" class="sub" style="max-height:230px;overflow:auto;font-size:12px">読み込み中…</div><div class="row" style="justify-content:flex-end"><button class="btn gold" data-act="x">閉じる</button></div>`);
+  m.querySelector('[data-act="x"]').onclick=()=>m.remove();
+  try{
+    const j=await rpc('nm_top',{},'p');const el=m.querySelector('#rklist');if(!el)return;
+    el.innerHTML=j.length?`<table><thead><tr><th>順位</th><th>なまえ</th><th>レート</th><th>戦績</th></tr></thead><tbody>${j.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.name)}</td><td>${x.rating}</td><td>${x.games}戦${x.wins}勝</td></tr>`).join('')}</tbody></table>`:'まだ試合の記録がありません。';
+  }catch(e){const el=m.querySelector('#rklist');if(el)el.textContent=e&&e.fatal?FATAL_MSG[e.fatal]:'取得できませんでした'}
 }
 /* --- 受信したメッセージの処理 --- */
 async function handle(m){
@@ -1242,7 +1293,8 @@ async function advance(){
       if(ok)ok=S2.p[0].score===R.S.p[0].score&&S2.p[1].score===R.S.p[1].score;
       const mine=R.deck.slice(),orig=[R.myDeck.slice(),R.od.slice()];
       if(!ok)onNet({t:'final',fin:{w:-1,why:'相手の申告と試合の記録が一致しません(不正の疑い)。この試合は無効です',decks:[mine,R.od.slice()],orig}});
-      else{const f=finalWinner(S2);onNet({t:'final',fin:{w:f.w===-1?-1:(f.w===s?0:1),why:f.why,decks:[mine,odf],orig}})}
+      else{const f=finalWinner(S2);onNet({t:'final',fin:{w:f.w===-1?-1:(f.w===s?0:1),why:f.why,decks:[mine,odf],orig}});R.myRes=f.w===-1?-1:(f.w===s?0:1)}
+      if(NET.mode==='random'&&!R.reported){R.reported=true;const v=ok?R.myRes:9;for(let t=0;t<4;t++){try{const rr=await rpc('nm_report',{p_room:NET.code,p_result:v,p_forfeit:false});if(rr&&(rr.ok||rr.err))break}catch(e){await sleep(800)}}}
     }
     if(R.ag[0]&&R.ag[1]){
       const fut=R.fut;NET.R=newR(R.g+1,{hello:R.hello});NET.R.phase='build';NET.R.fut=[];
@@ -1266,9 +1318,10 @@ function onNet(m){
   case 'created':renderLobby();break;
     case 'error':netErr(m.msg);break;
   case 'closed':netEnd(m.why);break;
+  case 'rate':showRate(m.rate);break;
   case 'opp':if(!m.on)SFX.play('blip');netBanner(m.on?'':'相手の接続が切れました。戻るのを待っています…');break;
   case 'opp_again':if(G){G.oppAgain=true;const h=document.getElementById('againhint');if(h)h.textContent='相手が「もう一度」を希望しています'}break;
-  case 'build':newOnline(m.names);SFX.play('ding');buildFor(0);break;
+  case 'build':newOnline(m.names);G.rated=NET.mode==='random';SFX.play('ding');buildFor(0);break;
   case 'reveal':G.names=m.names;G.orig=[m.orig[0].slice(),m.orig[1].slice()];G.decks=[m.orig[0].slice(),m.orig[1].slice()];renderSwap(0);break;
   case 'turn':G.S=mkS(m.view);G.decks[0]=m.view.me.deck.slice();G.log=[];G.picks=[null,null];G.fin=null;G.wantFin=false;nextPick(0);break;
   case 'result':G.S=mkS(m.view);G.log.push(m.L);renderResult(m.L);break;
@@ -1393,6 +1446,12 @@ $s.addEventListener('contextmenu',e=>{if(!isIn(e))e.preventDefault()});
 document.addEventListener('selectstart',e=>{if(!isIn(e))e.preventDefault()});
 document.getElementById('rotok').addEventListener('click',()=>{const r=document.getElementById('rot');r.dataset.skip=1;r.hidden=true});
 fit();renderTitle();
+/*ENDUI*/
+
+/*ENDUI*/
+
+/*ENDUI*/
+
 /*ENDUI*/
 
 /*ENDUI*/
