@@ -274,6 +274,12 @@ img{-webkit-user-drag:none;user-drag:none}
 .tmr{margin-left:auto;margin-right:6px;align-self:center;font:700 12px 'Zen Kaku Gothic New',sans-serif;padding:3px 10px;border:1px solid #5a4630;border-radius:999px;color:#f0c555;background:#261c14;white-space:nowrap}
 .tmr.warn{color:#ff9a7a;border-color:#c0583a;animation:tmrp 1s ease-in-out infinite}
 @keyframes tmrp{50%{background:#4a2218}}
+/* めくり終わったカードは3D描画をやめて、画像をくっきり表示する */
+.flip.done{perspective:none}
+.flip.done .flipi{transform-style:flat;transform:none}
+.flip.done .bf{display:none}
+.flip.done .ff{backface-visibility:visible;-webkit-backface-visibility:visible}
+@media (prefers-reduced-motion:reduce){.flip{perspective:none}.flipi{transform-style:flat}.bf{display:none}.ff{backface-visibility:visible}}
 </style>
 <div id="stage"></div>
 <div id="rot" hidden><p style="font:800 20px 'Shippori Mincho B1',serif">スマホを横向きにしてください</p><p style="font-size:13px;color:#b8a68a">この画面は横向きで遊ぶように作っています。</p><button id="rotok" class="btn" style="background:#261c14;color:#f1e8d6">このまま遊ぶ</button></div>
@@ -499,7 +505,7 @@ function sndModal(){
 }
 let ANIM=false;
 const TMX=Math.max(0.05,+(new URLSearchParams(location.search).get('tmx')||1)||1);
-const BUILD_SEC=Math.round(120*TMX),SWAP_SEC=Math.round(60*TMX),PICK_SEC=Math.round(45*TMX),STALL_EXTRA=Math.round(25*TMX);
+const BUILD_SEC=Math.round(120*TMX),SWAP_SEC=Math.round(60*TMX),PICK_SEC=Math.round(45*TMX),STALL_EXTRA=Math.round(25*TMX),RES_SEC=Math.round(20*TMX);
 const TM={on:false,keep:false,end:0,fn:null,iv:null,tick:-1,sw:null};
 TM.start=(sec,fn)=>{TM.stop();TM.on=true;TM.keep=true;TM.end=Date.now()+sec*1000;TM.fn=fn;TM.tick=-1;TM.iv=setInterval(()=>TM.upd(),250)};
 TM.stop=()=>{TM.on=false;TM.fn=null;clearInterval(TM.iv);TM.iv=null;clearTimeout(TM.sw);TM.sw=null};
@@ -534,7 +540,7 @@ function renderTitle(){
    <div class="tl"><img class="logo" src="${IC.app}" alt=""><h1><span class="en">NEMESIS</span><span class="jp">ネメシス</span></h1><p>ギリシャ神話 試作版 / 5枚のデッキで、5ラウンドの読み合い</p>${profH()}</div>
    <div class="panel tr">
     <div><span class="lbl">対戦相手</span><div><div class="seg" role="group" aria-label="対戦相手"><button data-act="mode" data-v="cpu" aria-pressed="${mode==='cpu'}">CPUと対戦</button><button data-act="mode" data-v="duo" aria-pressed="${mode==='duo'}">2人で交代</button><button data-act="mode" data-v="room" aria-pressed="${mode==='room'}">ルーム戦</button><button data-act="mode" data-v="rand" aria-pressed="${mode==='rand'}">ランダムマッチ</button></div></div></div>
-    ${mode==='cpu'?`<div><span class="lbl">CPUの強さ</span><div><div class="seg" role="group" aria-label="CPUの強さ"><button data-act="lv" data-v="easy" aria-pressed="${lv==='easy'}">やさしい</button><button data-act="lv" data-v="normal" aria-pressed="${lv==='normal'}">ふつう</button></div></div></div>`:(mode==='rand'?`<div><span class="lbl">ニックネーム(8文字まで)</span><div><input id="nick" class="inp" maxlength="8" value="${esc(NICK)}" placeholder="なまえ" style="width:100%"></div></div><p class="sub" id="myrate" style="color:#f0c555;font-weight:700;margin:0">あなたのレート: 確認中…</p><p class="sub" style="margin:0;line-height:1.5">レート戦です。強い相手に勝つと大きく増え、弱い相手に負けると大きく減ります。途中で退出すると負けになります。</p><div class="row"><button class="btn" data-act="rk">ランキング</button></div>`:mode==='duo'?`<p class="sub">1台の端末を渡しながら遊びます。見せたくない場面では確認の画面が入ります。</p>`:`<div><span class="lbl">ニックネーム(8文字まで)</span><div><input id="nick" class="inp" maxlength="8" value="${esc(NICK)}" placeholder="なまえ" style="width:100%"></div></div><div class="row" style="flex-wrap:nowrap"><button class="btn gold" data-act="mk" style="flex:1">部屋を作る</button><input id="rcode" class="inp" maxlength="4" value="${esc(PRE)}" placeholder="コード" style="width:84px;text-transform:uppercase;text-align:center;letter-spacing:.15em" aria-label="ルームコード"><button class="btn" data-act="jn">入る</button></div>`)}
+    ${mode==='cpu'?`<div><span class="lbl">CPUの強さ</span><div><div class="seg" role="group" aria-label="CPUの強さ"><button data-act="lv" data-v="easy" aria-pressed="${lv==='easy'}">やさしい</button><button data-act="lv" data-v="normal" aria-pressed="${lv==='normal'}">ふつう</button></div></div></div>`:(mode==='rand'?`<div><span class="lbl">ニックネーム(8文字まで)</span><div><input id="nick" class="inp" maxlength="8" value="${esc(NICK)}" placeholder="なまえ" style="width:100%"></div></div><p class="sub" id="myrate" style="color:#f0c555;font-weight:700;margin:0">あなたのレート: 確認中…</p><p class="sub" style="margin:0;line-height:1.5">レート戦です。強い相手に勝つと大きく増え、弱い相手に負けると大きく減ります。途中で退出すると負けになります。</p><div class="row"><button class="btn" data-act="rk">ランキング</button></div>`:mode==='duo'?`<p class="sub">1台の端末を渡しながら遊びます。見せたくない場面では確認の画面が入ります。</p>`:`<div><span class="lbl">ニックネーム(8文字まで)</span><div><input id="nick" class="inp" maxlength="8" value="${esc(NICK)}" placeholder="なまえ" style="width:100%"></div></div><div class="row" style="flex-wrap:nowrap"><button class="btn gold" data-act="mk" style="flex:1">部屋を作る</button><input id="rcode" class="inp" maxlength="4" value="${esc(PRE)}" placeholder="コード" style="width:84px;text-transform:uppercase;text-align:center;letter-spacing:.15em" aria-label="ルームコード" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" name="nm-room-code-x"><button class="btn" data-act="jn">入る</button></div>`)}
     <button class="btn" data-act="tut" style="width:100%;border-color:#d9a93f;color:#f0c555">チュートリアル(はじめての方はこちら)</button>
     <div class="row" style="justify-content:flex-end"><button class="btn" data-act="rules">ルール</button><button class="btn" data-act="snd" aria-label="音の設定">音</button>${mode==='room'?'':mode==='rand'?'<button class="btn gold" data-act="rm">相手を探す</button>':'<button class="btn gold" data-act="go">対戦を始める</button>'}</div>
    </div></div>`,'bgA','grid-template-rows:1fr')};
@@ -548,7 +554,7 @@ function renderTitle(){
      <li>5ラウンド、毎ラウンド両者が1枚ずつ同時に出します。数値が大きい方が1点(最大3点)。同じ数値は引き分けです。</li>
      <li>勝った方のカードが数値1〜5なら、勝利時の効果が働きます。効果は次のラウンドだけ有効です。</li>
      <li>合計得点が同点のときは、デッキの数値の合計が小さい方の勝ちです。</li>
-     <li>ルーム戦・ランダムマッチには制限時間があります(デッキ編成120秒、入れ替え60秒、各ラウンド45秒)。時間切れになると自動で選ばれます(入れ替えは「しない」になります)。</li>
+     <li>ルーム戦・ランダムマッチには制限時間があります(デッキ編成120秒、入れ替え60秒、各ラウンド45秒、ラウンド結果20秒)。時間切れになると自動で選ばれます(入れ替えは「しない」になります)。ラウンド結果は、両者が「次のラウンドへ」を押すか、20秒たつと次へ進みます。</li>
      <li>処理順: スフィンクス・パンドラなどの無効化 → 数値の増減 → 暫定結果 → 勝ち確定・引き分けへの書き換え → 勝利時の効果。</li></ul>
      <div class="row" style="justify-content:flex-end"><button class="btn gold" data-act="close">閉じる</button></div>`);
      m.querySelector('[data-act="close"]').onclick=()=>m.remove()});
@@ -736,6 +742,7 @@ function doResolve(){
 function renderResult(L){
   const S=G.S,last=S.round>5;
   mRound(L);
+  const onl=G.mode==='online'&&!G.les&&!G.tut;let force=null;if(onl)TM.start(RES_SEC,()=>force&&force());
   const col=p=>L.w===-1?'#e6b34a':(L.w===p?'#8fd0a0':'#ee7b6d');
   ANIM=true;
   const cardCol=p=>`<div class="col rc ${L.w===-1?'':(L.w===p?'won':'lost')}" style="align-items:center;gap:6px"><span class="lbl">${esc(G.names[p])}</span><div class="slide ${p===0?'fl':'fr'}">${flipH(L.cards[p],'x',p===0?.55:.95)}</div>
@@ -747,14 +754,24 @@ function renderResult(L){
   show(`<div class="hd"><div class="hl"><span class="ttl">第${L.r}ラウンドの結果</span><span class="sub">処理は上から順に進みます。</span></div>${scoreH(S.p[0].score,S.p[1].score,0)}</div>
    <div style="grid-column:1">${cardCol(0)}</div>
    <div class="col" style="grid-column:2;justify-content:space-between;min-height:0">
-     <div class="panel" style="flex:1;min-height:0;display:flex;flex-direction:column"><div class="lbl" style="margin-bottom:4px">処理の内訳</div><ul class="notes">${L.notes.length?L.notes.map((t,n)=>`<li style="--i:${Math.min(n,7)}">${esc(t)}</li>`).join(''):'<li>効果は働きません。数値で決まりました。</li>'}</ul></div>
+     <div class="panel" style="flex:1;min-height:0;display:flex;flex-direction:column"><div class="lbl" style="margin-bottom:4px;display:flex;justify-content:space-between"><span>処理の内訳</span><span id="rdhint" style="color:#e6b34a"></span></div><ul class="notes">${L.notes.length?L.notes.map((t,n)=>`<li style="--i:${Math.min(n,7)}">${esc(t)}</li>`).join(''):'<li>効果は働きません。数値で決まりました。</li>'}</ul></div>
      <div class="row" style="flex-wrap:nowrap"><div class="banner rb ${kind}" style="flex:1;--bd:${Math.min(1.9+L.notes.length*.3,3.6)}s"><img src="${icon}" alt="">${msg}</div><button class="btn gold" data-act="next" style="width:148px">${G.les?(G.les.n+1<SC[CARDS[G.les.k].id].opts.length?'次の相手の札へ':'体験を終える'):(last?(G.tut?'まとめへ':'最終結果へ'):'次のラウンドへ')}</button></div>
    </div>
    <div style="grid-column:3">${cardCol(1)}</div>`,'bgT','grid-template-columns:132px 1fr 132px;grid-template-rows:34px minmax(0,1fr);gap:0 14px');
   SFX.at(550,'flip');SFX.at(950,'flip');SFX.at(1450,'pop');SFX.at(1850,'pop');SFX.at(Math.min(1.9+L.notes.length*.3,3.6)*1000,L.w===-1?'draw':(cpu?(L.w===0?'win':'lose'):'ding'));
   if(G.tut)tut('result',L);
   if(G.les)lesEv('result',L);
-  on('next',()=>{if(G.les){lesNext();return}if(last){if(G.tut)renderTutEnd();else if(G.mode==='online'&&!G.fin){G.wantFin=true;waitScr('結果を集計しています','')}else renderFinal()}else nextPick(0)});
+  const adv=()=>{if(G.les){lesNext();return}if(last){if(G.tut)renderTutEnd();else if(G.mode==='online'&&!G.fin){G.wantFin=true;waitScr('結果を集計しています','')}else renderFinal()}else nextPick(0)};
+  if(!onl)on('next',adv);
+  else{
+    const Gc=G,tok={};let pressed=false;G.resTok=tok;G.resR=L.r;
+    const run=()=>{if(G!==Gc||G.resTok!==tok||!NET.active)return;G.resTok=null;adv()};
+    const send=()=>{if(pressed)return;pressed=true;if(!last)netSend({t:'ready',r:L.r})};
+    G.resGo=()=>{if(pressed)run()};
+    force=()=>{send();run()};
+    if(!last&&oppReady(L.r)){const h=document.getElementById('rdhint');if(h)h.textContent='相手は準備OKです'}
+    on('next',el=>{send();if(last||oppReady(L.r)){run();return}el.disabled=true;el.textContent='相手を待っています…'});
+  }
 }
 function renderFinal(){
   ANIM=true;
@@ -1055,6 +1072,7 @@ const NET={slot:'m',leaving:null,rateInfo:null,rateShown:false,orateShown:false,
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const cn=s=>String(s||'').replace(/[\u0000-\u001f<>]/g,'').trim().slice(0,8);
 const rs=()=>{const a=new Uint8Array(16);crypto.getRandomValues(a);return [...a].map(x=>x.toString(16).padStart(2,'0')).join('')};
+const oppReady=r=>!!(NET.R&&NET.R.rdy&&NET.R.rdy[1-NET.seat][r]);
 const isCard=k=>Number.isInteger(k)&&k>=0&&k<15;
 const CODE_CH='ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const rnd4=()=>{let s='';const a=new Uint8Array(4);crypto.getRandomValues(a);for(const x of a)s+=CODE_CH[x%CODE_CH.length];return s};
@@ -1110,7 +1128,7 @@ function netErr(msg){const s=$s.querySelector('.scr');if(!s)return;const m=modal
 function netEnd(why){renderTitle();setTimeout(()=>netErr(why),60)}
 const enq=fn=>{const g=NET.gen;NET.q=NET.q.then(()=>g===NET.gen?fn():0).catch(e=>{if(g===NET.gen)netFail(e)})};
 const myName=()=>cn(NICK)||(NET.seat?'ゲスト':'ホスト');
-function newR(g,keep){return{g,hello:keep?keep.hello:[null,null],pi:keep?keep.pi:[null,null],phase:keep?'build':'lobby',dk:[null,null],dkMine:false,sentDr:false,od:null,myDeck:null,mySalt:'',deck:null,sc:[null,null],scMine:false,mySwap:null,S:null,mp:null,sentPr:false,pc:{},opr:{},log:[],sr:null,fin:false,ag:[false,false],fut:[]}}
+function newR(g,keep){return{g,hello:keep?keep.hello:[null,null],pi:keep?keep.pi:[null,null],phase:keep?'build':'lobby',dk:[null,null],dkMine:false,sentDr:false,od:null,myDeck:null,mySalt:'',deck:null,sc:[null,null],scMine:false,mySwap:null,S:null,mp:null,sentPr:false,pc:{},opr:{},log:[],sr:null,fin:false,ag:[false,false],fut:[],rdy:[{},{}]}}
 function names2(){const a=NET.R.hello[0]||'',b=NET.R.hello[1]||'';return a===b?[a,b+'2']:[a,b]}
 function nm(){const n=names2(),s=NET.seat;return[n[s],n[1-s]]}
 function bad(){netEnd('相手のデータに不整合がありました(不正の疑い)。対戦を終了します。')}
@@ -1289,6 +1307,7 @@ async function handle(m){
     if(!isCard(d.card)||typeof d.salt!=='string'||d.salt.length>40)return bad();
     if(await H(`P|${R.g}|${d.r}|${d.card}|${d.salt}`)!==R.pc[d.r])return bad();R.opr[d.r]=d.card;break}
   case 'sr':if(!R.sr)R.sr=d;break;
+  case 'rd':if(Number.isInteger(d.r)&&d.r>=1&&d.r<=5&&!R.rdy[o][d.r]){R.rdy[o][d.r]=true;onNet({t:'rdy',r:d.r})}break;
   case 'ag':R.ag[o]=true;if(!R.ag[s])onNet({t:'opp_again'});break;
   }
   return advance();
@@ -1315,6 +1334,8 @@ async function act(o){
     R.mp={r:R.S.round,card:o.card,salt:rs()};
     const h=await H(`P|${R.g}|${R.mp.r}|${o.card}|${R.mp.salt}`);
     if(!await sendMsg('pc',{g:R.g,r:R.mp.r,h}))return;
+  }else if(o.t==='ready'&&R.phase==='play'&&Number.isInteger(o.r)){
+    await sendMsg('rd',{g:R.g,r:o.r});return;
   }else if(o.t==='again'&&R.phase==='final'&&!R.ag[s]){
     R.ag[s]=true;if(!await sendMsg('ag',{g:R.g}))return;
   }else return;
@@ -1413,6 +1434,7 @@ function onNet(m){
     case 'error':netErr(m.msg);break;
   case 'closed':netEnd(m.why);break;
   case 'rate':showRate(m.rate);break;
+  case 'rdy':if(G&&G.resTok&&G.resR===m.r){const h=document.getElementById('rdhint');if(h)h.textContent='相手は準備OKです';if(G.resGo)G.resGo()}break;
   case 'opp':if(!m.on)SFX.play('blip');netBanner(m.on?'':'相手の接続が切れました。戻るのを待っています…');break;
   case 'opp_again':if(G){G.oppAgain=true;const h=document.getElementById('againhint');if(h)h.textContent='相手が「もう一度」を希望しています'}break;
   case 'build':{newOnline(m.names);G.rated=NET.mode==='random';const op=(NET.R&&NET.R.pi[1-NET.seat])||{};G.oppAv=op.av;G.oppTi=op.ti;SFX.play('ding');if(m.first)matchIntro();else buildFor(0);break}
@@ -1529,6 +1551,7 @@ function showTip(el){
 const tgt=e=>e.target.closest&&e.target.closest('[data-cid]');
 $s.addEventListener('mouseover',e=>{const t=tgt(e);if(t)showTip(t);else if(!e.target.closest('#tip'))hideTip()});
 $s.addEventListener('mouseleave',hideTip);
+$s.addEventListener('animationend',e=>{const t=e.target;if(t.classList&&t.classList.contains('flipi')&&t.parentElement)t.parentElement.classList.add('done')});
 $s.addEventListener('focusin',e=>{const t=tgt(e);if(t)showTip(t)});
 $s.addEventListener('focusout',hideTip);
 let lp=null,lpHit=false;
