@@ -465,6 +465,38 @@ img{-webkit-user-drag:none;user-drag:none}
 @keyframes spfl2{0%{opacity:.6}100%{opacity:0}}
 @keyframes spout{to{opacity:0}}
 @media (prefers-reduced-motion:reduce){.splash .sp-rays{animation:spbg 1s forwards}.splash .sp-t{animation-duration:.01s!important;animation-delay:.1s!important;opacity:1}}
+
+/* 結果画面のごほうび(ドラクマ・レート) */
+.rwd{display:flex;gap:8px;justify-content:center;align-items:stretch;width:100%}
+.rw{position:relative;overflow:hidden;flex:1 1 0;max-width:212px;min-width:0;display:flex;align-items:center;gap:9px;padding:6px 10px;background:rgba(20,14,9,.88);border:1px solid #5a4630;border-radius:10px;text-align:left;animation:rwin .5s cubic-bezier(.2,1.2,.4,1) backwards}
+.rwd .rw:nth-child(2){animation-delay:.12s}
+.rw .rt{display:flex;flex-direction:column;gap:1px;min-width:0}
+.rw .rl{font-size:10px;color:#b8a68a;letter-spacing:.06em;white-space:nowrap}
+.rw .rv{font:800 21px/1.1 'Shippori Mincho B1',serif;color:#f0c555;white-space:nowrap;display:flex;align-items:baseline;gap:6px}
+.rw .rpl{font-style:normal;font-size:13px;color:#8fd0a0;opacity:0;transform:translateY(6px)}
+.rw.go .rpl{animation:rplin .45s .1s ease-out forwards}
+.rw .rsub{font-size:10px;color:#b8a68a;line-height:1.3}
+.rw.hit .rsub{color:#f0c555;font-weight:700}
+.rw .wt{font:400 13px 'Zen Kaku Gothic New',sans-serif;color:#b8a68a}
+.rcn{flex:none;width:34px;height:34px;display:flex;align-items:center;justify-content:center;perspective:200px}
+.rcn i{display:block;width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe9a0,#c9922c);border:2px solid #7a5518;box-shadow:0 0 10px rgba(240,197,85,.5)}
+.rw.go .rcn i{animation:cspin .9s ease-in-out}
+.cfl{position:absolute;left:26px;top:50%;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:#ffe9a0;box-shadow:0 0 6px 1px #f0c555;opacity:0;animation:cfl .9s var(--d) ease-out}
+.rw.rate .rdt{margin-left:auto;display:flex;flex-direction:column;align-items:center;line-height:1.05;opacity:0;transform:scale(.4)}
+.rw.rate.show .rdt{animation:rdin .5s .25s cubic-bezier(.2,1.6,.4,1) forwards}
+.rdt .rar{font-size:14px}.rdt b{font:800 19px 'Shippori Mincho B1',serif}
+.rw.rate.up{border-color:#6fbf86}.rw.rate.up .rdt,.rw.rate.up .rn{color:#8fd0a0}
+.rw.rate.dn{border-color:#c0583a}.rw.rate.dn .rdt,.rw.rate.dn .rn{color:#ee7b6d}
+.rw.rate.eq .rdt{color:#d6d6de}
+.rw.rate.up.show{animation:rwup .9s ease-out}.rw.rate.dn.show{animation:rwdn .5s}
+@keyframes rwin{from{opacity:0;transform:translateY(10px) scale(.92)}}
+@keyframes rplin{to{opacity:1;transform:none}}
+@keyframes cspin{from{transform:rotateY(0)}to{transform:rotateY(720deg)}}
+@keyframes cfl{0%{opacity:1;transform:translate(0,0)}100%{opacity:0;transform:translate(var(--x),var(--y))}}
+@keyframes rdin{to{opacity:1;transform:none}}
+@keyframes rwup{0%,100%{box-shadow:0 0 0 rgba(143,208,160,0)}40%{box-shadow:0 0 22px rgba(143,208,160,.85)}}
+@keyframes rwdn{0%,100%{transform:translate(0)}20%{transform:translate(-4px,0)}40%{transform:translate(4px,0)}60%{transform:translate(-3px,0)}80%{transform:translate(2px,0)}}
+@media (prefers-reduced-motion:reduce){.rw,.rw.go .rcn i,.cfl,.rw.rate.show{animation:none!important}.rw .rpl,.rw.rate .rdt{opacity:1;transform:none}.cfl{display:none}}
 </style>
 <div id="stage"></div>
 <div id="rot" hidden><p style="font:800 20px 'Shippori Mincho B1',serif">スマホを横向きにしてください</p><p style="font-size:13px;color:#b8a68a">この画面は横向きで遊ぶように作っています。</p><button id="rotok" class="btn" style="background:#261c14;color:#f1e8d6">このまま遊ぶ</button></div>
@@ -679,6 +711,10 @@ const SFX=(()=>{
     bell:(c,o,t)=>{tone(c,o,t,1318,1,'sine',.2);tone(c,o,t,1976,.8,'sine',.08);tone(c,o,t,2637,.5,'sine',.04)},
     ding:(c,o,t)=>{tone(c,o,t,988,.5,'sine',.2);tone(c,o,t+.1,1319,.6,'sine',.2)},
     blip:(c,o,t)=>tone(c,o,t,200,.12,'triangle',.2),
+    coin:(c,o,t)=>{tone(c,o,t,1568,.09,'square',.07);tone(c,o,t+.05,2349,.3,'sine',.13)},
+    tick:(c,o,t)=>tone(c,o,t,1900,.03,'square',.05),
+    rup:(c,o,t)=>{seq(c,o,t,[523,659,784,1047],.07,(c,o,t,f)=>pluck(c,o,t,f,.18,.5));[784,1047,1319].forEach(f=>pluck(c,o,t+.3,f,.1,.9))},
+    rdn:(c,o,t)=>seq(c,o,t,[392,349,294],.14,(c,o,t,f)=>tone(c,o,t,f,.3,'triangle',.16)),
     gshake:(c,o,t)=>{noise(c,o,t,1.5,120,420,.45,1.2);for(let k=0;k<10;k++)tone(c,o,t+k*.15,80+k*9,.13,'sine',.14+.02*k)},
     gcrack:(c,o,t)=>{noise(c,o,t,.3,3200,700,.8,.6);tone(c,o,t,1100,.25,'triangle',.2,180);tone(c,o,t+.05,1760,.9,'sine',.14);tone(c,o,t+.05,2349,.7,'sine',.08)},
     gsr:(c,o,t)=>{seq(c,o,t,[392,494,587,784,988,1175],.09,(c,o,t,f)=>pluck(c,o,t,f,.2,.8));[784,988,1175,1568].forEach(f=>tone(c,o,t+.6,f,1.6,'sine',.1));noise(c,o,t+.55,.9,5000,9000,.15,2)}
@@ -1141,7 +1177,7 @@ function renderFinalBody(){
    <div class="col" style="justify-content:center;gap:10px">
      <div class="banner rb ${kind}" style="font-size:20px;padding:10px 14px;--bd:.3s"><img src="${icon}" alt="" style="width:44px;height:44px">${msg}</div>
      ${scoreH(S.p[0].score,S.p[1].score,0)}
-     <p class="sub">決まり手: ${esc(f.why)}</p>${G.gotCoin?`<p class="sub" style="color:#f0c555">+${G.gotCoin} ドラクマ獲得</p>`:''}<p class="sub" id="againhint" style="color:#e6b34a">${G.oppAgain&&!G.rated?'相手が「もう一度」を希望しています':''}</p>${G.rated?'<p class="sub" id="ratebox" style="color:#f0c555;font-weight:700;font-size:13px">レートを集計しています…</p>':''}
+     <p class="sub">決まり手: ${esc(f.why)}</p>${rewardH()}<p class="sub" id="againhint" style="color:#e6b34a">${G.oppAgain&&!G.rated?'相手が「もう一度」を希望しています':''}</p>
      <div class="row"><button class="btn gold" data-act="again">${G.rated?'次の対戦相手を探す':'もう一度遊ぶ'}</button><button class="btn" data-act="title">タイトルへ</button></div>
    </div>
    <div class="panel col" style="gap:6px;overflow:auto">
@@ -1149,7 +1185,7 @@ function renderFinalBody(){
      <div class="lbl">最終デッキ(入れ替え後)</div>
      ${[0,1].map(p=>`<div class="row" style="gap:4px"><span class="sub" style="width:76px;white-space:nowrap">${esc(G.names[p])}</span>${G.decks[p].map(miniH).join('')}${G.decks[p].join()!==G.orig[p].join()?'<span class="chip">入れ替えあり</span>':''}</div>`).join('')}
    </div>`,'bgH','grid-template-columns:1fr 1fr;grid-template-rows:36px minmax(0,1fr);gap:0 16px');
-  if(G.rated&&NET.rateInfo)showRate(NET.rateInfo);
+  rwStart();
   bindQuit();
   if(G.mode==='online'&&NET.oppGone)applyGone();
   on('again',el=>{if(G.rated){startRoom('random');return}if(G.mode==='online'){netSend({t:'again'});el.disabled=true;el.textContent='相手を待っています…';return}startGame(G.mode,G.level)});on('title',renderTitle);
@@ -1220,7 +1256,7 @@ function mGame(){
   add('g');if(G.mode==='online')add('room');
   if(w===0){add('w');if(G.mode==='cpu'&&G.level==='normal')add('wn');if(G.mode==='online')add('roomW');if(sw)add('swW');if(!G.lostR)add('perf');if((G.maxDef||0)>=3)add('come')}
   if(sw)add('sw');
-  G.gotCoin=w===0?50:30;MS.coins=(MS.coins||0)+G.gotCoin;
+  G.coinWin=w===0;G.gotCoin=G.coinWin?30:10;MS.coins=(MS.coins||0)+G.gotCoin;
   saveMS();mCheck();
 }
 function profH(){const dn=MIS.filter(m=>MS.done[m.id]).length;
@@ -1812,12 +1848,58 @@ async function doPoll(gen){
 }
 
 /* レート戦(ランダムマッチ)の案内・ランキング */
+/* 結果画面のごほうび: ドラクマが増える演出と、レートの上下 */
+function rwCount(el,from,to,ms,every){
+  if(!el)return;
+  if(from===to||(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)){el.textContent=to;return}
+  const t0=performance.now();let last=from,n=0;el.textContent=from;
+  const iv=setInterval(()=>{
+    if(!el.isConnected){clearInterval(iv);return}
+    const k=Math.min(1,(performance.now()-t0)/ms),v=Math.round(from+(to-from)*(1-Math.pow(1-k,3)));
+    if(v!==last){last=v;el.textContent=v;if(every&&++n%every===0)SFX.play('tick')}
+    if(k>=1){clearInterval(iv);el.textContent=to}
+  },30);
+}
+const num0r=v=>Math.max(0,Math.floor(+v)||0);
+function rewardH(){
+  const cards=[];
+  if(G.gotCoin){
+    const g=num0r(G.gotCoin),after=num0r(MS.coins),before=Math.max(0,after-g),hit=after>=PRICE1&&before<PRICE1;
+    const sub=after>=PRICE1?(hit?'ガチャが引けるようになった!':'ガチャが引けます'):`ガチャまで あと ${PRICE1-after}`;
+    cards.push(`<div class="rw coin${hit?' hit':''}" id="coinbox" data-from="${before}" data-to="${after}"><span class="rcn"><i></i></span><div class="rt"><span class="rl">ドラクマ ・ ${G.coinWin?'勝利':'参加'}ボーナス</span><span class="rv"><span class="rn">${before}</span><em class="rpl">+${g}</em></span><span class="rsub">${sub}</span></div></div>`);
+  }
+  if(G.rated)cards.push(`<div class="rw rate" id="ratebox"><div class="rt"><span class="rl">レート</span><span class="rv"><span class="wt">集計中<span class="dots"></span></span></span></div></div>`);
+  return cards.length?`<div class="rwd">${cards.join('')}</div>`:'';
+}
+function rwStart(){
+  const el=document.getElementById('coinbox');
+  if(el){
+    const from=+el.dataset.from,to=+el.dataset.to;
+    setTimeout(()=>{
+      if(!el.isConnected)return;
+      el.classList.add('go');
+      for(let i=0;i<9;i++){const f=document.createElement('i');f.className='cfl';f.style.cssText=`--x:${Math.round(20+Math.random()*70)}px;--y:${Math.round(-30+Math.random()*60)}px;--d:${(i*.04).toFixed(2)}s`;el.appendChild(f)}
+      SFX.play('coin');
+      rwCount(el.querySelector('.rn'),from,to,900,3);
+      if(el.classList.contains('hit'))setTimeout(()=>{if(el.isConnected)SFX.play('bell')},1000);
+    },450);
+  }
+  if(G.rated&&NET.rateInfo)setTimeout(()=>showRate(NET.rateInfo),el?1700:600);
+}
 function showRate(r){
-  const el=document.getElementById('ratebox');if(!el)return;
-  if(r.outcome==='applied'){const a=r.before+r.delta;el.textContent=`レート ${r.before} → ${a}(${r.delta>=0?'+':''}${r.delta})`;SFX.play(r.delta>0?'bell':'blip')}
-  else if(r.outcome==='practice')el.textContent='今回は練習試合でした。レートは変わりません';
-  else if(r.outcome==='disputed')el.textContent='お互いの結果の申告が食い違ったため、レートは変わりません';
-  else el.textContent='この試合は無効です(レートは変わりません)';
+  const el=document.getElementById('ratebox');if(!el||el.dataset.done)return;
+  el.dataset.done='1';
+  if(r.outcome==='applied'){
+    const before=num0r(r.before),d=Math.trunc(+r.delta)||0,after=Math.max(0,before+d);
+    el.className='rw rate '+(d>0?'up':(d<0?'dn':'eq'));
+    el.innerHTML=`<div class="rt"><span class="rl">レート</span><span class="rv"><span class="rn">${before}</span></span></div><div class="rdt"><span class="rar">${d>0?'▲':(d<0?'▼':'―')}</span><b>${d>0?'+':''}${d}</b></div>`;
+    void el.offsetWidth;el.classList.add('show');
+    rwCount(el.querySelector('.rn'),before,after,900,3);
+    SFX.play(d>0?'rup':(d<0?'rdn':'click'));
+  }else{
+    const t=r.outcome==='practice'?'今回は練習試合でした。レートは変わりません':(r.outcome==='disputed'?'お互いの結果の申告が食い違ったため、レートは変わりません':'この試合は無効です(レートは変わりません)');
+    el.innerHTML=`<div class="rt"><span class="rl">レート</span><span class="rsub">${t}</span></div>`;
+  }
 }
 async function fillRate(el){try{if(!(window.crypto&&crypto.subtle))throw fatal('NOCRYPTO');const j=await rpc('nm_me',{p_name:cn(NICK)},'p');if(el.isConnected)el.textContent=`あなたのレート: ${j.rating}(${j.games}戦 ${j.wins}勝${j.losses}敗${j.draws?j.draws+'分':''}${j.rank?'・'+j.rank+'位':''})`}catch(e){if(el.isConnected)el.textContent=(e&&e.fatal?FATAL_MSG[e.fatal]:'レートを取得できませんでした(通信状況を確かめてください)')}}
 async function ratedModal(){
@@ -2172,7 +2254,7 @@ function tut(ev,d){
   if(!G||!G.tut)return;
   if(ev==='deck'){
     gmodal({title:'ネメシスのルール',html:'<p>5枚のデッキを持ち、<b>5ラウンド</b>戦います。毎ラウンド、お互いに1枚ずつ<b>同時に</b>カードを出し、<b>数値が大きい方が1点</b>を得ます。5ラウンド後に、合計点が多い方の勝ちです。</p><p><span class="chip">① デッキを組む</span> → <span class="chip">② 公開と入れ替え</span> → <span class="chip">③ 5ラウンド</span> → <span class="chip">④ 勝敗</span></p><p class="sub">用意したデッキで、1試合を最後まで進めます(約3分)。</p>',cb:()=>
-    gmodal({title:'① デッキを組む',html:'<p>全21種類のカードから<b>5枚</b>を選びます。条件は2つです。</p><ul><li>数値の合計が <b>22〜25</b></li><li>数値1〜3の小さいカードは <b>2枚まで</b></li></ul><p>誰でも同じ15枚から選べます。カードにカーソルを合わせる(スマホは長押し)と、効果の全文が読めます。</p>',cb:()=>
+    gmodal({title:'① デッキを組む',html:'<p>全21種類のカードから<b>5枚</b>を選びます。条件は2つです。</p><ul><li>数値の合計が <b>22〜25</b></li><li>数値1〜3の小さいカードは <b>2枚まで</b></li></ul><p>誰でも同じ21枚から選べます。カードにカーソルを合わせる(スマホは長押し)と、効果の全文が読めます。</p>',cb:()=>
     gmodal({title:'3つのプール',html:'<p>カードは3つのプールに分かれています。</p><ul><li><b class="pcol-A">A 条件勝ち</b>: 条件を満たすと、数値に関係なく勝てる</li><li><b class="pcol-B">B 数値操作</b>: 自分や相手の数値を増減する</li><li><b class="pcol-C">C 結果の書き換え</b>: 勝敗の結果を変える</li></ul><p>左のタブでプールを切り替えられます。次の「入れ替え」は、<b>ほかのプールのカード</b>にもできます。</p>',cb:()=>
     gbar('用意したデッキです。右下の<b>「決定」</b>を押して進みます。',P_DECK,'[data-act="ok"]')})})});
   }else if(ev==='swap'){
@@ -2205,9 +2287,10 @@ function renderTutEnd(){
    <ul>
     <li>数値が大きい方が1点。<b>数値1〜5のカードで勝つと、勝利時の効果</b>が次のラウンドまで働きます。</li>
     <li>効果には「数値を足し引きする」「<b>条件を満たせば勝つ</b>」があります。条件勝ちは、小さい数値でも勝てます。</li>
-    <li>まだ試していないもの: 負けを<b>引き分けに書き換える</b>アイギスとテミス、効果を<b>無効にする</b>パンドラとスフィンクス、条件勝ちを防ぐゼウス。</li>
+    <li>まだ試していないもの: 負けを<b>引き分けに書き換える</b>アイギス・テミス・ヘルメス、効果を<b>無効にする</b>パンドラとスフィンクス、相手の<b>勝利時の効果を消す</b>ハデス、条件勝ちを防ぐゼウス。</li>
     <li>合計得点が同点のときは、<b>デッキの数値の合計が小さい方</b>の勝ちです。</li>
-    <li>実戦では、<b>入れ替え</b>が最大の読み合いです。相手のデッキを見て、何に替えるかを決めます。</li>
+    <li>実戦では、<b>入れ替え</b>が最大の読み合いです。相手のデッキを見て、デッキにない好きなカード(プールは問いません)に1枚だけ替えられます。</li>
+    <li>対戦が終わると<b>ドラクマ</b>がもらえます。ためて<b>ガチャ</b>を引くと、カードの裏・アイコン・称号が手に入ります。</li>
    </ul>
    <div class="row" style="justify-content:flex-end"><button class="btn" data-act="tt">タイトルへ</button><button class="btn" data-act="again">もう一度</button><button class="btn gold" data-act="cpu">CPUと対戦する</button></div></div></div>`,'bgH','grid-template-rows:1fr');
   on('tt',renderTitle);on('again',startTutorial);on('cpu',()=>startGame('cpu','normal'));
