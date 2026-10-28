@@ -168,6 +168,7 @@ h1,h2,h3,p{margin:0}
 .lb-mid{flex:1;min-height:0;display:flex;justify-content:space-between;gap:10px}
 .lb-feat{width:250px;flex:none;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1.1fr 1fr 1fr 1fr .62fr;gap:7px}
 .lt.rcb{grid-column:1/-1;flex-direction:row;gap:10px;padding:0 12px}.lt.rcb .ln{font-size:13px}.lt.rcb small{font-size:10px;color:#b8a68a}
+.lt2{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:7px;min-height:0}.lt2 .lt{background:linear-gradient(100deg,rgba(60,38,14,.94),rgba(110,76,24,.92))}.kgmini{display:block;width:26px;height:34px;border-radius:4px;border:2px solid #f0c040;background:linear-gradient(135deg,#fff0b0,#d9a21e 40%,#ffe27a 60%,#a8730c);box-shadow:0 0 8px rgba(240,190,60,.7)}
 .lt.wide{grid-column:1/-1;flex-direction:row;gap:14px;justify-content:flex-start;padding:0 16px;background:linear-gradient(100deg,rgba(60,38,14,.94),rgba(110,76,24,.92))}
 .lt.wide .lx{display:flex;flex-direction:column;align-items:flex-start;gap:2px}.lt.wide .ln{font-size:19px;letter-spacing:.08em;color:#f0c555}.lt.wide small{font-size:10.5px;color:#d9c9a8}
 .lb-prof{display:flex;align-items:center;gap:9px;padding:4px 14px 4px 5px;background:rgba(20,14,9,.86);border:1px solid #6a5238;border-radius:30px;color:#f3e8d2;cursor:pointer;text-align:left}
@@ -237,6 +238,74 @@ button.card{cursor:pointer}
 .card.g{--w:124px;--h:150px;--ah:62px;--nmf:13px;--kwf:10.5px}
 .card.s{--w:84px;--h:100px;--ah:50px;--nz:22px;--nf:14px;--nmf:10.5px}
 .card.x{--w:110px;--h:152px;--ah:70px;--nmf:12.5px;--kwf:10.5px}
+/* card tiers: silver / gold / diamond (same art, frame+foil only) */
+@property --trA{syntax:'<angle>';inherits:false;initial-value:0deg}
+.card.tr-s,.card.tr-g,.card.tr-d{border-width:3px}
+.card.tr-s::before,.card.tr-g::before,.card.tr-d::before{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;background-size:250% 250%;animation:trSh 3.2s linear infinite}
+@keyframes trSh{0%{background-position:130% 130%}60%,100%{background-position:-30% -30%}}
+.card.tr-s{border-color:#c9d3de;background:#eef0f2;box-shadow:0 0 0 1px #6f7c8a,0 3px 9px rgba(160,185,215,.45)}
+.card.tr-s::after{border-color:rgba(255,255,255,.85);box-shadow:inset 0 0 6px rgba(190,210,235,.6)}
+.card.tr-s::before{background-image:linear-gradient(115deg,transparent 38%,rgba(255,255,255,.55) 48%,rgba(220,235,255,.25) 52%,transparent 62%)}
+.card.tr-g{border-color:#f0c040;background:#f6e8c0;box-shadow:0 0 0 1px #8a5a10,0 0 12px rgba(240,190,60,.65),0 3px 9px rgba(0,0,0,.5)}
+.card.tr-g::after{border:1px solid #fff3b0;box-shadow:inset 0 0 8px rgba(255,205,70,.7)}
+.card.tr-g::before{background-image:linear-gradient(115deg,transparent 36%,rgba(255,240,170,.7) 47%,rgba(255,200,60,.35) 53%,transparent 64%);animation-duration:2.6s}
+.card.tr-d{border-color:transparent;background:linear-gradient(#f1f6fb,#f1f6fb) padding-box,conic-gradient(from var(--trA),#ff6ec7,#ffe66d,#5dffb0,#4cc9ff,#a78bfa,#ff6ec7) border-box;animation:trSp 4s linear infinite;box-shadow:0 0 14px rgba(120,200,255,.75),0 0 26px rgba(190,120,255,.4),0 3px 9px rgba(0,0,0,.5)}
+@keyframes trSp{to{--trA:360deg}}
+.card.tr-d::after{border:1px solid rgba(255,255,255,.95);box-shadow:inset 0 0 10px rgba(150,220,255,.8);background:
+ radial-gradient(circle at 22% 30%,#fff 0 1.2px,transparent 2.4px),radial-gradient(circle at 78% 22%,#fff 0 1.4px,transparent 2.8px),radial-gradient(circle at 66% 68%,#fff 0 1px,transparent 2.2px),radial-gradient(circle at 30% 80%,#fff 0 1.3px,transparent 2.6px);animation:trTw 1.8s ease-in-out infinite}
+@keyframes trTw{0%,100%{opacity:.35}50%{opacity:1}}
+.card.tr-d::before{background-image:linear-gradient(115deg,transparent 30%,rgba(255,110,199,.16) 40%,rgba(255,240,120,.2) 46%,rgba(93,255,176,.2) 52%,rgba(76,201,255,.2) 58%,rgba(167,139,250,.16) 64%,transparent 74%);mix-blend-mode:screen;opacity:.8;animation-duration:2.2s}
+
+/* engraved plate art */
+.card.tr-s .art,.card.tr-g .art,.card.tr-d .art{background-color:#999}
+.card.tr-s .art img,.card.tr-g .art img,.card.tr-d .art img{mix-blend-mode:multiply;filter:grayscale(1) brightness(1.9) contrast(1.5) drop-shadow(1px 1px 0 rgba(255,255,255,.7)) drop-shadow(-1px -1px 0 rgba(0,0,0,.35))}
+.card.tr-s .art{background:linear-gradient(135deg,#f4f7fb,#aab4c0 35%,#e9eef4 55%,#8a95a3 80%,#dfe6ee)}
+.card.tr-g .art{background:linear-gradient(135deg,#fff0b0,#d9a21e 35%,#ffe27a 55%,#a8730c 80%,#f5cf5a)}
+.card.tr-d .art{background:linear-gradient(135deg,#f4fbff,#a9d8f5 25%,#e6d4ff 45%,#bff5e6 65%,#ffd9ec 82%,#e8f6ff)}
+.card.tr-g .art img{filter:grayscale(1) sepia(.5) brightness(1.9) contrast(1.5) drop-shadow(1px 1px 0 rgba(255,240,170,.8)) drop-shadow(-1px -1px 0 rgba(90,50,0,.45))}
+.card.tr-s .art::after,.card.tr-g .art::after,.card.tr-d .art::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.07) 0 1px,rgba(0,0,0,.05) 1px 2px);pointer-events:none;mix-blend-mode:overlay}
+.card.tr-s .num{background:linear-gradient(145deg,#eef2f7,#7d8794);color:#222;text-shadow:0 1px 0 #fff}
+.card.tr-g .num{background:linear-gradient(145deg,#ffe58a,#a8730c);color:#3a2400;text-shadow:0 1px 0 #ffeeb0}
+.card.tr-d .num{background:linear-gradient(145deg,#fff,#8fd0ff 50%,#c79bff);color:#1a2a5a;text-shadow:0 1px 0 #fff}
+
+/* body tinted by pool */
+.pA{--pt:#bcd3ea;--pt2:#8fb2d6}.pB{--pt:#c9dea6;--pt2:#9dbb6c}.pC{--pt:#f2c3a2;--pt2:#dd9466}
+.card.tr-s,.card.tr-g{background:linear-gradient(180deg,var(--pt),var(--pt2))}
+.card.tr-d{background:linear-gradient(180deg,var(--pt),var(--pt2)) padding-box,conic-gradient(from var(--trA),#ff6ec7,#ffe66d,#5dffb0,#4cc9ff,#a78bfa,#ff6ec7) border-box}
+.card.tr-s .kw,.card.tr-g .kw,.card.tr-d .kw{color:#2a1c10}
+
+/* card gacha (kg) */
+.kgt{background:none;border:0;padding:0;width:100%;height:112px;perspective:700px}
+.kgi{position:relative;display:block;width:100%;height:100%;transition:transform .35s;transform-style:preserve-3d}
+.kgt.on .kgi{transform:rotateY(180deg)}
+.kgb,.kgf{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.kgf{transform:rotateY(180deg);font-size:11px;color:#f3e8d2;text-align:center}
+.kgb .back{width:78px;height:106px}
+.kgf em{font-style:normal;font-size:10px;color:#8fd0a0}.kgf b{font-size:12px}
+.kgf .kd{font-size:11px;color:#e6b34a}
+.kgf.dust,.kgf.bl,.kgf.gem{background:rgba(24,16,10,.96);border:2px solid #b8a68a}
+.kgf.dust{border-color:#8fb8d8}.kgf.bl{border-color:#e6b34a}.kgf.gem{border-color:#9fe8ff;box-shadow:0 0 18px rgba(130,220,255,.8)}
+.kgs{position:absolute;inset:0;z-index:8;background:radial-gradient(circle at 50% 40%,#2a1c10,#0a0705 80%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:8px}
+.kgs .kgg{display:grid;gap:8px;width:min(660px,96%);grid-template-columns:repeat(5,1fr)}.kgs .kgg.one{grid-template-columns:110px}.kgs .kgg.one .kgt{height:150px}
+.kgs .kgg .card.s{--w:76px;--h:96px;--ah:46px;--nz:20px;--nf:13px;--nmf:10px}
+.kgs .kgg.one .card.s{--w:100px;--h:132px;--ah:64px;--nmf:12px}
+.kgfx{position:absolute;inset:0;z-index:9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:radial-gradient(circle,rgba(255,230,140,.55),rgba(0,0,0,.88) 70%);animation:kgin .35s ease-out}
+.kgfx.d{background:radial-gradient(circle,rgba(150,225,255,.6),rgba(30,0,60,.9) 70%)}
+@keyframes kgin{from{opacity:0;transform:scale(1.15)}}
+.kgfx big{font:800 34px "Shippori Mincho B1",serif;letter-spacing:.1em;color:#ffe48a;text-shadow:0 0 18px #f0b020}.kgfx.d big{color:#d6f4ff;text-shadow:0 0 20px #5cc8ff,0 0 40px #b070ff}
+.kgfx .card{transform:scale(1.25)}
+.kgfx small{font-size:11px;color:#e8dcc0}
+.kgs.qk{animation:gqk .5s}
+.kgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px 8px;align-content:start;overflow:auto;min-height:0;padding:2px}
+.kgc{display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:0;padding:0;color:#f3e8d2;font-size:10px;cursor:pointer}
+.kgc .card{--w:84px;--h:100px;--ah:50px;--nz:22px;--nf:14px;--nmf:10.5px}.kgc.sl .card{box-shadow:0 0 0 2px #e6b34a}
+.kgb2{display:inline-flex;gap:2px}.kgb2 i{font-style:normal;font-size:9px;font-weight:700;border-radius:3px;padding:0 3px;color:#241a05}
+.kgb2 .s{background:#cfd8e2}.kgb2 .g{background:#f0c040}.kgb2 .d{background:linear-gradient(90deg,#ff9fd8,#9fe0ff,#c9a8ff)}
+.kgtr{display:flex;gap:6px;flex-wrap:nowrap}.kgtr button{background:none;border:0;padding:0;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:#dccfb8;cursor:pointer}
+.kgtr .card{--w:62px;--h:78px;--ah:36px;--nz:17px;--nf:11px;--nmf:8.5px}.kgtr .on .card{box-shadow:0 0 0 2px #e6b34a}
+.kgbar{height:7px;background:#2a1f14;border-radius:4px;overflow:hidden}.kgbar u{display:block;height:100%;background:linear-gradient(90deg,#d9a93f,#ffe48a)}
+.kgchip{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#f3e8d2;background:rgba(20,14,9,.8);border:1px solid #5a4630;border-radius:14px;padding:2px 9px;white-space:nowrap}
+.kgq li{list-style:none;font-size:11px;color:#b8a68a}.kgq li.ok{color:#8fd0a0}
 .pA{--pool:#2a5f8f}.pB{--pool:#5d7a34}.pC{--pool:#b4532a}
 .back{width:88px;height:128px;border-radius:9px;border:2px solid #8a745a;background-size:cover;background-position:center;flex:none}
 .back.sm{width:28px;height:40px;border-radius:4px;border-width:1.5px}
@@ -1089,13 +1158,16 @@ function show(html,cls='',style=''){if(TM.on&&!TM.keep)TM.stop();if(TM.sw){clear
 function on(act,fn){$s.querySelectorAll(`[data-act="${act}"]`).forEach(el=>el.addEventListener('click',()=>fn(el)))}
 function modal(html){const m=document.createElement('div');m.className='modal';m.innerHTML=`<div class="panel mp" role="dialog" aria-modal="true">${html}</div>`;$s.querySelector('.scr').appendChild(m);return m}
 const backH=(cls='')=>`<div class="back ${cls}" style="background-image:url(${BACKS[BACK]})" aria-hidden="true"></div>`;
-function cardH(i,o={}){const c=CARDS[i],t=o.act?'button':'div',sz=o.size||'h';
-  return `<${t} class="card ${sz} p${c.p}${o.sel?' sel':''}${o.off?' off':''}${o.cls?' '+o.cls:''}" ${o.act?`data-act="${o.act}" data-i="${o.di!=null?o.di:i}" ${o.dis?'disabled':''} aria-pressed="${!!o.sel}"`:''} data-cid="${i}" aria-label="${c.n} 数値${c.num}">
+const TRS=['s','g','d'];
+function tierOf(sd,i){const id=CARDS[i].id;if(sd===0){const t=MS.ceq[id];return t&&MS.ct[t]&&MS.ct[t].includes(id)?t:''}
+  if(!G||(G.mode!=='cpu'&&G.mode!=='online')||G.tut||G.les||!G.tier)return '';const t=G.tier[id];return TRS.includes(t)?t:''}
+function cardH(i,o={}){const c=CARDS[i],t=o.act?'button':'div',sz=o.size||'h',tr=o.t!=null?o.t:(o.sd!=null?tierOf(o.sd,i):'');
+  return `<${t} class="card ${sz} p${c.p}${tr?' tr-'+tr:''}${o.sel?' sel':''}${o.off?' off':''}${o.cls?' '+o.cls:''}" ${o.act?`data-act="${o.act}" data-i="${o.di!=null?o.di:i}" ${o.dis?'disabled':''} aria-pressed="${!!o.sel}"`:''} data-cid="${i}" aria-label="${c.n} 数値${c.num}">
   <span class="art"><img src="${ART[c.id]}" alt=""><span class="num">${c.num}</span>${o.sel&&sz==='g'?'<span class="chk"><svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M6 11.5L9.5 15L16 7.5" stroke="#241a05" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>':''}</span>
   <span class="nm">${c.n}</span>${sz==='s'?'':`<span class="kw">${esc(KW[c.id])}</span>`}${c.num<=5&&sz!=='s'?'<span class="wn">勝利時の効果あり</span>':''}</${t}>`}
 const thumbH=(i,used)=>`<div class="th2 p${CARDS[i].p}${used?' used':''}" data-cid="${i}" aria-label="${CARDS[i].n} 数値${CARDS[i].num}${used?' 使用済み':''}"><span class="ta"><img src="${ART[CARDS[i].id]}" alt=""><b>${CARDS[i].num}</b></span><span class="tn">${CARDS[i].n}</span></div>`;
 const miniH=i=>`<span class="mi p${CARDS[i].p}" data-cid="${i}"><b>${CARDS[i].num}</b>${CARDS[i].n}</span>`;
-function flipH(i,size,d){return `<div class="flip ${size}" style="--d:${d}s"><div class="flipi"><div class="face bf"><div class="back ${size}" style="background-image:url(${BACKS[BACK]})"></div></div><div class="face ff">${cardH(i,{size})}</div></div></div>`}
+function flipH(i,size,d,sd){return `<div class="flip ${size}" style="--d:${d}s"><div class="flipi"><div class="face bf"><div class="back ${size}" style="background-image:url(${BACKS[BACK]})"></div></div><div class="face ff">${cardH(i,{size,sd})}</div></div></div>`}
 const coin=`<img class="coin" src="${IC.coin}" alt="">`;
 const quitBtn=`<button class="menu" data-act="quit" aria-label="メニュー">☰</button>`;
 function bindQuit(){on('quit',()=>{const gv=!GUIDE.hidden&&!!G&&!!(G.tut||G.les);if(gv)GUIDE.hidden=true;const m=modal(`<h3 class="ttl" style="font-size:17px">対戦をやめますか</h3><p class="sub">いまの対戦は破棄され、タイトルへ戻ります。</p><div class="row" style="justify-content:flex-end"><button class="btn" data-act="snd2" style="margin-right:auto">音</button><button class="btn" data-act="no">続ける</button><button class="btn gold" data-act="yes">タイトルへ戻る</button></div>`);m.querySelector('[data-act="snd2"]').onclick=sndModal;
@@ -1119,7 +1191,7 @@ function renderTitle(){
     </div>
     <div class="lb-mid">
       <div class="lb-feat">
-        <button class="lt wide hot${canPull?' nb':''}" data-act="gacha"><span class="li"><img src="${URN_IMG}" alt="" style="height:46px"></span><span class="lx"><span class="ln">ガチャ</span><small>${PRICE1}ドラクマで1回</small></span></button>
+        <div class="lt2"><button class="lt hot${canPull?' nb':''}" data-act="gacha"><span class="li"><img src="${URN_IMG}" alt="" style="height:34px"></span><span class="ln" style="font-size:14px;color:#f0c555">壺ガチャ</span></button><button class="lt hot${(MS.coins||0)>=KG.p1?' nb':''}" data-act="kgp"><span class="li"><span class="kgmini"></span></span><span class="ln" style="font-size:14px;color:#f0c555">カードガチャ</span></button></div>
         ${tile('ms','<img src="'+avSrc('laurel')+'" alt="" style="width:36px;height:36px;border-radius:50%">','ミッション・装備')}
         ${tile('myd',gl('札'),'マイデッキ')}
         ${tile('dex',gl('図'),'図鑑')}
@@ -1169,7 +1241,7 @@ function renderTitle(){
       const ld=()=>{if(sp._l)return;sp._l=1;SFX.play('confirm');const t=sp.querySelector('.tap');if(t){t.outerHTML=`<div class="ldg"><div class="ldb"><i></i></div><span>読み込み中<span class="dots"></span></span><small>${TIPS[Math.floor(Math.random()*TIPS.length)]}</small></div>`}setTimeout(go,1500)};
       sp.addEventListener('click',ld);sp.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')ld()});sp.tabIndex=0;
       $s.querySelector('.scr').appendChild(sp);setTimeout(()=>sp.focus(),50)}
-    on('gacha',renderGacha);on('ms',()=>renderMissions());on('dex',()=>renderDex());on('snd',sndModal);on('rcn',renderRecent);on('rkpg',renderRank);on('xfer',xferModal);
+    on('gacha',renderGacha);on('kgp',()=>renderKg());on('ms',()=>renderMissions());on('dex',()=>renderDex());on('snd',sndModal);on('rcn',renderRecent);on('rkpg',renderRank);on('xfer',xferModal);
     on('rules',()=>{const m=modal(`<h3 class="ttl" style="font-size:17px">ルールの要点</h3><ul>
      <li>デッキは全21枚(A・B・Cのプール各7枚)から5枚。数値の合計は22〜25、数値1〜3のカードは2枚まで。</li>
      <li>両者のデッキを同時に公開したあと、各自が1枚を、デッキにない別のカードに入れ替えられます(プールは問わず、任意。相手には見えません)。入れ替え後も、合計22〜25と数値1〜3は2枚までの条件を守ります。</li>
@@ -1249,7 +1321,7 @@ function buildFor(i){
       <div style="font-size:11px;line-height:1.5;color:#dccfb8;min-height:60px">${f?`<b class="pcol-${f.p}" style="font-size:12px">${f.n}</b><br>${esc(f.eff)}<br><span style="color:#b8a68a">${f.num<=5?'勝利時: '+esc(f.wt):'勝利時の効果なし'}</span>`:'<span style="color:#b8a68a">カードを選ぶと、効果の全文がここに出ます。</span>'}</div>
     </div>
     <div id="cgrid" style="grid-column:2;display:grid;grid-template-columns:repeat(3,124px);grid-auto-rows:150px;gap:10px 12px;align-content:start;justify-content:center;min-width:0;min-height:0;overflow-y:auto;padding:2px 0 6px">
-      ${ORD.map(k=>CARDS[k].p===pool?cardH(k,{size:'g',act:'tog',sel:d.includes(k),cls:(G.foc===k&&d.includes(k)?'pop':'')}):'').join('')}
+      ${ORD.map(k=>CARDS[k].p===pool?cardH(k,{size:'g',sd:0,act:'tog',sel:d.includes(k),cls:(G.foc===k&&d.includes(k)?'pop':'')}):'').join('')}
     </div>
     <div class="panel col" style="grid-column:3;width:228px;gap:6px">
       <div class="row" style="justify-content:space-between"><b style="font-size:14px">いまのデッキ</b><button class="btn" data-act="clr" style="height:24px;line-height:22px;font-size:11px;padding:0 8px" ${d.length&&!G.tut?'':'disabled'}>クリア</button></div>
@@ -1314,9 +1386,9 @@ function renderSwap(i){
     showT(`<div class="hd"><div class="hl"><span class="ttl">入れ替え</span><span class="sub">自分のカード1枚を、デッキにない別のカードに替えられます(プールは問いません)。相手には見えません。</span></div>${quitBtn}</div>
     <div class="col" style="gap:8px">
       <div class="panel col" style="gap:6px"><div class="row" style="justify-content:space-between"><span class="lbl">${esc(G.names[1-i])}のデッキ(公開)</span><span class="lbl">数値の合計 ${sumDeck(opp)}</span></div>
-        <div class="row" style="gap:10px;height:104px;flex-wrap:nowrap">${opp.map((k,n)=>first?flipH(k,'s',.25+n*.13):cardH(k,{size:'s'})).join('')}</div></div>
+        <div class="row" style="gap:10px;height:104px;flex-wrap:nowrap">${opp.map((k,n)=>first?flipH(k,'s',.25+n*.13,1):cardH(k,{size:'s',sd:1})).join('')}</div></div>
       <div class="panel col" style="gap:6px"><div class="row" style="justify-content:space-between"><span class="lbl">あなたのデッキ</span><span style="font-size:11px">数値の合計 <b style="font:800 14px 'Shippori Mincho B1',serif">${sumDeck(me)}</b>${changed?` → <b style="font:800 14px 'Shippori Mincho B1',serif;color:#8fd0a0">${sumDeck(nd)}</b> <span class="okc">(22〜25の範囲内)</span>`:''}</span></div>
-        <div class="row" style="gap:10px;height:112px;align-items:flex-end;flex-wrap:nowrap;padding-bottom:2px">${me.map((k,pos)=>cardH(changed&&G.swPos===pos?G.swCard:k,{size:'s',act:'pos',di:pos,sel:G.swPos===pos,cls:(changed&&G.swPos===pos?'pop':'')})).join('')}</div>
+        <div class="row" style="gap:10px;height:112px;align-items:flex-end;flex-wrap:nowrap;padding-bottom:2px">${me.map((k,pos)=>cardH(changed&&G.swPos===pos?G.swCard:k,{size:'s',sd:0,act:'pos',di:pos,sel:G.swPos===pos,cls:(changed&&G.swPos===pos?'pop':'')})).join('')}</div>
         <div style="font-size:11px;color:#e6b34a;min-height:16px;padding-left:4px">${changed?`${CARDS[me[G.swPos]].n}を${CARDS[G.swCard].n}に入れ替える予定`:''}</div></div>
     </div>
     <div class="panel col" style="width:300px;gap:6px">${right}
@@ -1372,9 +1444,9 @@ function renderPick(i){
       <div style="display:flex;align-items:center;justify-content:center;gap:26px;height:150px">
         <div class="col" style="align-items:center;gap:6px"><div class="oback">${backH()}</div><span class="lbl">${G.les?'相手は決めています':(G.mode==='cpu'?'CPUは選んでいます':esc(G.names[o])+'は選びます')}</span></div>
         <span style="font:800 22px 'Shippori Mincho B1',serif;color:#8a745a">VS</span>
-        <div class="col" style="align-items:center;gap:6px">${ch?cardH(G.chosen,{cls:G.fresh?'drop':''}):`<div style="width:88px;height:128px;border-radius:9px;border:2px dashed #e6b34a;display:flex;align-items:center;justify-content:center;text-align:center;font-size:11px;color:#e6b34a;line-height:1.4">下の手札から<br>1枚選ぶ</div>`}<span class="lbl">あなたの札</span></div>
+        <div class="col" style="align-items:center;gap:6px">${ch?cardH(G.chosen,{sd:0,cls:G.fresh?'drop':''}):`<div style="width:88px;height:128px;border-radius:9px;border:2px dashed #e6b34a;display:flex;align-items:center;justify-content:center;text-align:center;font-size:11px;color:#e6b34a;line-height:1.4">下の手札から<br>1枚選ぶ</div>`}<span class="lbl">あなたの札</span></div>
       </div>
-      <div class="hand" style="display:flex;justify-content:center;gap:${P.hand.length>=5?-3:12}px;height:146px;align-items:flex-end;padding-bottom:6px">${P.hand.slice().sort((a,b)=>a-b).map(k=>cardH(k,{act:'play',sel:G.chosen===k,off:!!((G.tut&&k!==TUT_R[S.round-1].me)||(G.les&&k!==G.les.k))})).join('')}</div>
+      <div class="hand" style="display:flex;justify-content:center;gap:${P.hand.length>=5?-3:12}px;height:146px;align-items:flex-end;padding-bottom:6px">${P.hand.slice().sort((a,b)=>a-b).map(k=>cardH(k,{sd:0,act:'play',sel:G.chosen===k,off:!!((G.tut&&k!==TUT_R[S.round-1].me)||(G.les&&k!==G.les.k))})).join('')}</div>
     </div>
     <div class="panel col" style="width:190px;gap:6px">
       <div class="lbl">選んだ札</div>
@@ -1421,7 +1493,7 @@ function renderResult(L){
   const col=p=>L.w===-1?'#e6b34a':(L.w===p?'#8fd0a0':'#ee7b6d');
   ANIM=true;
   const sparkH=()=>'<div class="sparks">'+Array.from({length:14},(_,k)=>`<i style="--a:${Math.round(k*360/14+Math.random()*12)}deg;--r:${50+Math.round(Math.random()*40)}px"></i>`).join('')+'</div>';
-  const cardCol=p=>`<div class="col rc ${L.w===-1?'':(L.w===p?'won':'lost')}" style="align-items:center;gap:6px;position:relative">${L.w===p?sparkH()+`<span class="plus">+${L.sc}</span>`:''}${L.w===-1?'<span class="eq">=</span>':''}<span class="lbl">${esc(G.names[p])}</span><div class="slide ${p===0?'fl':'fr'}">${flipH(L.cards[p],'x',p===0?.55:.95)}</div>
+  const cardCol=p=>`<div class="col rc ${L.w===-1?'':(L.w===p?'won':'lost')}" style="align-items:center;gap:6px;position:relative">${L.w===p?sparkH()+`<span class="plus">+${L.sc}</span>`:''}${L.w===-1?'<span class="eq">=</span>':''}<span class="lbl">${esc(G.names[p])}</span><div class="slide ${p===0?'fl':'fr'}">${flipH(L.cards[p],'x',p===0?.55:.95,p)}</div>
     <div style="display:flex;align-items:baseline;gap:6px"><span class="fin" style="color:${col(p)};--nd:${p===0?1.45:1.85}s">${L.n[p]}</span><span class="sub" style="font-size:11px">${L.n[p]===CARDS[L.cards[p]].num?'':CARDS[L.cards[p]].num+' → '+L.n[p]}</span></div></div>`;
   const cpu=G.mode==='cpu'||G.mode==='online';
   const kind=L.w===-1?'draw':(cpu?(L.w===0?'win':'lose'):'draw');
@@ -1531,6 +1603,7 @@ const mcoin=m=>m.c||(m.goal>=5?120:80);
 const rwName=r=>r[0]==='back'?`カードの裏「${BKN[r[1]]}」`:r[0]==='av'?`アイコン「${AVN[r[1]]}」`:`称号「${r[1]}」`;
 function loadMS(){let m=null;try{m=JSON.parse(localStorage.getItem('gm1')||'null')}catch(e){}
   m=m&&typeof m==='object'?m:{};m.st=m.st||{};m.done=m.done||{};m.cardsSeen=m.cardsSeen||[];m.dexSeen=m.dexSeen||[];m.lessSeen=m.lessSeen||[];m.eq=Object.assign({back:'std',av:'owl',title:''},m.eq||{});m.own=Object.assign({back:[],av:[],title:[]},m.own||{});m.coins=m.coins||0;
+  m.ct=Object.assign({s:[],g:[],d:[]},m.ct||{});for(const t of['s','g','d'])if(!Array.isArray(m.ct[t]))m.ct[t]=[];m.ceq=m.ceq&&typeof m.ceq==='object'?m.ceq:{};m.cw=m.cw&&typeof m.cw==='object'?m.cw:{};m.dust=Math.max(0,+m.dust||0);m.gem=Math.max(0,+m.gem||0);m.bl=Math.max(0,+m.bl||0);
   if(!m.gs)m.gs=1;m.rp=Math.max(0,+m.rp||0);
   if(!m.mg){m.mg=1;for(const x of MIS)if(m.done[x.id]&&m.own[x.rw[0]]&&!m.own[x.rw[0]].includes(x.rw[1]))m.own[x.rw[0]].push(x.rw[1])}
   if(!m.tm){m.tm=1;for(const x of MIS)if(m.done[x.id]&&x.rw[0]==='title'&&!m.own.title.includes(x.rw[1]))m.own.title.push(x.rw[1])}
@@ -1552,6 +1625,7 @@ function mRound(L){
   const S=G.S,me=CARDS[L.cards[0]];
   if(L.w===0){if(L.sc>=3)MS.st.big=1;if(L.notes.some(t=>t.startsWith(me.n+': 条件を満たし、勝ちが確定')))MS.st.cond=1}
   if(L.w===1)G.lostR=true;
+  if(L.w===0&&!L.cwd){L.cwd=1;const id=me.id,b=MS.cw[id]||0;MS.cw[id]=b+1;if(b<KG.need&&b+1>=KG.need&&MS.ct.g.includes(id)&&!MS.ct.d.includes(id))setTimeout(()=>toast(`<b>${esc(me.n)}がダイヤの条件(${KG.need}勝)を達成!</b>カードガチャのコレクションから仕上げられます<span></span>`),2500);saveMS()}
   G.maxDef=Math.max(G.maxDef||0,S.p[1].score-S.p[0].score);
   const seen=MS.cardsSeen;if(!seen.includes(L.cards[0])){seen.push(L.cards[0]);MS.st.cards=seen.length}
   saveMS();mCheck();
@@ -1734,6 +1808,90 @@ function renderGacha(){
     const go=n=>{if(busy||(MS.coins||0)<(n===1?PRICE1:PRICE10))return;busy=true;MS.coins-=n===1?PRICE1:PRICE10;const res=gPull(n);saveMS();mCheck();draw();
       gStage(res,()=>{busy=false;draw()})};
     on('g1',()=>go(1));on('g10',()=>go(10));
+  };
+  draw();
+}
+
+/* ===== カードガチャ(銀・金・ダイヤ) ===== */
+const KG={p1:30,p10:300,dS:3,dG:10,xS:30,xG:100,xD:500,need:20,bl:2,dp:1000};
+const TN={s:'銀',g:'金',d:'ダイヤ'},TRK={s:1,g:2,d:3};
+const kgW=id=>MS.cw[id]||0;
+const kgBest=id=>MS.ct.d.includes(id)?'d':MS.ct.g.includes(id)?'g':MS.ct.s.includes(id)?'s':'';
+function kgGrant(t,id){if(MS.ct[t].includes(id))return false;MS.ct[t].push(id);const c=MS.ceq[id];if(!c||TRK[t]>TRK[c])MS.ceq[id]=t;return true}
+function kgPull(n){const res=[];
+  for(let i=0;i<n;i++){const r=Math.random()*100,cid=()=>CARDS[Math.floor(Math.random()*CARDS.length)].id;let x;
+    if(r<52){const t=r<42?'s':'g',id=cid(),nw=kgGrant(t,id);let dust=0;if(!nw){dust=t==='s'?KG.dS:KG.dG;MS.dust+=dust}x={k:t,id,nw,dust}}
+    else if(r<90){const d=5+Math.floor(Math.random()*11);MS.dust+=d;x={k:'dust',d}}
+    else if(r<98){MS.bl++;x={k:'bl'}}
+    else{MS.gem++;x={k:'gem'}}
+    res.push(x)}
+  MS.st.kpulls=(MS.st.kpulls||0)+n;saveMS();return res}
+const kgIdx=id=>CARDS.findIndex(c=>c.id===id);
+function kgStage(res,done){
+  const scr=$s.querySelector('.scr'),n=res.length,st=document.createElement('div');st.className='kgs';
+  const face=x=>x.k==='s'||x.k==='g'?`<span class="kgf" style="background:none"><span style="display:block">${cardH(kgIdx(x.id),{size:'s',t:x.k})}</span><em>${x.nw?'NEW':'重複 星屑+'+x.dust}</em></span>`
+    :x.k==='dust'?`<span class="kgf dust"><span style="font-size:26px;color:#9fd0f0">✦</span><b>星屑</b><em>+${x.d}</em></span>`
+    :x.k==='bl'?`<span class="kgf bl"><span style="font-size:26px;color:#f0c555">☆</span><b>加護の印</b><em>勝ち数+${KG.bl}</em></span>`
+    :`<span class="kgf gem"><span style="font-size:30px;color:#9fe8ff">◆</span><b>ダイヤの原石</b><em>NEW</em></span>`;
+  st.innerHTML=`<div class="kgg${n===1?' one':''}">${res.map((x,i)=>`<div class="kgt" data-i="${i}"><span class="kgi"><span class="kgb"><span class="back" style="background-image:url(${BACKS[BACK]})"></span></span>${face(x)}</span></div>`).join('')}</div><div class="row"><button class="btn" id="kgs">スキップ</button><button class="btn gold" id="kgd" disabled>閉じる</button></div>`;
+  scr.appendChild(st);
+  const tiles=[...st.querySelectorAll('.kgt')],T=[];let over=false;
+  const big=x=>x.k==='g'&&x.nw||x.k==='gem';
+  const fin=()=>{if(tiles.every(t=>t.classList.contains('on'))){st.querySelector('#kgs').hidden=true;st.querySelector('#kgd').disabled=false}};
+  const fx=(x,cb)=>{const e=document.createElement('div');e.className='kgfx'+(x.k==='gem'?' d':'');
+    e.innerHTML=x.k==='gem'?`<small>RARE</small><big>ダイヤの原石!</big><span style="font-size:60px;color:#bff0ff;text-shadow:0 0 24px #5cc8ff">◆</span><small>ダイヤカードの材料です</small>`:`<small>RARE</small><big>金のカード!</big>${cardH(kgIdx(x.id),{size:'s',t:'g'})}<small>${esc(CARDS[kgIdx(x.id)].n)}</small>`;
+    st.appendChild(e);st.classList.add('qk');SFX.play('gsr');let d=0;const end=()=>{if(d)return;d=1;e.remove();cb()};e.onclick=end;T.push(setTimeout(end,2300))};
+  const flip=i=>new Promise(r=>{const t=tiles[i];if(t.classList.contains('on')){r();return}const x=res[i];
+    t.classList.add('on');SFX.play('flip');
+    T.push(setTimeout(()=>{if(over){fin();r();return}
+      if(big(x))fx(x,()=>{st.classList.remove('qk');fin();r()});
+      else{SFX.play(x.k==='s'||x.k==='bl'?'ding':'pop');fin();T.push(setTimeout(r,x.k==='dust'?140:300))}},230))});
+  let q=Promise.resolve();tiles.forEach((t,i)=>{q=q.then(()=>over?0:flip(i))});
+  st.querySelector('#kgs').onclick=()=>{over=true;T.forEach(clearTimeout);st.querySelectorAll('.kgfx').forEach(e=>e.remove());st.classList.remove('qk');tiles.forEach(t=>t.classList.add('on'));SFX.play('flip');fin()};
+  st.querySelector('#kgd').onclick=()=>{over=true;T.forEach(clearTimeout);st.remove();done()};
+  T.push(setTimeout(()=>{},0));
+}
+function renderKg(tab0,sel0){
+  BGM.set('title');let tab=tab0||'g',sel=sel0!=null?sel0:ORD[0],busy=false,first=true;
+  const draw=()=>{
+    if(first){ANIM=true;first=false}
+    const c=MS.coins||0,cnt=t=>MS.ct[t].length;
+    const chips=`<span class="dcoin"><i></i><b>${c}</b> ドラクマ</span><span class="kgchip" title="星屑">✦ ${MS.dust}</span><span class="kgchip" title="ダイヤの原石">◆ ${MS.gem}</span><span class="kgchip" title="加護の印">☆ ${MS.bl}</span>`;
+    const head=`<div class="hd"><div class="hl"><span class="ttl">カードガチャ</span><div class="seg" role="group" aria-label="タブ" style="margin-left:10px"><button data-act="ktab" data-v="g" aria-pressed="${tab==='g'}" style="height:26px;font-size:12px;padding:0 12px">ガチャ</button><button data-act="ktab" data-v="c" aria-pressed="${tab==='c'}" style="height:26px;font-size:12px;padding:0 12px">コレクション</button></div></div><div class="row" style="gap:6px;flex-wrap:nowrap;flex:none;margin-left:auto">${chips}<button class="btn" data-act="home" style="height:28px;padding:0 14px">戻る</button></div></div>`;
+    let body;
+    if(tab==='g'){
+      body=`<div class="panel col" style="align-items:center;justify-content:center;gap:9px;grid-column:1/-1">
+       <div style="display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:nowrap">${cardH(kgIdx('champ'),{size:'s',t:'s'})}${cardH(kgIdx('champ'),{size:'s',t:'g'})}${cardH(kgIdx('champ'),{size:'s',t:'d'})}</div>
+       <div style="font-size:11px;color:#dccfb8;line-height:1.6;text-align:center">銀 42% ・ 金 10% ・ 星屑 38%(5〜15) ・ 加護の印 8% ・ ダイヤの原石 2%<br><span style="color:#b8a68a">天井・確定なし。絵は同じで、見た目だけが変わります。重複した銀は星屑${KG.dS}、金は星屑${KG.dG}になります。</span></div>
+       <div class="row" style="gap:10px;flex-wrap:nowrap"><button class="btn gold" data-act="k1" style="width:140px" ${c<KG.p1||busy?'disabled':''}>1回<br><small>${KG.p1}ドラクマ</small></button><button class="btn gold" data-act="k10" style="width:140px" ${c<KG.p10||busy?'disabled':''}>10連<br><small>${KG.p10}ドラクマ</small></button><button class="btn" data-act="kgem" style="width:170px" ${MS.dust<KG.xD?'disabled':''}>星屑${KG.xD}を<br>ダイヤの原石に交換</button></div>
+       <div style="font-size:10.5px;color:#e6b34a;min-height:14px">${c<KG.p1?'ドラクマが足りません(対戦やミッションで貯まります)':''}</div>
+       <div style="font-size:11px;color:#b8a68a">所持 銀 ${cnt('s')} / 金 ${cnt('g')} / ダイヤ ${cnt('d')}(全${CARDS.length}種)</div></div>`;
+    }else{
+      const id=CARDS[sel].id,w=kgW(id),own={s:MS.ct.s.includes(id),g:MS.ct.g.includes(id),d:MS.ct.d.includes(id)},eq=tierOf(0,sel);
+      const conds=[[MS.ct.g.includes(id),'金のカードを持っている'],[w>=KG.need,`このカードで${KG.need}勝(いま ${Math.min(w,KG.need)})`],[MS.gem>=1,'ダイヤの原石 1個'],[c>=KG.dp,`${KG.dp}ドラクマ`]];
+      const canD=!own.d&&conds.every(x=>x[0]);
+      const trbtn=(t,lab)=>{const ok=t===''||own[t];return `<button data-act="keq" data-t="${t}" class="${eq===t?'on':''}" ${ok?'':'disabled style="opacity:.4"'}>${cardH(sel,{size:'s',t:ok?t:t,cls:ok?'':'off'})}<span>${lab}${eq===t?' ✓':''}</span></button>`};
+      body=`<div class="kgrid">${ORD.map(k=>{const cid=CARDS[k].id,b=kgBest(cid);return `<button class="kgc${k===sel?' sl':''}" data-act="kpick" data-i="${k}">${cardH(k,{size:'s',t:tierOf(0,k),cls:b?'':'off'})}<span class="kgb2">${MS.ct.s.includes(cid)?'<i class="s">銀</i>':''}${MS.ct.g.includes(cid)?'<i class="g">金</i>':''}${MS.ct.d.includes(cid)?'<i class="d">ダ</i>':''}</span><span style="color:#b8a68a">${kgW(cid)}勝</span></button>`}).join('')}</div>
+       <div class="panel col" style="width:330px;gap:6px;overflow:auto;min-height:0">
+        <div class="row" style="justify-content:space-between;flex-wrap:nowrap"><b style="font:800 17px 'Shippori Mincho B1',serif">${esc(CARDS[sel].n)}</b><span class="lbl">対戦で使う見た目</span></div>
+        <div class="kgtr">${trbtn('','通常')}${trbtn('s','銀')}${trbtn('g','金')}${trbtn('d','ダイヤ')}</div>
+        <div class="lbl">このカードで勝った回数 ${w}${own.d?'':` / ${KG.need}`}</div><div class="kgbar"><u style="width:${Math.min(100,w/KG.need*100)}%"></u></div>
+        <div class="row" style="gap:5px">${own.s?'':`<button class="btn" data-act="kex" data-t="s" ${MS.dust<KG.xS?'disabled':''} style="height:30px;font-size:11px;padding:0 8px">星屑${KG.xS}で銀に</button>`}${own.g?'':`<button class="btn" data-act="kex" data-t="g" ${MS.dust<KG.xG?'disabled':''} style="height:30px;font-size:11px;padding:0 8px">星屑${KG.xG}で金に</button>`}${!own.d&&w<KG.need?`<button class="btn" data-act="kbl" ${MS.bl<1?'disabled':''} style="height:30px;font-size:11px;padding:0 8px">加護の印を使う(+${KG.bl}勝 ・ 所持${MS.bl})</button>`:''}</div>
+        ${own.d?'<div style="font-size:12px;color:#9fe0ff">ダイヤのカードを入手済みです</div>':`<div class="lbl" style="margin-top:2px">ダイヤに仕上げる条件</div><ul class="kgq" style="margin:0;padding:0">${conds.map(x=>`<li class="${x[0]?'ok':''}">${x[0]?'✓':'・'} ${x[1]}</li>`).join('')}</ul><button class="btn gold" data-act="kdia" ${canD?'':'disabled'} style="height:32px">ダイヤのカードを作る</button>`}
+       </div>`;
+    }
+    show(head+body,'bgT',tab==='g'?'grid-template-rows:38px minmax(0,1fr)':'grid-template-columns:1fr 340px;grid-template-rows:38px minmax(0,1fr);gap:0 10px');
+    on('home',renderTitle);on('ktab',el=>{tab=el.dataset.v;draw()});
+    on('kpick',el=>{sel=+el.dataset.i;draw()});
+    on('keq',el=>{const t=el.dataset.t,id=CARDS[sel].id;if(t)MS.ceq[id]=t;else delete MS.ceq[id];saveMS();draw()});
+    on('kex',el=>{const t=el.dataset.t,id=CARDS[sel].id,p=t==='s'?KG.xS:KG.xG;if(MS.dust<p||MS.ct[t].includes(id))return;MS.dust-=p;kgGrant(t,id);saveMS();SFX.play('ding');toast(`<b>${esc(CARDS[sel].n)}が${TN[t]}になりました</b>星屑 -${p}<span></span>`);draw()});
+    on('kbl',()=>{if(MS.bl<1)return;MS.bl--;const id=CARDS[sel].id;MS.cw[id]=kgW(id)+KG.bl;saveMS();SFX.play('ding');draw()});
+    on('kgem',()=>{if(MS.dust<KG.xD)return;MS.dust-=KG.xD;MS.gem++;saveMS();SFX.play('gsr');toast(`<b>ダイヤの原石を手に入れました</b>星屑 -${KG.xD}<span></span>`);draw()});
+    on('kdia',()=>{const id=CARDS[sel].id;const m=modal(`<h3 class="ttl" style="font-size:17px">ダイヤのカードを作りますか</h3><p class="sub">${esc(CARDS[sel].n)}をダイヤにします。ダイヤの原石1個と${KG.dp}ドラクマを使います。</p><div class="row" style="justify-content:flex-end"><button class="btn" data-act="no">やめる</button><button class="btn gold" data-act="yes">作る</button></div>`);
+      m.querySelector('[data-act="no"]').onclick=()=>m.remove();
+      m.querySelector('[data-act="yes"]').onclick=()=>{if(MS.gem<1||(MS.coins||0)<KG.dp||kgW(id)<KG.need||!MS.ct.g.includes(id)||MS.ct.d.includes(id)){m.remove();return}MS.gem--;MS.coins-=KG.dp;kgGrant('d',id);MS.ceq[id]='d';saveMS();m.remove();SFX.play('gsr');toast(`<b>${esc(CARDS[sel].n)}がダイヤになりました!</b><span></span>`);draw()}});
+    const go=n=>{const p=n===1?KG.p1:KG.p10;if(busy||(MS.coins||0)<p)return;busy=true;MS.coins-=p;const res=kgPull(n);saveMS();mCheck();draw();kgStage(res,()=>{busy=false;draw()})};
+    on('k1',()=>go(1));on('k10',()=>go(10));
   };
   draw();
 }
@@ -2242,7 +2400,9 @@ async function rankModal(){
 /* 対戦相手の紹介(マッチング直後) */
 const AVSET=['owl','helmet','laurel','lyre','sandals','trident',...GI.filter(g=>g.k==='av').map(g=>g.id),...Object.values(RK_REW).filter(r=>r[0]==='av').map(r=>r[1])];
 const TITLE_OK=t=>(typeof t==='string'&&GTITLES.includes(t))?t:'';
-const helloData=()=>({name:myName(),av:MS.eq.av,ti:MS.eq.title});
+const cleanCT=x=>{const o={};if(x&&typeof x==='object')for(const c of CARDS)if(TRS.includes(x[c.id]))o[c.id]=x[c.id];return o};
+const myCT=()=>{const o={};for(let i=0;i<CARDS.length;i++){const t=tierOf(0,i);if(t)o[CARDS[i].id]=t}return o};
+const helloData=()=>({name:myName(),av:MS.eq.av,ti:MS.eq.title,ct:myCT()});
 const num0=v=>Math.max(0,Math.floor(+v)||0);
 function statTxt(j,fb){
   if(!j)return fb!=null?`レート <b style="font:800 18px 'Shippori Mincho B1',serif;color:#f0c555">${num0(fb)}</b>`:'戦績を取得できませんでした';
@@ -2349,9 +2509,10 @@ function mkBot(gen,me,tk){
     else if(kind==='pc'){B.hpc[data.r]=true;tryReveal(data.r)}
     else if(kind==='pr'){B.hpr[data.r]=data.card;tryResolve(data.r)}
   };
-  B.start=()=>{B.g=NET.R.g;out('hello',{name:prof.name,av:prof.av,ti:prof.ti});after(rb(8,28),commitDeck)};
+  B.start=()=>{B.g=NET.R.g;out('hello',{name:prof.name,av:prof.av,ti:prof.ti,ct:botCT()});after(rb(8,28),commitDeck)};
   return B;
 }
+function botCT(){const o={},p=Math.random();if(p<.4)return o;for(const c of CARDS){const r=Math.random();if(r<.22)o[c.id]='s';else if(r<.3)o[c.id]='g';else if(r<.32)o[c.id]='d'}return o}
 async function startBot(gen){
   if(NET.bot||NET.botBusy)return;NET.botBusy=true;
   const code=NET.code;let me=null,tk=null,old=false;
@@ -2370,7 +2531,7 @@ async function startBot(gen){
 /* --- 受信したメッセージの処理 --- */
 async function handle(m){
   const R=NET.R;if(!R)return;const d=m.data||{},s=NET.seat,o=1-s;
-  if(m.kind==='hello'){if(R.hello[o]==null){R.hello[o]=cn(d.name)||(o?'ゲスト':'ホスト');R.pi[o]={av:AVSET.includes(d.av)?d.av:'owl',ti:TITLE_OK(d.ti)}}return advance()}
+  if(m.kind==='hello'){if(R.hello[o]==null){R.hello[o]=cn(d.name)||(o?'ゲスト':'ホスト');R.pi[o]={av:AVSET.includes(d.av)?d.av:'owl',ti:TITLE_OK(d.ti),ct:cleanCT(d.ct)}}return advance()}
   if(d.g!==R.g){if(d.g>R.g)R.fut.push(m);return}
   switch(m.kind){
   case 'dc':if(R.dk[o]==null&&typeof d.h==='string'&&d.h.length===64)R.dk[o]=d.h;break;
@@ -2526,7 +2687,7 @@ function onNet(m){
   case 'rdy':if(G&&G.resTok&&G.resR===m.r){const h=document.getElementById('rdhint');if(h)h.textContent='相手は準備OKです';if(G.resGo)G.resGo()}break;
   case 'opp':if(!m.on)SFX.play('blip');netBanner(m.on?'':'相手の接続が切れました。戻るのを待っています…');break;
   case 'opp_again':if(G){G.oppAgain=true;const h=document.getElementById('againhint');if(h)h.textContent='相手が「もう一度」を希望しています'}break;
-  case 'build':{newOnline(m.names);G.rated=NET.mode==='random';const op=(NET.R&&NET.R.pi[1-NET.seat])||{};G.oppAv=op.av;G.oppTi=op.ti;SFX.play('ding');if(m.first)matchIntro();else buildFor(0);break}
+  case 'build':{newOnline(m.names);G.rated=NET.mode==='random';const op=(NET.R&&NET.R.pi[1-NET.seat])||{};G.oppAv=op.av;G.oppTi=op.ti;G.tier=op.ct||{};SFX.play('ding');if(m.first)matchIntro();else buildFor(0);break}
   case 'reveal':G.names=m.names;G.orig=[m.orig[0].slice(),m.orig[1].slice()];G.decks=[m.orig[0].slice(),m.orig[1].slice()];renderSwap(0);break;
   case 'turn':G.S=mkS(m.view);G.decks[0]=m.view.me.deck.slice();G.log=[];G.picks=[null,null];G.fin=null;G.wantFin=false;nextPick(0);break;
   case 'result':G.S=mkS(m.view);G.log.push(m.L);renderResult(m.L);break;
