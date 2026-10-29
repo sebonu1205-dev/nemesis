@@ -275,6 +275,7 @@ button.card{cursor:pointer}
 .card.tr-s .kw,.card.tr-g .kw,.card.tr-d .kw{color:#2a1c10}
 
 /* card gacha (kg) */
+.godth{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);z-index:40;display:flex;align-items:center;gap:8px;background:rgba(20,14,9,.95);border:1px solid #d9a93f;border-radius:20px;padding:6px 16px;font-size:13px;color:#f3e8d2;box-shadow:0 4px 14px rgba(0,0,0,.6)}.godth img{width:26px;height:26px;border-radius:50%}
 /* kg extra fx */
 .kgforge{position:absolute;inset:0;z-index:12;overflow:hidden;background:radial-gradient(circle at 50% 45%,#1d1030,#05030a 80%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;animation:kgin .4s ease-out}
 .kgforge .fgs{position:relative;width:200px;height:190px;display:flex;align-items:flex-end;justify-content:center}
@@ -852,6 +853,7 @@ function rollout(T,me){
   const f=finalWinner(T);return f.w===-1?0.5:(f.w===me?1:0);
 }
 function cpuChoose(G){
+  if(G.god!=null&&typeof godChoose==='function')return godChoose(G);
   const S=G.S,me=1,opp=0,hand=S.p[me].hand;
   if(G.level==='easy')return rand(hand);
   let belief=G.orig[opp].filter(c=>!S.p[opp].used.includes(c));
@@ -1321,6 +1323,59 @@ function renderTitle(){
   };
   draw();bind();
 }
+
+/* ===== 神のAI: 完全読み(5ラウンドを最後まで解き、最善の混ぜ方で選ぶ。相手の手札は見ない) ===== */
+function godSolveMat(M){
+  const m=M.length,n=M[0].length;
+  if(m===1){let v=1,j0=0;for(let j=0;j<n;j++)if(M[0][j]<v){v=M[0][j];j0=j}const q=Array(n).fill(0);q[j0]=1;return{v,p:[1],q}}
+  if(n===1){let v=0,i0=0;for(let i=0;i<m;i++)if(M[i][0]>v){v=M[i][0];i0=i}const p=Array(m).fill(0);p[i0]=1;return{v,p,q:[1]}}
+  let mm=-1,MM=2,ai=0,bj=0;
+  for(let i=0;i<m;i++){let r=2;for(let j=0;j<n;j++)if(M[i][j]<r)r=M[i][j];if(r>mm){mm=r;ai=i}}
+  for(let j=0;j<n;j++){let c=-1;for(let i=0;i<m;i++)if(M[i][j]>c)c=M[i][j];if(c<MM){MM=c;bj=j}}
+  if(Math.abs(mm-MM)<1e-12){const p=Array(m).fill(0),q=Array(n).fill(0);p[ai]=1;q[bj]=1;return{v:mm,p,q}}
+  const W=m+n+1,T=[];
+  for(let i=0;i<m;i++){const r=new Array(W).fill(0);for(let j=0;j<n;j++)r[j]=M[i][j]+1;r[n+i]=1;r[W-1]=1;T.push(r)}
+  const ob=new Array(W).fill(0);for(let j=0;j<n;j++)ob[j]=-1;T.push(ob);
+  const bs=[];for(let i=0;i<m;i++)bs.push(n+i);
+  for(let it=0;it<200;it++){
+    let c=-1;for(let j=0;j<W-1;j++)if(T[m][j]<-1e-10){c=j;break}
+    if(c<0)break;
+    let r=-1,bt=1e18;for(let i=0;i<m;i++)if(T[i][c]>1e-10){const t=T[i][W-1]/T[i][c];if(t<bt-1e-12){bt=t;r=i}}
+    if(r<0)break;
+    const pv=T[r][c];for(let j=0;j<W;j++)T[r][j]/=pv;
+    for(let i=0;i<=m;i++)if(i!==r){const f=T[i][c];if(f!==0)for(let j=0;j<W;j++)T[i][j]-=f*T[r][j]}
+    bs[r]=c}
+  const z=T[m][W-1],y=new Array(n).fill(0);for(let i=0;i<m;i++)if(bs[i]<n)y[bs[i]]=T[i][W-1];
+  const p=[];for(let i=0;i<m;i++)p.push(T[m][n+i]/z);
+  return{v:1/z-1,p,q:y.map(x=>x/z)}}
+let GMEMO=new Map();
+const gKey=S=>{let k=S.round;for(const q of S.p){k+='|'+q.hand.slice().sort((a,b)=>a-b).join(',')+'/'+q.used.slice(0,-1).sort((a,b)=>a-b).join(',')+'/'+(q.used.length?q.used[q.used.length-1]:'')+'/'+q.own+','+q.dec+','+q.prev+','+q.score}return k+'|'+S.p[0].deck.join(',')+'|'+S.p[1].deck.join(',')};
+function godSolve(S,root,g){
+  if(S.round>5){const f=finalWinner(S);return{v:f.w===-1?.5:(f.w===0?1:0)}}
+  let k;if(!root){k=gKey(S);const c=GMEMO.get(k);if(c!==undefined)return{v:c}}
+  const M=[];
+  for(const a of S.p[0].hand){const row=[];for(const b of S.p[1].hand){const T=cloneState(S),L={notes:[],names:['','']};resolve(T,[a,b],L);if(g.f)g.f(T,L);T.round++;row.push(godSolve(T,false,g).v)}M.push(row)}
+  const r=godSolveMat(M);if(!root)GMEMO.set(k,r.v);return r}
+/* 相手(あなた)の最終デッキは入れ替えで変わりうる。見えているのは公開デッキと、これまでに出した札だけ */
+function godChoose(G){
+  const g=GODS[G.god],S=G.S,orig=G.orig[0],used=S.p[0].used,hand1=S.p[1].hand;
+  GMEMO=new Map();
+  let cands=[{d:orig.slice(),w:.4}];
+  const opts=swapOptions(orig).map(o=>{const d=orig.slice();d[o.pos]=o.card;return d.slice().sort((a,b)=>a-b)}).filter(d=>used.every(c=>d.includes(c)));
+  const lim=S.round===1?4:S.round===2?10:99;
+  if(!used.every(c=>orig.includes(c))){cands=[]}
+  const pick=shuffle(opts.slice()).slice(0,lim);
+  if(cands.length===0&&pick.length===0)pick.push(orig.slice());
+  for(const d of pick)cands.push({d,w:(cands.length?.6:1)/Math.max(1,pick.length)});
+  const tot=cands.reduce((a,c)=>a+c.w,0),Q=new Array(hand1.length).fill(0);
+  for(const c of cands){
+    const T=cloneState(S);T.p[0].deck=c.d.slice();T.p[0].hand=c.d.filter(x=>!used.includes(x));
+    if(T.p[0].hand.length!==T.p[1].hand.length)continue;
+    const r=godSolve(T,true,g);r.q.forEach((x,i)=>Q[i]+=x*c.w/tot)}
+  GMEMO=new Map();
+  const sm=Q.reduce((a,b)=>a+b,0);if(!(sm>0))return rand(hand1);
+  let t=Math.random()*sm;for(let i=0;i<Q.length;i++){t-=Q[i];if(t<=0)return hand1[i]}
+  return hand1[hand1.length-1]}
 /* ===== 神々との対戦(1人用 / 初回クリアのみ報酬) ===== */
 const GODS=[
  {id:'hermes',n:'ヘルメス',ep:'旅と伝令の神',lv:'easy',d:[1,6,12,17,19],rule:'韋駄天: 対戦の開始時から、ヘルメスは得点を1点持っている',rw:{coins:100,dust:10},init:S=>{S.p[1].score+=1}},
@@ -1342,14 +1397,14 @@ function renderGods(){
   BGM.set('title');
   const cards=GODS.map((g,i)=>{const ok=godOpen(i),cl=!!MS.gods[g.id];
     return `<div class="panel col" style="gap:4px;padding:8px 10px;${ok?'':'opacity:.55'}"><div class="row" style="justify-content:space-between;flex-wrap:nowrap"><b style="font:800 16px 'Shippori Mincho B1',serif">${esc(g.n)}<small style="font:400 10.5px sans-serif;color:#b8a68a;margin-left:6px">${esc(g.ep)}</small></b><span class="sub" style="font-size:10.5px;white-space:nowrap">${cl?'✓ クリア済み':ok?'':'未解放'}</span></div><div class="sub" style="font-size:11px;line-height:1.5">${ok?esc(g.rule):'前の神に勝つと解放されます'}</div>${ok?`<div class="row" style="gap:3px">${g.d.map(miniH).join('')}</div>`:''}<div class="row" style="justify-content:space-between;flex-wrap:nowrap;margin-top:auto"><span class="sub" style="font-size:10.5px;color:#e6b34a">${cl?'報酬は受け取り済み':'初回報酬: '+godRwTxt(g.rw)}</span><button class="btn gold" data-act="gst" data-i="${i}" ${ok?'':'disabled'} style="height:26px;padding:0 12px">${cl?'もう一度':'挑む'}</button></div></div>`}).join('');
-  show(`<div class="hd"><div class="hl"><span class="ttl">神々との対戦</span><span class="sub">神ごとの特別ルール ・ 初回クリアのみ報酬</span></div><button class="btn" data-act="home" style="height:28px;padding:0 14px">戻る</button></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;overflow:auto;align-content:start;min-height:0">${cards}</div>`,'bgT','grid-template-rows:38px minmax(0,1fr)');
+  show(`<div class="hd"><div class="hl"><span class="ttl">神々との対戦</span><span class="sub">神は先を完全に読み切ります ・ 特別ルール ・ 初回クリアのみ報酬</span></div><button class="btn" data-act="home" style="height:28px;padding:0 14px">戻る</button></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;overflow:auto;align-content:start;min-height:0">${cards}</div>`,'bgT','grid-template-rows:38px minmax(0,1fr)');
   on('home',renderTitle);on('gst',el=>startGod(+el.dataset.i));
 }
 function startGame(mode,level){
   G={mode,level,names:mode==='cpu'?['あなた','CPU']:['プレイヤー1','プレイヤー2'],decks:[null,null],orig:[null,null],S:null,picks:[null,null],log:[],pool:'A'};
   if(mode==='cpu'){
     ANIM=true;show(`<div class="center" style="grid-column:1/-1;justify-content:flex-start;padding-top:18px"><div class="panel center" style="padding:14px 28px"><img class="avt" src="${IC.helmet}" alt=""><h2 class="ttl">対戦相手を探しています<span class="dots"></span></h2><p class="sub" id="mtxt">&nbsp;</p></div></div>`,'bgM','grid-template-rows:1fr');
-    setTimeout(()=>{const t=document.getElementById('mtxt');if(t)t.textContent=`CPU(${level==='easy'?'やさしい':'ふつう'})が見つかりました`},900);SFX.at(900,'ding');
+    setTimeout(()=>{const t=document.getElementById('mtxt');if(t)t.textContent=`${G&&G.god!=null?esc(GODS[G.god].n):'CPU('+(level==='easy'?'やさしい':'ふつう')+')'}が見つかりました`},900);SFX.at(900,'ding');
     setTimeout(()=>buildFor(0),1700);
   }else buildFor(0);
 }
@@ -1550,6 +1605,8 @@ function renderPick(i){
       G.picks[i]=G.chosen;
       if(G.mode==='online'){netSend({t:'pick',card:G.chosen});waitPick(PICK_SEC+STALL_EXTRA);return}
       if(G.mode==='duo'&&i===0){pass(1,()=>renderPick(1),'出すカードを選びます。');return}
+      if(G.mode==='cpu'&&G.god!=null&&!G.les&&!G.tut){const ov=document.createElement('div');ov.className='godth';ov.innerHTML=`<img src="${IC.helmet}" alt=""><b>${esc(GODS[G.god].n)}が先を読んでいます</b><span class="dots"></span>`;$s.appendChild(ov);
+        setTimeout(()=>{try{G.picks[1]=cpuChoose(G)}catch(e){G.picks[1]=rand(S.p[1].hand)}ov.remove();doResolve()},80);return}
       if(G.mode==='cpu'){G.picks[1]=G.les?G.les.oc:(G.tut?TUT_R[S.round-1].opp:cpuChoose(G))}
       if(G.tut||G.les)ghide();
       doResolve();
@@ -1690,7 +1747,7 @@ const mcoin=m=>m.c||(m.goal>=5?120:80);
 const rwName=r=>r[0]==='back'?`カードの裏「${BKN[r[1]]}」`:r[0]==='av'?`アイコン「${AVN[r[1]]}」`:`称号「${r[1]}」`;
 function loadMS(){let m=null;try{m=JSON.parse(localStorage.getItem('gm1')||'null')}catch(e){}
   m=m&&typeof m==='object'?m:{};m.st=m.st||{};m.done=m.done||{};m.cardsSeen=m.cardsSeen||[];m.dexSeen=m.dexSeen||[];m.lessSeen=m.lessSeen||[];m.eq=Object.assign({back:'std',av:'owl',title:''},m.eq||{});m.own=Object.assign({back:[],av:[],title:[]},m.own||{});m.coins=m.coins||0;
-  m.ct=Object.assign({s:[],g:[],d:[]},m.ct||{});for(const t of['s','g','d'])if(!Array.isArray(m.ct[t]))m.ct[t]=[];m.ceq=m.ceq&&typeof m.ceq==='object'?m.ceq:{};m.cw=m.cw&&typeof m.cw==='object'?m.cw:{};m.dust=Math.max(0,+m.dust||0);m.gem=Math.max(0,+m.gem||0);m.bl=Math.max(0,+m.bl||0);m.gods=m.gods&&typeof m.gods==='object'?m.gods:{};m.fw=+m.fw||0;
+  m.ct=Object.assign({s:[],g:[],d:[]},m.ct||{});for(const t of['s','g','d'])if(!Array.isArray(m.ct[t]))m.ct[t]=[];m.ceq=m.ceq&&typeof m.ceq==='object'?m.ceq:{};m.cw=m.cw&&typeof m.cw==='object'?m.cw:{};m.dust=Math.max(0,+m.dust||0);m.gem=Math.max(0,+m.gem||0);m.bl=Math.max(0,+m.bl||0);m.gods=m.gods&&typeof m.gods==='object'?m.gods:{};if(m.gv!==2){m.gods={};m.gv=2}m.fw=+m.fw||0;
   if(!m.gs)m.gs=1;m.rp=Math.max(0,+m.rp||0);
   if(!m.mg){m.mg=1;for(const x of MIS)if(m.done[x.id]&&m.own[x.rw[0]]&&!m.own[x.rw[0]].includes(x.rw[1]))m.own[x.rw[0]].push(x.rw[1])}
   if(!m.tm){m.tm=1;for(const x of MIS)if(m.done[x.id]&&x.rw[0]==='title'&&!m.own.title.includes(x.rw[1]))m.own.title.push(x.rw[1])}
