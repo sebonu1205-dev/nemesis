@@ -703,6 +703,9 @@ img{-webkit-user-drag:none;user-drag:none}
 @keyframes rwup{0%,100%{box-shadow:0 0 0 rgba(143,208,160,0)}40%{box-shadow:0 0 22px rgba(143,208,160,.85)}}
 @keyframes rwdn{0%,100%{transform:translate(0)}20%{transform:translate(-4px,0)}40%{transform:translate(4px,0)}60%{transform:translate(-3px,0)}80%{transform:translate(2px,0)}}
 @media (prefers-reduced-motion:reduce){.rw,.rw.go .rcn i,.cfl,.rw.rate.show{animation:none!important}.rw .rpl,.rw.rate .rdt{opacity:1;transform:none}.cfl{display:none}}
+/* スクロールバーを非表示(スクロール操作は有効のまま) */
+*{scrollbar-width:none!important;-ms-overflow-style:none!important}
+*::-webkit-scrollbar{display:none!important;width:0!important;height:0!important;background:transparent!important}
 </style>
 <div id="stage"></div>
 <div id="rot" hidden><p style="font:800 20px 'Shippori Mincho B1',serif">スマホを横向きにしてください</p><p style="font-size:13px;color:#b8a68a">この画面は横向きで遊ぶように作っています。</p><button id="rotok" class="btn" style="background:#261c14;color:#f1e8d6">このまま遊ぶ</button></div>
@@ -1017,7 +1020,7 @@ const rkItem=r=>({k:r[0],id:r[1],n:r[0]==='back'?BKN[r[1]]:AVN[r[1]],r:'N'});
 const rkLvOf=(k,id)=>{for(const l of Object.keys(RK_REW))if(RK_REW[l][0]===k&&RK_REW[l][1]===id)return +l;return 0};
 function rkSync(){let ch=false;const lv=rkLv(MS.rp||0);for(const l of Object.keys(RK_REW).map(Number)){if(lv>=l){const r=RK_REW[l];if(!MS.own[r[0]].includes(r[1])){MS.own[r[0]].push(r[1]);ch=true}}}if(ch)saveMS()}
 function rkGame(){
-  if(!G||G.rkDone||G.tut||G.les||G.myEdit!=null||!G.S)return;
+  if(!G||G.rkDone||G.tut||G.les||G.god!=null||G.myEdit!=null||!G.S)return;
   G.rkDone=true;let w=null;
   try{w=G.mode==='online'&&G.fin?G.fin.w:finalWinner(G.S).w}catch(e){return}
   const pts=G.mode==='duo'?RK_PT.duo:(w===-1?RK_PT.draw:(w===0?RK_PT.win:RK_PT.lose));
@@ -1106,7 +1109,7 @@ const TIPS=[
  '勝負は全5ラウンド。最後は合計得点で決まります。',
  'ランダムマッチはレート戦。自分より強い相手に勝つほど、レートは大きく増えます。',
  'オンライン対戦には1手ごとに制限時間があります。迷いすぎないようにしましょう。',
- '試合に参加するだけでドラクマがもらえます。ためてガチャを引きましょう。',
+ '試合に参加するだけでドラクマがもらえます。1日の最初の勝利は100、ランダムマッチの勝利は50。ためてガチャを引きましょう。',
  'ガチャは10連でR以上が1つ確定。50回SRが出ないと、次はSRが確定します。',
  '図鑑では、各カードが強い相手・弱い相手を読めます。デッキ作りの参考に。',
  '「今日のお題」は毎日1問、詰めの問題が出ます。解くとドラクマがもらえます。',
@@ -1263,6 +1266,7 @@ function renderTitle(){
         ${mc('rand','ランダムマッチ','レート戦 ・ 世界のだれかと対戦',' gold')}
         ${mc('room','ルーム戦','合言葉で友達と対戦')}
         ${mc('cpu','CPUと対戦','ひとりで練習')}
+        <button class="mdc" data-act="god"><b>神々との対戦</b><span>ひとりで挑む ・ 初回クリアで報酬</span><i aria-hidden="true">›</i></button>
         ${mc('duo','2人で交代','1台の端末で2人で対戦')}
       </div>
     </div>
@@ -1300,7 +1304,7 @@ function renderTitle(){
       const ld=()=>{if(sp._l)return;sp._l=1;SFX.play('confirm');const t=sp.querySelector('.tap');if(t){t.outerHTML=`<div class="ldg"><div class="ldb"><i></i></div><span>読み込み中<span class="dots"></span></span><small>${TIPS[Math.floor(Math.random()*TIPS.length)]}</small></div>`}setTimeout(go,1500)};
       sp.addEventListener('click',ld);sp.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')ld()});sp.tabIndex=0;
       $s.querySelector('.scr').appendChild(sp);setTimeout(()=>sp.focus(),50)}
-    on('gacha',renderGacha);on('kgp',()=>renderKg());on('ms',()=>renderMissions());on('dex',()=>renderDex());on('snd',sndModal);on('rcn',renderRecent);on('rkpg',renderRank);on('xfer',xferModal);
+    on('gacha',renderGacha);on('god',renderGods);on('kgp',()=>renderKg());on('ms',()=>renderMissions());on('dex',()=>renderDex());on('snd',sndModal);on('rcn',renderRecent);on('rkpg',renderRank);on('xfer',xferModal);
     on('rules',()=>{const m=modal(`<h3 class="ttl" style="font-size:17px">ルールの要点</h3><ul>
      <li>デッキは全21枚(A・B・Cのプール各7枚)から5枚。数値の合計は22〜25、数値1〜3のカードは2枚まで。</li>
      <li>両者のデッキを同時に公開したあと、各自が1枚を、デッキにない別のカードに入れ替えられます(プールは問わず、任意。相手には見えません)。入れ替え後も、合計22〜25と数値1〜3は2枚までの条件を守ります。</li>
@@ -1316,6 +1320,30 @@ function renderTitle(){
     if(autoRoom)setTimeout(()=>openMode('room'),80);
   };
   draw();bind();
+}
+/* ===== 神々との対戦(1人用 / 初回クリアのみ報酬) ===== */
+const GODS=[
+ {id:'hermes',n:'ヘルメス',ep:'旅と伝令の神',lv:'easy',d:[1,6,12,17,19],rule:'韋駄天: 対戦の開始時から、ヘルメスは得点を1点持っている',rw:{coins:100,dust:10},init:S=>{S.p[1].score+=1}},
+ {id:'poseidon',n:'ポセイドン',ep:'海を統べる神',lv:'normal',d:[0,1,4,5,9],rule:'大波: 第2・第4ラウンドでポセイドンが勝つと、得点+1',rw:{coins:150,bl:1},f:(S,L)=>{if(L.w===1&&(S.round===2||S.round===4)){S.p[1].score+=1;L.notes.push('ポセイドンの大波: 得点+1')}}},
+ {id:'athena',n:'アテナ',ep:'知恵と戦の女神',lv:'normal',d:[2,7,10,12,13],rule:'知恵の盾: 引き分けになったラウンドは、アテナの得点+1',rw:{coins:200,dust:30},f:(S,L)=>{if(L.w===-1){S.p[1].score+=1;L.notes.push('アテナの知恵の盾: 得点+1')}}},
+ {id:'hades',n:'ハデス',ep:'冥府の王',lv:'normal',d:[0,3,5,8,20],rule:'冥府の重み: あなたがラウンドに勝って得る得点が1減る(0点まで)',rw:{coins:300,bl:2},f:(S,L)=>{if(L.w===0&&L.sc>=1){S.p[0].score-=1;L.notes.push('ハデスの冥府の重み: あなたの得点が1減った')}}},
+ {id:'zeus',n:'ゼウス',ep:'神々の王',lv:'normal',d:[0,12,14,15,16],rule:'雷霆: ゼウスがラウンドに勝つたび、得点+1',rw:{coins:500,gem:1,dust:50},f:(S,L)=>{if(L.w===1){S.p[1].score+=1;L.notes.push('ゼウスの雷霆: 得点+1')}}}
+];
+const godRwTxt=r=>[r.coins&&`ドラクマ ${r.coins}`,r.dust&&`星屑 ${r.dust}`,r.bl&&`加護の印 ${r.bl}`,r.gem&&`ダイヤの原石 ${r.gem}`].filter(Boolean).join(' ・ ');
+const godOpen=i=>i===0||!!MS.gods[GODS[i-1].id];
+function startGod(i){const g=GODS[i];startGame('cpu',g.lv);G.god=i;G.names[1]=g.n}
+function godEnd(w){const g=GODS[G.god];G.godRw=null;if(w!==0)return;
+  if(MS.gods[g.id]){G.godRw={again:1};return}
+  const r=g.rw;MS.gods[g.id]=1;MS.coins=(MS.coins||0)+(r.coins||0);MS.dust+=r.dust||0;MS.bl+=r.bl||0;MS.gem+=r.gem||0;G.godRw={rw:r};saveMS();
+  setTimeout(()=>toast(`<b>${esc(g.n)}に勝利!</b>${godRwTxt(r)}<span></span>`),1500)}
+function godRwH(){const g=GODS[G.god],r=G.godRw;
+  return `<div class="rwd"><div class="rw"><div class="rt"><span class="rl">神々との対戦 ・ ${esc(g.n)}</span><span class="rv" style="font-size:13px">${!r?'勝つとクリアです(初回のみ報酬があります)':r.again?'クリア済みのため、報酬はありません':'初回クリア報酬: '+godRwTxt(r.rw)}</span></div></div></div>`}
+function renderGods(){
+  BGM.set('title');
+  const cards=GODS.map((g,i)=>{const ok=godOpen(i),cl=!!MS.gods[g.id];
+    return `<div class="panel col" style="gap:4px;padding:8px 10px;${ok?'':'opacity:.55'}"><div class="row" style="justify-content:space-between;flex-wrap:nowrap"><b style="font:800 16px 'Shippori Mincho B1',serif">${esc(g.n)}<small style="font:400 10.5px sans-serif;color:#b8a68a;margin-left:6px">${esc(g.ep)}</small></b><span class="sub" style="font-size:10.5px;white-space:nowrap">${cl?'✓ クリア済み':ok?'':'未解放'}</span></div><div class="sub" style="font-size:11px;line-height:1.5">${ok?esc(g.rule):'前の神に勝つと解放されます'}</div>${ok?`<div class="row" style="gap:3px">${g.d.map(miniH).join('')}</div>`:''}<div class="row" style="justify-content:space-between;flex-wrap:nowrap;margin-top:auto"><span class="sub" style="font-size:10.5px;color:#e6b34a">${cl?'報酬は受け取り済み':'初回報酬: '+godRwTxt(g.rw)}</span><button class="btn gold" data-act="gst" data-i="${i}" ${ok?'':'disabled'} style="height:26px;padding:0 12px">${cl?'もう一度':'挑む'}</button></div></div>`}).join('');
+  show(`<div class="hd"><div class="hl"><span class="ttl">神々との対戦</span><span class="sub">神ごとの特別ルール ・ 初回クリアのみ報酬</span></div><button class="btn" data-act="home" style="height:28px;padding:0 14px">戻る</button></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;overflow:auto;align-content:start;min-height:0">${cards}</div>`,'bgT','grid-template-rows:38px minmax(0,1fr)');
+  on('home',renderTitle);on('gst',el=>startGod(+el.dataset.i));
 }
 function startGame(mode,level){
   G={mode,level,names:mode==='cpu'?['あなた','CPU']:['プレイヤー1','プレイヤー2'],decks:[null,null],orig:[null,null],S:null,picks:[null,null],log:[],pool:'A'};
@@ -1409,7 +1437,7 @@ function buildFor(i){
       if(G.mode==='online'){netSend({t:'deck',deck:G.decks[0]});waitScr('相手のデッキ編成を待っています','決めたデッキは、両者がそろうまで相手に見えません。',BUILD_SEC+STALL_EXTRA);return}
       if(i===0){
         if(G.mode==='duo')pass(1,()=>buildFor(1),'プレイヤー1のデッキは、まだ公開されません。');
-        else{G.decks[1]=G.tut?TUT[1].slice():randomLegal();startSwap()}
+        else{G.decks[1]=G.tut?TUT[1].slice():G.god!=null?GODS[G.god].d.slice():randomLegal();startSwap()}
       }else startSwap();
     });
   };
@@ -1467,10 +1495,10 @@ function afterSwap(i){
   if(i===0){
     if(G.mode==='duo'){pass(1,()=>renderSwap(1),'入れ替えを選びます。');return}
     ANIM=true;show(`<div class="center" style="grid-column:1/-1"><div class="panel center" style="padding:14px 28px"><img class="avt" src="${IC.helmet}" alt=""><h2 class="ttl">CPUが入れ替えを考えています<span class="dots"></span></h2></div></div>`,'bgT','grid-template-rows:1fr');
-    setTimeout(()=>{const o=cpuSwap(G);if(o){G.decks[1][o.pos]=o.card;G.decks[1].sort((a,b)=>a-b)}beginRounds()},400);
+    setTimeout(()=>{const o=G.god!=null?null:cpuSwap(G);if(o){G.decks[1][o.pos]=o.card;G.decks[1].sort((a,b)=>a-b)}beginRounds()},400);
   }else beginRounds();
 }
-function beginRounds(){G.S=mkState(G.decks);G.log=[];G.picks=[null,null];nextPick(0)}
+function beginRounds(){G.S=mkState(G.decks);if(G.god!=null&&GODS[G.god].init)GODS[G.god].init(G.S);G.log=[];G.picks=[null,null];nextPick(0)}
 function nextPick(i){
   if(G.mode==='duo')pass(i,()=>renderPick(i),i===0?`第${G.S.round}ラウンド。出すカードを選びます。`:'出すカードを選びます。');
   else renderPick(0);
@@ -1532,7 +1560,7 @@ function renderPick(i){
 function doResolve(){
   const S=G.S,L={notes:[],names:G.names,r:S.round,cards:G.picks.slice()};
   L.sc0=[S.p[0].score,S.p[1].score];
-  resolve(S,G.picks,L);G.log.push(L);S.round++;G.picks=[null,null];
+  resolve(S,G.picks,L);if(G.god!=null&&GODS[G.god].f)GODS[G.god].f(S,L);G.log.push(L);S.round++;G.picks=[null,null];
   renderResult(L);
 }
 function tagsH(L){
@@ -1610,14 +1638,14 @@ function renderFinalBody(){
   const kind=f.w===-1?'draw':(cpu?(f.w===0?'win':'lose'):'draw');
   const icon=f.w===-1?IC.draw:(cpu?(f.w===0?IC.win:IC.lose):IC.win);
   const msg=f.w===-1?'引き分け':(cpu?(f.w===0?'あなたの勝ち':(G.mode==='online'?esc(G.names[1])+'の勝ち':'CPUの勝ち')):`${esc(G.names[f.w])}の勝ち`);
-  try{REP.save(f)}catch(e){}
+  try{if(G.god==null)REP.save(f)}catch(e){}
   const rows=G.log.map(L=>`<tr><td>${L.r}</td><td>${esc(CARDS[L.cards[0]].n)}(${L.n[0]})</td><td>${esc(CARDS[L.cards[1]].n)}(${L.n[1]})</td><td>${L.w===-1?'引き分け':esc(G.names[L.w])+' +'+L.sc}</td></tr>`).join('');
   show(`<div class="hd"><div class="hl"><span class="ttl">最終結果</span></div>${quitBtn}</div>
    <div class="col" style="justify-content:safe center;gap:7px;min-height:0;overflow:auto">
      <div class="banner rb ${kind}" style="font-size:20px;padding:10px 14px;--bd:.3s"><img src="${icon}" alt="" style="width:44px;height:44px">${msg}</div>
      ${scoreH(S.p[0].score,S.p[1].score,0)}
-     <p class="sub">決まり手: ${esc(f.why)}</p>${rewardH()}<p class="sub" id="againhint" style="color:#e6b34a">${G.oppAgain&&!G.rated?'相手が「もう一度」を希望しています':''}</p>
-     <div class="row"><button class="btn gold" data-act="again">${G.rated?'次の対戦相手を探す':'もう一度遊ぶ'}</button><button class="btn" data-act="title">タイトルへ</button></div>
+     <p class="sub">決まり手: ${esc(f.why)}</p>${rewardH()}${G.god!=null?godRwH():''}<p class="sub" id="againhint" style="color:#e6b34a">${G.oppAgain&&!G.rated?'相手が「もう一度」を希望しています':''}</p>
+     <div class="row"><button class="btn gold" data-act="again">${G.god!=null?'もう一度挑む':G.rated?'次の対戦相手を探す':'もう一度遊ぶ'}</button>${G.god!=null?'<button class="btn" data-act="gods">神々の一覧へ</button>':''}<button class="btn" data-act="title">タイトルへ</button></div>
    </div>
    <div class="panel col" style="gap:6px;overflow:auto">
      <table><thead><tr><th>R</th><th>${esc(G.names[0])}</th><th>${esc(G.names[1])}</th><th>結果</th></tr></thead><tbody>${rows}</tbody></table>
@@ -1627,7 +1655,7 @@ function renderFinalBody(){
   rwStart();rkStart(G.gotCoin?1500:600);
   bindQuit();
   if(G.mode==='online'&&NET.oppGone)applyGone();
-  on('again',el=>{if(G.rated){startRoom('random');return}if(G.mode==='online'){netSend({t:'again'});el.disabled=true;el.textContent='相手を待っています…';return}startGame(G.mode,G.level)});on('title',renderTitle);
+  on('again',el=>{if(G.god!=null){startGod(G.god);return}if(G.rated){startRoom('random');return}if(G.mode==='online'){netSend({t:'again'});el.disabled=true;el.textContent='相手を待っています…';return}startGame(G.mode,G.level)});on('title',renderTitle);on('gods',renderGods);
 }
 
 
@@ -1662,7 +1690,7 @@ const mcoin=m=>m.c||(m.goal>=5?120:80);
 const rwName=r=>r[0]==='back'?`カードの裏「${BKN[r[1]]}」`:r[0]==='av'?`アイコン「${AVN[r[1]]}」`:`称号「${r[1]}」`;
 function loadMS(){let m=null;try{m=JSON.parse(localStorage.getItem('gm1')||'null')}catch(e){}
   m=m&&typeof m==='object'?m:{};m.st=m.st||{};m.done=m.done||{};m.cardsSeen=m.cardsSeen||[];m.dexSeen=m.dexSeen||[];m.lessSeen=m.lessSeen||[];m.eq=Object.assign({back:'std',av:'owl',title:''},m.eq||{});m.own=Object.assign({back:[],av:[],title:[]},m.own||{});m.coins=m.coins||0;
-  m.ct=Object.assign({s:[],g:[],d:[]},m.ct||{});for(const t of['s','g','d'])if(!Array.isArray(m.ct[t]))m.ct[t]=[];m.ceq=m.ceq&&typeof m.ceq==='object'?m.ceq:{};m.cw=m.cw&&typeof m.cw==='object'?m.cw:{};m.dust=Math.max(0,+m.dust||0);m.gem=Math.max(0,+m.gem||0);m.bl=Math.max(0,+m.bl||0);
+  m.ct=Object.assign({s:[],g:[],d:[]},m.ct||{});for(const t of['s','g','d'])if(!Array.isArray(m.ct[t]))m.ct[t]=[];m.ceq=m.ceq&&typeof m.ceq==='object'?m.ceq:{};m.cw=m.cw&&typeof m.cw==='object'?m.cw:{};m.dust=Math.max(0,+m.dust||0);m.gem=Math.max(0,+m.gem||0);m.bl=Math.max(0,+m.bl||0);m.gods=m.gods&&typeof m.gods==='object'?m.gods:{};m.fw=+m.fw||0;
   if(!m.gs)m.gs=1;m.rp=Math.max(0,+m.rp||0);
   if(!m.mg){m.mg=1;for(const x of MIS)if(m.done[x.id]&&m.own[x.rw[0]]&&!m.own[x.rw[0]].includes(x.rw[1]))m.own[x.rw[0]].push(x.rw[1])}
   if(!m.tm){m.tm=1;for(const x of MIS)if(m.done[x.id]&&x.rw[0]==='title'&&!m.own.title.includes(x.rw[1]))m.own.title.push(x.rw[1])}
@@ -1693,12 +1721,13 @@ function mGame(){
   if(!G||G.tut||G.counted||(G.mode!=='cpu'&&G.mode!=='online'))return;
   G.counted=true;
   let w;if(G.mode==='online'&&G.fin)w=G.fin.w;else w=finalWinner(G.S).w;
+  if(G.god!=null){godEnd(w);return}
   const sw=G.mode==='online'&&G.fin?G.fin.decks[0].join()!==G.fin.orig[0].join():G.decks[0].join()!==G.orig[0].join();
   const st=MS.st,add=k=>st[k]=(st[k]||0)+1;
   add('g');if(G.mode==='online')add('room');
   if(w===0){add('w');if(G.mode==='cpu'&&G.level==='normal')add('wn');if(G.mode==='online')add('roomW');if(sw)add('swW');if(!G.lostR)add('perf');if((G.maxDef||0)>=3)add('come')}
   if(sw)add('sw');
-  G.coinWin=w===0;G.gotCoin=G.coinWin?30:10;MS.coins=(MS.coins||0)+G.gotCoin;
+  G.coinWin=w===0;const dk=(d=>d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate())(new Date());let cn=G.coinWin?(G.rated?50:30):10;if(G.coinWin&&MS.fw!==dk){cn=100;MS.fw=dk;G.firstWin=true}G.gotCoin=cn;MS.coins=(MS.coins||0)+G.gotCoin;
   saveMS();mCheck();
 }
 function profH(){const dn=MIS.filter(m=>MS.done[m.id]).length;
@@ -2423,7 +2452,7 @@ function rewardH(){
   if(G.gotCoin){
     const g=num0r(G.gotCoin),after=num0r(MS.coins),before=Math.max(0,after-g),hit=after>=PRICE1&&before<PRICE1;
     const sub=after>=PRICE1?(hit?'ガチャが引けるようになった!':'ガチャが引けます'):`ガチャまで あと ${PRICE1-after}`;
-    cards.push(`<div class="rw rcoin${hit?' hit':''}" id="coinbox" data-from="${before}" data-to="${after}"><span class="rcn"><i></i></span><div class="rt"><span class="rl">ドラクマ(${G.coinWin?'勝利':'参加'})</span><span class="rv"><span class="rn">${before}</span><em class="rpl">+${g}</em></span><span class="rsub">${sub}</span></div></div>`);
+    cards.push(`<div class="rw rcoin${hit?' hit':''}" id="coinbox" data-from="${before}" data-to="${after}"><span class="rcn"><i></i></span><div class="rt"><span class="rl">ドラクマ(${G.firstWin?'今日の初勝利!':G.coinWin?(G.rated?'ランダムマッチ勝利':'勝利'):'参加'})</span><span class="rv"><span class="rn">${before}</span><em class="rpl">+${g}</em></span><span class="rsub">${sub}</span></div></div>`);
   }
   if(G.rated)cards.push(`<div class="rw rate" id="ratebox"><div class="rt"><span class="rl">レート</span><span class="rv"><span class="wt">集計中<span class="dots"></span></span></span></div></div>`);
   if(G.rk)cards.push(rkBarH());
