@@ -1146,7 +1146,7 @@ async function onlPing(){
   catch(e){ONL.bad++}}
 setInterval(onlPing,60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)onlPing()});
 /* ===== データ引継ぎ ===== */
-const XK=['gm1','nm_puz','nick','nm_myd','sfxv','bgmv','nm_rep'];
+const XK=['gm1','nm_puz','nick','nm_myd','sfxv','bgmv','nm_rep','nm_cpud','nm_cpuc'];
 const xHash=t=>{let h=2166136261;for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(36)};
 const xB64=t=>{const b=new TextEncoder().encode(t);let s='';b.forEach(c=>s+=String.fromCharCode(c));return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')};
 const xUn=t=>{t=t.replace(/-/g,'+').replace(/_/g,'/');while(t.length%4)t+='=';const s=atob(t),b=new Uint8Array(s.length);for(let i=0;i<s.length;i++)b[i]=s.charCodeAt(i);return new TextDecoder().decode(b)};
@@ -1275,7 +1275,7 @@ function renderTitle(){
    </div>`,'bgA','grid-template-rows:1fr')};
   const modeHtml=md=>{
     const nick=`<div><span class="lbl">ニックネーム(8文字まで)</span><div><input id="nick" class="inp" maxlength="8" value="${esc(NICK)}" placeholder="なまえ" style="width:100%"></div></div>`;
-    if(md==='cpu')return `<div><span class="lbl">CPUの強さ</span><div><div class="seg" role="group" aria-label="CPUの強さ"><button data-act="lv" data-v="easy" aria-pressed="${lv==='easy'}">やさしい</button><button data-act="lv" data-v="normal" aria-pressed="${lv==='normal'}">ふつう</button></div></div></div>`;
+    if(md==='cpu')return `<div><span class="lbl">CPUの強さ</span><div><div class="seg" role="group" aria-label="CPUの強さ"><button data-act="lv" data-v="easy" aria-pressed="${lv==='easy'}">やさしい</button><button data-act="lv" data-v="normal" aria-pressed="${lv==='normal'}">ふつう</button></div></div></div><div><span class="lbl">CPUのデッキ</span><select id="cpud" class="inp" style="width:100%" aria-label="CPUのデッキ">${cpuDeckList().map(x=>`<option value="${x[0]}"${x[0]===CPUDK?' selected':''}>${esc(x[1])}</option>`).join('')}</select>${cpuDeckK()?mydChips(cpuDeckK(),5):(CPUDK==='c'?'<p class="sub" style="margin:4px 0 0">下のボタンで、CPUのデッキを組みます。</p>':'<p class="sub" style="margin:4px 0 0">試合ごとに、ランダムなデッキを使います。</p>')}${CPUDK==='c'?`<div class="row" style="margin-top:6px"><button class="btn" data-act="cpue" style="height:28px;padding:0 12px">${CPUC?'デッキを組み直す':'デッキを組む'}</button></div>`:''}</div>`;
     if(md==='duo')return `<p class="sub">1台の端末を渡しながら遊びます。見せたくない場面では確認の画面が入ります。</p>`;
     if(md==='rand')return `${nick}<p class="sub" id="myrate" style="color:#f0c555;font-weight:700;margin:0">あなたのレート: 確認中…</p><p class="sub" style="margin:0;line-height:1.5">レート戦です。強い相手に勝つと大きく増え、弱い相手に負けると大きく減ります。途中で退出すると負けになります。</p><div class="row"><button class="btn" data-act="rk">ランキング</button></div>`;
     return `${nick}<div class="row" style="flex-wrap:nowrap"><button class="btn gold" data-act="mk" style="flex:1">部屋を作る</button><input id="rcode" class="inp" maxlength="4" value="${esc(PRE)}" placeholder="コード" style="width:84px;text-transform:uppercase;text-align:center;letter-spacing:.15em" aria-label="ルームコード" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" name="nm-room-code-x"><button class="btn" data-act="jn">入る</button></div>`};
@@ -1287,7 +1287,9 @@ function renderTitle(){
     m.querySelector('.mp').style.width='400px';
     m.querySelector('[data-act="mx"]').onclick=()=>m.remove();
     m.querySelectorAll('[data-act="lv"]').forEach(b=>b.onclick=()=>{lv=b.dataset.v;openMode(md)});
+    const cd=m.querySelector('#cpud');if(cd)cd.onchange=()=>{CPUDK=cd.value;try{localStorage.setItem('nm_cpud',CPUDK)}catch(e){}SFX.play('select');if(CPUDK==='c'&&!CPUC){m.remove();cpuEdit();return}openMode(md)};
     const q=a=>m.querySelector(`[data-act="${a}"]`);
+    if(q('cpue'))q('cpue').onclick=()=>{m.remove();cpuEdit()};
     const ni=m.querySelector('#nick');if(ni)ni.oninput=()=>{NICK=ni.value;try{localStorage.setItem('nick',NICK)}catch(e){}};
     const sv=()=>{if(ni){NICK=ni.value;try{localStorage.setItem('nick',NICK)}catch(e){}}};
     if(q('go'))q('go').onclick=()=>startGame(md,lv);
@@ -1320,6 +1322,7 @@ function renderTitle(){
      m.querySelector('[data-act="close"]').onclick=()=>m.remove()});
     on('tut',startTutorial);on('myd',renderMyDecks);on('rkm',rankModal);
     if(autoRoom)setTimeout(()=>openMode('room'),80);
+    if(OPENMODE){const o=OPENMODE;OPENMODE=null;setTimeout(()=>openMode(o),120)}
   };
   draw();bind();
 }
@@ -1456,7 +1459,7 @@ function buildFor(i){
     const cnt=p=>d.filter(k=>CARDS[k].p===p).length;
     const slots=[...d].sort((a,b)=>a-b);
     const f=G.foc!=null?CARDS[G.foc]:null;
-    showT(`${`<div class="hd"><div class="hl"><span class="ttl">${ED?'マイデッキ'+(G.myEdit+1)+'の編集':esc(G.names[i])+'のデッキ編成'}</span><span class="sub">3つのプールから、合わせて5枚を選びます。${ED?'':(G.mode==='duo'?'相手には見せないでください。':'')}</span></div>${ED?'<button class="btn" data-act="mback" style="height:28px;padding:0 14px">戻る</button>':quitBtn}</div>`}
+    showT(`${`<div class="hd"><div class="hl"><span class="ttl">${ED?(G.cpuEd?'CPUのデッキの編集':'マイデッキ'+(G.myEdit+1)+'の編集'):esc(G.names[i])+'のデッキ編成'}</span><span class="sub">3つのプールから、合わせて5枚を選びます。${ED?'':(G.mode==='duo'?'相手には見せないでください。':'')}</span></div>${ED?'<button class="btn" data-act="mback" style="height:28px;padding:0 14px">戻る</button>':quitBtn}</div>`}
     <div class="col" style="width:148px;grid-column:1">
       ${['A','B','C'].map(p=>`<button class="tab" data-act="pool" data-v="${p}" aria-pressed="${pool===p}"><img src="${IC['pool'+p]}" alt="${p}"><span><span style="display:block;font-weight:700;font-size:12px;letter-spacing:-.04em;white-space:nowrap">${POOLN[p]}</span><span class="lbl">選択 ${cnt(p)}</span></span></button>`).join('')}
       ${ED||G.tut?'':'<button class="btn" data-act="my" style="width:100%;height:30px;padding:0;font-size:12px">マイデッキから選ぶ</button>'}
@@ -1475,7 +1478,7 @@ function buildFor(i){
       <div class="row" style="margin-top:auto;flex-wrap:nowrap;gap:5px"><button class="btn" style="flex:1;padding:0;font-size:12px" data-act="pre" ${G.tut?'disabled':''}>おすすめ</button><button class="btn" style="flex:1;padding:0;font-size:12px" data-act="rnd" ${G.tut?'disabled':''}>ランダム</button><button class="btn gold" style="flex:1.2;padding:0;font-size:12px" data-act="ok" ${legal(d)?'':'disabled'}>${ED?'保存':'決定'}</button></div>
     </div>`,'bgT','grid-template-columns:148px 1fr 228px;grid-template-rows:36px minmax(0,1fr)');
     bindQuit();
-    on('mback',()=>{const m=modal(`<h3 class="ttl" style="font-size:17px">編集をやめますか</h3><p class="sub">保存していない変更は消えます。</p><div class="row" style="justify-content:flex-end"><button class="btn" data-act="x">続ける</button><button class="btn gold" data-act="y">戻る</button></div>`);m.querySelector('[data-act="x"]').onclick=()=>m.remove();m.querySelector('[data-act="y"]').onclick=()=>renderMyDecks()});
+    on('mback',()=>{const m=modal(`<h3 class="ttl" style="font-size:17px">編集をやめますか</h3><p class="sub">保存していない変更は消えます。</p><div class="row" style="justify-content:flex-end"><button class="btn" data-act="x">続ける</button><button class="btn gold" data-act="y">戻る</button></div>`);m.querySelector('[data-act="x"]').onclick=()=>m.remove();m.querySelector('[data-act="y"]').onclick=()=>{if(G.cpuEd){OPENMODE='cpu';renderTitle()}else renderMyDecks()}});
     on('my',()=>{const L=MYD.list();const m=modal(`<div class="row" style="justify-content:space-between;flex-wrap:nowrap"><h3 class="ttl" style="font-size:17px">マイデッキ</h3><span class="sub" style="flex:1;text-align:right">選ぶと、いまのデッキと置き換わります</span><button class="btn" data-act="x" style="height:26px;padding:0 12px">閉じる</button></div>${L.map((x,n)=>x?`<button class="btn" data-m="${n}" style="display:block;width:100%;height:auto;padding:6px 10px;margin-top:6px;text-align:left"><b style="font-size:13px">${esc(x.n)}</b> <span class="sub" style="font-size:11px">合計 ${sumDeck(x.k)}</span>${mydChips(x.k,5)}</button>`:`<div class="sub" style="margin-top:6px;padding:8px 10px;border:1px dashed #5a4630;border-radius:8px;color:#8a745a">マイデッキ${n+1}: まだ作られていません</div>`).join('')}<p class="sub" style="font-size:11px;margin:6px 0 0">マイデッキは、タイトル画面の「マイデッキ」で作れます。</p>`);
       m.querySelector('[data-act="x"]').onclick=()=>m.remove();
       m.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{const x=L[+b.dataset.m];if(x){G.sel=x.k.slice();G.foc=null}m.remove();draw()})});
@@ -1487,12 +1490,13 @@ function buildFor(i){
       m.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{G.sel=PRESETS[+b.dataset.p].k.slice();G.foc=null;draw()})});
     on('clr',()=>{G.sel=[];draw()});
     on('ok',()=>{
+      if(ED&&G.cpuEd){CPUC=G.sel.slice().sort((x,y)=>x-y);CPUDK='c';try{localStorage.setItem('nm_cpuc',JSON.stringify(CPUC));localStorage.setItem('nm_cpud','c')}catch(e){}OPENMODE='cpu';renderTitle();return}
       if(ED){const a=MYD.list(),old=a[G.myEdit];a[G.myEdit]={n:old?old.n:'マイデッキ'+(G.myEdit+1),k:G.sel.slice().sort((x,y)=>x-y)};MYD.save(a);renderMyDecks();return}
       G.decks[i]=G.sel.slice().sort((a,b)=>a-b);
       if(G.mode==='online'){netSend({t:'deck',deck:G.decks[0]});waitScr('相手のデッキ編成を待っています','決めたデッキは、両者がそろうまで相手に見えません。',BUILD_SEC+STALL_EXTRA);return}
       if(i===0){
         if(G.mode==='duo')pass(1,()=>buildFor(1),'プレイヤー1のデッキは、まだ公開されません。');
-        else{G.decks[1]=G.tut?TUT[1].slice():G.god!=null?GODS[G.god].d.slice():randomLegal();startSwap()}
+        else{G.decks[1]=G.tut?TUT[1].slice():G.god!=null?GODS[G.god].d.slice():G.mode==='cpu'?cpuDeck():randomLegal();startSwap()}
       }else startSwap();
     });
   };
@@ -2103,6 +2107,14 @@ const PRESETS=[
  {n:'読み返し',d:'負けを引き分けにし、逆転を狙う。合計22で同点に強い',k:[2,10,11,12,13]},
  {n:'バランス型',d:'3つのプールを混ぜた、扱いやすい形',k:[2,5,1,12,13]}
 ].map(p=>({...p,k:p.k.slice().sort((a,b)=>a-b)}));
+/* CPUのデッキ選択: r=毎回ランダム / p0..p3=おすすめ / m0..m2=マイデッキ */
+let CPUDK='r';try{CPUDK=localStorage.getItem('nm_cpud')||'r'}catch(e){}
+let CPUC=null,OPENMODE=null;try{const a=JSON.parse(localStorage.getItem('nm_cpuc'));if(Array.isArray(a)&&legal(a))CPUC=a.slice().sort((x,y)=>x-y)}catch(e){}
+const cpuDeckList=()=>{const o=[['r','毎回ランダム',null]];PRESETS.forEach((p,i)=>o.push(['p'+i,'おすすめ: '+p.n,p.k]));MYD.list().forEach((x,i)=>{if(x)o.push(['m'+i,'マイデッキ'+(i+1)+': '+x.n,x.k])});o.push(['c','自分で選ぶ'+(CPUC?'':'(未設定)'),CPUC]);return o};
+const cpuEdit=()=>{G={mode:'cpu',level:'easy',names:['あなた','CPU'],decks:[null,null],orig:[null,null],S:null,picks:[null,null],log:[],pool:'A',myEdit:0,cpuEd:true,myInit:CPUC?CPUC.slice():[]};buildFor(0)};
+const cpuDeckK=()=>{const o=cpuDeckList().find(x=>x[0]===CPUDK);return o&&o[2]?o[2]:null};
+const cpuDeck=()=>{const k=cpuDeckK();return k&&legal(k)?k.slice():randomLegal()};
+
 const DEX={
  perseus:{tip:'数値2でも、相手が6以上の偶数(6・8・10)を出せば勝てます。スフィンクス(10)・ハデス(8)・第1・第2ラウンドのイカロス(10)・負けた次のプロメテウス(10)などが標的で、勝てば得点+2です。',weak:'相手が奇数(5・7・9・11)や5以下だと、数値2のまま負けます。ゼウスの条件勝ちを受けない効果に防がれ、パンドラに無効にされます。'},
  hera:{tip:'数値7の札で、相手の数値がちょうど同じ7になったときに、引き分けではなく勝ちます。第3ラウンドのイカロス(7)や、使用済み3枚以上のオデュッセウス(7)などが標的です。',weak:'数値が違えば普通の数値勝負なので、8以上の札には負けます。ゼウスに防がれ、パンドラに無効にされます。勝利時の効果もありません。'},
