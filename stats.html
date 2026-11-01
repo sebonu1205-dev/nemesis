@@ -3,172 +3,258 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ネメシス NEMESIS - プレイ統計・戦績分析</title>
+  <title>ネメシス NEMESIS - 戦略分析ダッシュボード</title>
   <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --bgT: url(data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAsHCAoIBwsKCQoMDAsNEBsSEA8PECEYGRQbJyMpKScjJiUsMT81LC47LyUmNko3O0FDRkdGKjRNUkxEUj9FRkP/2wBDAQwMDBAOECASEiBDLSYtQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0P/wAARCAGSA4QDASIAAhEBAxEB/8QAGwAAAwADAQEAAAAAAAAAAAAAAAECAwQFBgf/xABTEAACAQMCAgUHBQsICAYDAQAAAQIDBBEFIRIxE0FRVJMGFBVhkbHRInFzgZIjJCUyNDVEVXJ0siYzRVOhosHCFjZCRlJWYmNDg4SU4fBkZfGj/8QAFwEBAQEBAAAAAAAAAAAAAAAAAAECA//EAB8RAQACAwEBAQEBAQAAAAAAAAABEgIRMWEhQVHRkf/aAAwDAQACEQMRAD8A+UABu2FGhOjcVbiM5Kkk8RljmyzOkhpgbvS6b10LjxEHS6Z/UXHiIljTSGjd6XTP6i58RD6XTO73PiIWNNEZu9Lpn9Rc+Ih9Lpnd7nxENppo5A3+l0vu914iF0ul93ufEQt4aaIG90ul93ufEQ1V0vu914iFvDTRFnB0Ol0ru914iH0mld2uvEQ2ac7IbnR6TSu7XXiIfS6V3a68RCyac4e50Ol0lfo114qH02kd2uvFRbLpzx8joKtpPdrrxUHTaQ/0e68VC3iaaAHQVXSO7XXioaq6R3W78VFt4Vc7AYOl0ukd2u/FQdLpHdrvxELJVzR4Ol0uj91u/FQdNo/dbvxULeFXNA6SraN3a78VD6fRu7XfioW8KuaB0+m0but54qDpdG7reeKhbwq5gHU6XRu63nioOl0but54qFvCrloHzOp02i91vPFQdPovdbvxULeFXMGdNVtE7teeKh9Noq/RbzxULeFXIkm3hDXM6vTaKv0W88VAq2i91vPFQt4Vc0MHUVXRX+iXnioOl0Xut54qFvEq5YdR1Ol0Xut54qH02id1vPFQt4tXKA6vTaKv0W88VB0uiP8ARbzxULeFfXLQ+Z1Ol0Xut54qDptF7reeKhbwq5WNwOr02id1vPFQum0Tut54qFvCrlhg6nS6L3W88VD6bRe63nioW8KuWCOp02i91vPFQdLovdbzxULeFXLGdPptF7peeKh9NovdbzxULeJVytxnU6bRe63nioOm0Xul54qFvFq5YczqdNovdbzxULptF7reeKhbxKuZgMHU6bRe63nioOm0Xut54qFvCrlDOn02i91vPFQ+l0Xut54qFvCrlgdTptF7pe+KhdNovdbzxUL+FXLDB1Om0Xu154qBVtF6rW88VC3i1csMbHU6bRO63i/81B02i91vPFQt4V9csWDq9NovdbzxUHS6L12t54qFvCrlBg6nTaI/0W88VD6bRe63nioW8KuVjcGdXpdF7peeKhdNoq/RbzxULeFXM5iaOoq+i9VreeKg6XRe7XnioW8KuWGTqdJoy/RbzxULpdG7reeKhbxKuYxHT6fRu63fioOm0bqtrzxULeLVzB9R0nW0bu154qBVdG7td+KhbxKuW+Yjq9Lo/dbvxUT0uj91u/FQt4tXMwH1HT6bR+63fioXTaP3a78VC3hVzAZ0um0fut34qE62j92uvFQsVc0DpdNo/drrxULpdIf6Nd+Khbwq5ojpurpPdrvxULpdJ7tdeKhbxauYCOn0uk92uvFRLraSv0a68VEsac8XWdB1tJ7vdeIhdNpPd7rxELLX1oMlnRdbSu7XXiIXS6V3e58REsac4R0el0ru9z4iF0uld2ufEQt4VaAnzyb7raX129yv/MQdLpXd7nxELGmgxI3+l0vu914iH0ml9Vvc+IhY054G/wBLpf8AUXPiIOl0zu9z4iFirQwBvdLpnd7nxEDq6Z3e58RCxVogbvS6Z...);
-    }
-    
+    :root { --bgT: url(data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAsHCAoIBwsKCQoMDAsNEBsSEA8PECEYGRQbJyMpKScjJiUsMT81LC47LyUmNko3O0FDRkdGKjRNUkxEUj9FRkP/2wBDAQwMDBAOECASEiBDLSYtQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0P/wAARCAGSA4QDASIAAhEBAxEB/8QAGwAAAwADAQEAAAAAAAAAAAAAAAECAwQFBgf/xABTEAACAQMCAgUHBQsICAYDAQAAAQIDBBEFIRIxE0FRVJMGFBVhkbHRInFzgZIjJCUyNDVEVXJ0siYzRVOhosHCFjZCRlJWYmNDg4SU4fBkZfGj/8QAFwEBAQEBAAAAAAAAAAAAAAAAAAECA//EAB8RAQACAwEBAQEBAQAAAAAAAAABEgIRMWEhQVHRkf/aAAwDAQACEQMRAD8A+UABu2FGhOjcVbiM5Kkk8RljmyzOkhpgbvS6b10LjxEHS6Z/UXHiIljTSGjd6XTP6i58RD6XTO73PiIWNNEZu9Lpn9Rc+Ih9Lpnd7nxENppo5A3+l0vu914iF0ul93ufEQt4aaIG90ul93ufEQ1V0vu914iFvDTRFnB0Ol0ru914iH0mld2uvEQ2ac7IbnR6TSu7XXiIfS6V3a68RCyac4e50Ol0lfo114qH02kd2uvFRbLpzx8joKtpPdrrxUHTaQ/0e68VC3iaaAHQVXSO7XXioaq6R3W78VFt4Vc7AYOl0ukd2u/FQdLpHdrvxELJVzR4Ol0uj91u/FQdNo/dbvxULeFXNA6SraN3a78VD6fRu7XfioW8KuaB0+m0but54qDpdG7reeKhbwq5gHU6XRu63nioOl0but54qFvCrloHzOp02i91vPFQdPovdbvxULeFXMGdNVtE7teeKh9Noq/RbzxULeFXIkm3hDXM6vTaKv0W88VAq2i91vPFQt4Vc0MHUVXRX+iXnioOl0Xut54qFvEq5YdR1Ol0Xut54qH02id1vPFQt4tXKA6vTaKv0W88VB0uiP8ARbzxULeFfXLQ+Z1Ol0Xut54qDptF7reeKhbwq5WNwOr02id1vPFQum0Tut54qFvCrlhg6nS6L3W88VD6bRe63nioW8KuWCOp02i91vPFQdLovdbzxULeFXLGdPptF7peeKh9NovdbzxULeJVytxnU6bRe63nioOm0Xul54qFvFq5YczqdNovdbzxULptF7reeKhbxKuZgMHU6bRe63nioOm0Xut54qFvCrlDOn02i91vPFQ+l0Xut54qFvCrlgdTptF7pe+KhdNovdbzxUL+FXLDB1Om0Xu154qBVtF6rW88VC3i1csMbHU6bRO63i/81B02i91vPFQt4V9csWDq9NovdbzxUHS6L12t54qFvCrlBg6nTaI/0W88VD6bRe63nioW8KuVjcGdXpdF7peeKhdNoq/RbzxULeFXM5iaOoq+i9VreeKg6XRe7XnioW8KuWGTqdJoy/RbzxULpdG7reeKhbxKuYxHT6fRu63fioOm0bqtrzxULeLVzB9R0nW0bu154qBVdG7td+KhbxKuW+Yjq9Lo/dbvxUT0uj91u/FQt4tXMwH1HT6bR+63fioXTaP3a78VC3hVzAZ0um0fut34qE62j92uvFQsVc0DpdNo/drrxULpdIf6Nd+Khbwq5ojpurpPdrvxULpdJ7tdeKhbxauYCOn0uk92uvFRLraSv0a68VEsac8XWdB1tJ7vdeIhdNpPd7rxELLX1oMlnRdbSu7XXiIXS6V3e58REsac4R0el0ru9z4iF0uld2ufEQt4VaAnzyb7raX129yv/MQdLpXd7nxELGmgxI3+l0vu914iH0ml9Vvc+IhY054G/wBLpf8AUXPiIOl0zu9z4iFirQwBvdLpnd7nxEDq6Z3e58RCxVogbvS6Z...); }
     * { box-sizing: border-box; }
     html, body { margin: 0; padding: 0; min-height: 100%; font-family: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif; background: #0d0906; color: #f1e8d6; }
-    .container { max-width: 1000px; margin: 0 auto; padding: 24px 16px; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 24px 16px; }
     h1, h2, h3 { margin: 0 0 10px; font-family: "Shippori Mincho B1", serif; color: #f0c555; }
     h1 { font-size: 26px; padding: 16px; text-align: center; background: rgba(17,12,8,0.9); border-bottom: 2px solid #5a4630; }
-    .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin: 20px 0; }
-    .stat-card { background: rgba(26,17,10,0.9); border: 1px solid #5a4630; border-radius: 10px; padding: 18px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
-    .stat-card .val { font: 800 32px 'Shippori Mincho B1', serif; color: #f0c555; margin: 6px 0 2px; }
-    .stat-card .lbl { font-size: 12px; color: #b8a68a; letter-spacing: 0.08em; }
-    .section { margin: 24px 0; padding: 20px; background: rgba(26,17,10,0.85); border-radius: 10px; border: 1px solid #5a4630; }
-    .section h2 { font-size: 18px; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 1px solid #5a4630; display: flex; justify-content: space-between; align-items: center; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    th, td { padding: 10px 12px; border-bottom: 1px solid #3a2d1f; text-align: left; }
-    th { background: rgba(10,7,4,0.6); color: #b8a68a; font-weight: 500; }
-    tr:hover { background: rgba(40,28,18,0.4); }
-    .btn { display: inline-block; padding: 8px 16px; background: #d9a93f; color: #110c08; text-decoration: none; font-weight: bold; border-radius: 6px; border: none; cursor: pointer; font-size: 13px; }
+    .btn { display: inline-block; padding: 8px 16px; background: #d9a93f; color: #110c08; text-decoration: none; font-weight: bold; border-radius: 6px; border: none; cursor: pointer; font-size: 13px; margin: 6px 6px 0 0; }
     .btn:hover { background: #c9922c; }
-    .tag { display: inline-block. font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 700; }
+    .btn.secondary { background: #261c14; color: #f3e8d2; border: 1px solid #5a4630; }
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin: 20px 0; }
+    .stat-card { background: rgba(26,17,10,0.9); border: 1px solid #5a4630; border-radius: 10px; padding: 18px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+    .stat-card .val { font: 800 32px 'Shippori Mincho B1', serif; color: #f0c555; margin: 6px 0 2px; display: block; }
+    .stat-card .lbl { font-size: 12px; color: #b8a68a; letter-spacing: 0.08em; display: block; }
+    .stat-card .sub { font-size: 11px; color: #8a745a; margin-top: 4px; display: block; }
+    .section { margin: 24px 0; padding: 20px; background: rgba(26,17,10,0.85); border-radius: 10px; border: 1px solid #5a4630; }
+    .section h2 { font-size: 18px; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 1px solid #5a4630; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+    .section h2 .actions { display: flex; gap: 6px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+    th, td { padding: 8px 10px; border-bottom: 1px solid #3a2d1f; text-align: left; }
+    th { background: rgba(10,7,4,0.6); color: #b8a68a; font-weight: 500; white-space: nowrap; }
+    tr:hover { background: rgba(40,28,18,0.4); }
+    .tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 700; white-space: nowrap; }
     .tag.win { background: rgba(36,64,44,0.8); color: #8fd0a0; border: 1px solid #5d7a34; }
     .tag.lose { background: rgba(74,36,32,0.8); color: #ee7b6d; border: 1px solid #8a3a2e; }
     .tag.draw { background: rgba(51,51,60,0.8); color: #d6d6de; border: 1px solid #5a5a6a; }
+    .tag.poolA { color: #7fb0d8; border-color: #2a5f8f; background: rgba(42,95,143,0.15); }
+    .tag.poolB { color: #a9c46a; border-color: #5d7a34; background: rgba(93,122,52,0.15); }
+    .tag.poolC { color: #ee9566; border-color: #b4532a; background: rgba(180,83,42,0.15); }
     .empty-state { text-align: center; padding: 40px 0; color: #8a745a; font-size: 14px; }
+    .insight { background: rgba(38,28,20,0.6); border-left: 3px solid #d9a93f; padding: 12px 16px; border-radius: 0 6px 6px 0; margin: 12px 0; font-size: 13px; line-height: 1.6; }
+    .insight b { color: #f0c555; }
+    .deck-list { display: grid; gap: 8px; max-height: 400px; overflow-y: auto; }
+    .deck-item { display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(20,14,9,0.6); border: 1px solid #5a4630; border-radius: 8px; }
+    .deck-item .deck-cards { flex: 1; font-size: 11px; color: #d9c9a8; }
+    .deck-item .deck-stats { font-size: 12px; color: #f0c555; min-width: 140px; }
+    .deck-item .deck-stats b { font-size: 14px; }
+    .card-chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px; border-radius: 6px; background: rgba(10,7,4,0.5); border: 1px solid #5a4630; font-size: 10px; margin: 2px 4px 2px 0; }
+    .card-chip .num { font-weight: 800; font: 800 12px 'Shippori Mincho B1', serif; }
+    .card-chip.A { color: #7fb0d8; border-color: #2a5f8f; }
+    .card-chip.B { color: #a9c46a; border-color: #5d7a34; }
+    .card-chip.C { color: #ee9566; border-color: #b4532a; }
   </style>
 </head>
 <body>
-  <h1>ネメシス NEMESIS — プレイ統計・戦績分析</h1>
+  <h1>ネメシス NEMESIS — 戦略分析ダッシュボード</h1>
   <div class="container">
-    
-    <!-- Overall Stats -->
+    <div style="margin-bottom: 16px; text-align: center;">
+      <button class="btn" onclick="loadAll()">データ再読み込み</button>
+      <button class="btn secondary" onclick="clearData()">データクリア</button>
+      <span style="font-size: 12px; color: #8a745a; margin-left: 12px;">localStorage (nm_rep, gm1) から自動読み込み</span>
+    </div>
+
     <div class="card-grid" id="summary-cards">
-      <div class="stat-card">
-        <div class="lbl">総対戦数</div>
-        <div class="val" id="st-total">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="lbl">勝利数 / 勝率</div>
-        <div class="val" id="st-winrate">0%</div>
-      </div>
-      <div class="stat-card">
-        <div class="lbl">ランク Lv.</div>
-        <div class="val" id="st-rank">1</div>
-      </div>
-      <div class="stat-card">
-        <div class="lbl">所持ドラクマ</div>
-        <div class="val" id="st-coins">0</div>
-      </div>
+      <div class="stat-card"><div class="lbl">総対戦数</div><div class="val" id="st-total">0</div><div class="sub" id="st-total-sub">対戦記録なし</div></div>
+      <div class="stat-card"><div class="lbl">勝敗・勝率</div><div class="val" id="st-winrate">0%</div><div class="sub" id="st-winrate-sub">0勝 0敗 0分</div></div>
+      <div class="stat-card"><div class="lbl">平均スコア差</div><div class="val" id="st-scorediff">0.0</div><div class="sub" id="st-scorediff-sub">自分 − 相手</div></div>
+      <div class="stat-card"><div class="lbl">現在ランク</div><div class="val" id="st-rank">1</div><div class="sub" id="st-rank-sub">ドラクマ: 0</div></div>
     </div>
 
-    <!-- Recent Matches -->
     <div class="section">
-      <h2><span>最近の対戦履歴 (nm_rep)</span> <button class="btn" onclick="loadStats()">更新</button></h2>
-      <div id="matches-container">
-        <div class="empty-state">localStorage からデータを読み込んでいます...</div>
-      </div>
+      <h2><span>🃏 カード使用頻度ランキング（自分のデッキ）</span></h2>
+      <div id="card-freq-container"><div class="empty-state">読み込み中...</div></div>
     </div>
 
-    <!-- Mission & Progress -->
     <div class="section">
-      <h2><span>ミッション達成状況 (gm1)</span></h2>
-      <div id="mission-container">
-        <div class="empty-state">読み込み中...</div>
-      </div>
+      <h2><span>📦 デッキ構成タイプ分析</span></h2>
+      <div class="card-grid" id="deck-type-grid"></div>
+      <div id="deck-types-detail"></div>
     </div>
 
+    <div class="section">
+      <h2><span>🏆 勝敗パターン分析</span></h2>
+      <div class="card-grid" id="result-grid">
+        <div class="stat-card"><div class="lbl">勝利</div><div class="val" id="res-win">0</div><div class="sub">勝率</div></div>
+        <div class="stat-card"><div class="lbl">敗北</div><div class="val" id="res-lose">0</div><div class="sub">敗北率</div></div>
+        <div class="stat-card"><div class="lbl">引き分け</div><div class="val" id="res-draw">0</div><div class="sub">引き分け率</div></div>
+      </div>
+      <div id="result-detail"></div>
+    </div>
+
+    <div class="section">
+      <h2><span>💀 負け方分析（改善ポイント）</span> <button class="btn secondary" onclick="showLossDetails()">詳細を見る</button></h2>
+      <div id="loss-analysis-container"><div class="empty-state">読み込み中...</div></div>
+    </div>
+
+    <div class="section">
+      <h2><span>🃏 最近使用したデッキ（直近10試合）</span></h2>
+      <div id="recent-decks-container"><div class="empty-state">読み込み中...</div></div>
+    </div>
+
+    <div style="margin-top: 40px; text-align: center; color: #8a745a; font-size: 12px;">
+      <p>データは localStorage (nm_rep, gm1) から読み取ります。サーバーには送信されません。</p>
+    </div>
   </div>
 
   <script>
-    function loadStats() {
-      // 1. Load recent matches (nm_rep)
-      let reps = [];
-      try {
-        reps = JSON.parse(localStorage.getItem('nm_rep') || '[]');
-      } catch(e) {}
+    const CARDS = [
+      {id:'joker',n:'サテュロス',p:'A',num:1},
+      {id:'hunter',n:'アルテミス',p:'A',num:4},
+      {id:'shield',n:'アイギス',p:'A',num:5},
+      {id:'seal',n:'パンドラ',p:'A',num:8},
+      {id:'general',n:'アキレウス',p:'A',num:9},
+      {id:'perseus',n:'ペルセウス',p:'A',num:2},
+      {id:'hera',n:'ヘラクレス',p:'A',num:7},
+      {id:'teseus',n:'テセウス',p:'A',num:3},
+      {id:'bellero',n:'ベレロフォン',p:'A',num:6},
+      {id:'awaken',n:'プロメテウス',p:'B',num:1},
+      {id:'chase',n:'アタランテ',p:'B',num:3},
+      {id:'veteran',n:'オデュッセウス',p:'B',num:4},
+      {id:'weaken',n:'メドゥーサ',p:'B',num:5},
+      {id:'wall',n:'ヘパイストス',p:'B',num:10},
+      {id:'icarus',n:'イカロス',p:'B',num:7},
+      {id:'narc',n:'ナルキッソス',p:'B',num:2},
+      {id:'daedalus',n:'ダイダロス',p:'B',num:6},
+      {id:'apollo',n:'アポロン',p:'B',num:8},
+      {id:'comeback',n:'モイライ',p:'C',num:1},
+      {id:'ambush',n:'トロイの木馬',p:'C',num:3},
+      {id:'offset',n:'テミス',p:'C',num:4},
+      {id:'check',n:'スフィンクス',p:'C',num:9},
+      {id:'champ',n:'ゼウス',p:'C',num:10},
+      {id:'hermes',n:'ヘルメス',p:'C',num:5},
+      {id:'hades',n:'ハデス',p:'C',num:8},
+      {id:'penel',n:'ペネロペ',p:'C',num:2},
+      {id:'dionysus',n:'ディオニュソス',p:'C',num:6}
+    ];
+    const CARD_BY_ID = {}; CARDS.forEach(c => { CARD_BY_ID[c.id] = c; });
+    const POOL_NAME = { A: '条件勝ち', B: '数値操作', C: '結果の書き換え' };
+    function poolOf(id) { return CARD_BY_ID[id]?.p || '?'; }
+    const RK_MAX=100;
+    function rkNeed(l){return 11+Math.floor(l/4);}
+    function rkCum(l){let c=0;for(let i=1;i<l;i++)c+=rkNeed(i);return c;}
+    function rkLv(p){p=Math.max(0,+p||0);let l=1;while(l<RK_MAX&&p>=rkCum(l+1))l++;return l;}
 
-      // 2. Load game progress / profile (gm1)
-      let gm1 = {};
-      try {
-        gm1 = JSON.parse(localStorage.getItem('gm1') || '{}');
-      } catch(e) {}
-
-      // Calculate summary metrics from nm_rep
-      let total = reps.length;
-      let wins = 0, losses = 0, draws = 0;
-
-      reps.forEach(r => {
-        const w = r.fin && r.fin.w;
-        const me = r.mode === 'cpu' || r.mode === 'online';
-        if (w === -1) draws++;
-        else if (me) {
-          if (w === 0) wins++;
-          else losses++;
-        } else {
-          // 2p mode
-          if (w === 0) wins++;
-          else losses++;
-        }
-      });
-
-      const winRate = total > 0 ? Math.round((wins / total) * 100) : 0;
-      const rp = gm1.rp || 0;
-      // Calculate rank level using formula from game
-      let lv = 1;
-      while (lv < 100 && rp >= rkCum(lv + 1)) lv++;
-      const coins = gm1.coins || 0;
-
-      // Update cards
-      document.getElementById('st-total').textContent = total;
-      document.getElementById('st-winrate').textContent = `${wins}勝 ${losses}敗 (${winRate}%)`;
-      document.getElementById('st-rank').textContent = lv;
-      document.getElementById('st-coins').textContent = coins;
-
-      // Render matches table
-      const matchContainer = document.getElementById('matches-container');
-      if (total === 0) {
-        matchContainer.innerHTML = '<div class="empty-state">保存された対戦履歴(nm_rep)がありません。ゲームを遊ぶとここに統計が表示されます。</div>';
-      } else {
-        let html = `<table><thead><tr><th>日時</th><th>モード</th><th>対戦相手</th><th>結果</th><th>スコア</th></tr></thead><tbody>`;
-        reps.forEach(r => {
-          const d = new Date(r.t);
-          const dateStr = isNaN(d) ? '-' : `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-          const modeStr = r.mode === 'cpu' ? `CPU (${r.lv==='easy'?'やさしい':'ふつう'})` : (r.mode==='online' ? (r.rated?'ランダムマッチ':'ルーム戦') : '2人対戦');
-          const oppName = r.names && r.names[1] ? r.names[1] : '対戦相手';
-          
-          let tagCls = 'draw', tagText = '引き分け';
-          const w = r.fin ? r.fin.w : -1;
-          const me = r.mode === 'cpu' || r.mode === 'online';
-          if (w === -1) {
-            tagCls = 'draw'; tagText = '引き分け';
-          } else if (me) {
-            if (w === 0) { tagCls = 'win'; tagText = '勝利'; }
-            else { tagCls = 'lose'; tagText = '敗北'; }
-          } else {
-            tagCls = 'win'; tagText = `${r.names[w]}の勝ち`;
-          }
-
-          html += `<tr>
-            <td>${dateStr}</td>
-            <td>${modeStr}</td>
-            <td>${oppName}</td>
-            <td><span class="tag ${tagCls}">${tagText}</span></td>
-            <td><b>${r.score[0]}</b> — <b>${r.score[1]}</b></td>
-          </tr>`;
-        });
-        html += `</tbody></table>`;
-        matchContainer.innerHTML = html;
-      }
-
-      // Render missions status
-      const missionContainer = document.getElementById('mission-container');
-      const doneMap = gm1.done || {};
-      const doneCount = Object.keys(doneMap).length;
-      missionContainer.innerHTML = `<p>達成済みミッション数: <b>${doneCount}</b></p>`;
+    function loadAll() {
+      let reps = []; try { reps = JSON.parse(localStorage.getItem('nm_rep') || '[]'); } catch(e) {}
+      if (!Array.isArray(reps)) reps = [];
+      let gm1 = {}; try { gm1 = JSON.parse(localStorage.getItem('gm1') || '{}'); } catch(e) {}
+      if (!gm1 || typeof gm1 !== 'object') gm1 = {};
+      renderSummary(reps, gm1);
+      renderCardFrequency(reps);
+      renderDeckTypes(reps);
+      renderResults(reps);
+      renderLossAnalysis(reps);
+      renderRecentDecks(reps);
     }
-
-    // Helper functions for rank calculation
-    function rkNeed(l) { return 11 + Math.floor(l / 4); }
-    function rkCum(l) { let c = 0; for(let i=1; i<l; i++) c += rkNeed(i); return c; }
-
-    document.addEventListener('DOMContentLoaded', loadStats);
+    function clearData() {
+      if (!confirm('localStorage の試合記録(nm_rep)をクリアしますか？')) return;
+      localStorage.removeItem('nm_rep');
+      loadAll();
+    }
+    function renderSummary(reps, gm1) {
+      const total = reps.length; let wins=0, losses=0, draws=0; let scoreDiffSum = 0;
+      reps.forEach(r => {
+        const w = r.fin ? r.fin.w : -1; const me = r.mode === 'cpu' || r.mode === 'online';
+        const diff = (r.score?.[0]||0) - (r.score?.[1]||0); scoreDiffSum += diff;
+        if (w === -1) draws++; else if (me) { if (w === 0) wins++; else losses++; } else { if (w === 0) wins++; else losses++; }
+      });
+      const winRate = total > 0 ? Math.round((wins / total) * 100) : 0;
+      const avgDiff = total > 0 ? (scoreDiffSum / total).toFixed(1) : '0.0';
+      const rp = gm1.rp || 0; const lv = rkLv(rp); const coins = gm1.coins || 0;
+      document.getElementById('st-total').textContent = total;
+      document.getElementById('st-total-sub').textContent = total > 0 ? '対戦記録あり' : '対戦記録なし';
+      document.getElementById('st-winrate').textContent = winRate + '%';
+      document.getElementById('st-winrate-sub').textContent = wins + '勝 ' + losses + '敗 ' + draws + '分';
+      document.getElementById('st-scorediff').textContent = avgDiff;
+      document.getElementById('st-scorediff-sub').textContent = total > 0 ? '自分 − 相手 (平均)' : '';
+      document.getElementById('st-rank').textContent = lv;
+      document.getElementById('st-rank-sub').textContent = 'ドラクマ: ' + coins;
+    }
+    function renderCardFrequency(reps) {
+      const container = document.getElementById('card-freq-container'); const usage = {};
+      reps.forEach(r => { (r.decks?.[0] || []).forEach(cid => { usage[cid] = (usage[cid]||0) + 1; }); });
+      if (reps.length === 0) { container.innerHTML = '<div class="empty-state">対戦記録がありません。</div>'; return; }
+      const rows = CARDS.map(c => ({...c, count: usage[c.id] || 0})).sort((a, b) => b.count - a.count);
+      let html = '<table><thead><tr><th>順位</th><th>カード名</th><th>プール</th><th>使用数</th><th>使用率</th></tr></thead><tbody>';
+      rows.forEach((c, i) => { const pct = reps.length > 0 ? ((c.count / reps.length) * 100).toFixed(1) : 0;
+        html += '<tr><td>' + (i + 1) + '</td><td>' + c.n + '</td><td><span class="tag pool' + c.p + '">' + POOL_NAME[c.p] + '</span></td><td>' + c.count + '</td><td>' + pct + '%</td></tr>';
+      });
+      html += '</tbody></table>'; container.innerHTML = html;
+    }
+    function classifyDeck(deck) {
+      if (!deck || deck.length === 0) return '不明';
+      const counts = {A:0, B:0, C:0}; let costSum = 0;
+      deck.forEach(cid => { const c = CARD_BY_ID[cid]; if (!c) return; counts[c.p]++; costSum += c.num; });
+      const avgCost = costSum / deck.length;
+      let type = 'バランス型';
+      if (counts.A >= 3) type = '条件勝ち重視';
+      else if (counts.B >= 3) type = '数値操作重視';
+      else if (counts.C >= 3) type = '結果書き換え重視';
+      if (avgCost >= 7) type += '（高コスト）'; else if (avgCost <= 4) type += '（低コスト）';
+      return { type, counts, avgCost };
+    }
+    function renderDeckTypes(reps) {
+      const grid = document.getElementById('deck-type-grid'); const detail = document.getElementById('deck-types-detail');
+      if (reps.length === 0) { grid.innerHTML = ''; detail.innerHTML = '<div class="empty-state">対戦記録がありません。</div>'; return; }
+      const typeCounts = {}; const deckSummaries = [];
+      reps.forEach(r => { const cls = classifyDeck(r.decks?.[0] || []); if (typeof cls === 'string') return; typeCounts[cls.type] = (typeCounts[cls.type] || 0) + 1; deckSummaries.push({ cls, result: r.fin?.w }); });
+      let html = ''; Object.entries(typeCounts).sort((a, b) => b[1] - a[1]).forEach(([type, cnt]) => {
+        const pct = ((cnt / reps.length) * 100).toFixed(1);
+        html += '<div class="stat-card"><div class="lbl">' + type + '</div><div class="val">' + cnt + ' 回</div><div class="sub">' + pct + '% のデッキ</div></div>';
+      }); grid.innerHTML = html;
+      let detailHtml = '<table><thead><tr><th>構成タイプ</th><th>プール構成</th><th>平均コスト</th><th>使用回数</th><th>勝率</th></tr></thead><tbody>';
+      Object.entries(typeCounts).sort((a, b) => b[1] - a[1]).forEach(([type, cnt]) => {
+        const typeDecks = deckSummaries.filter(d => d.cls.type === type);
+        const wins = typeDecks.filter(d => d.result === 0).length; const losses = typeDecks.filter(d => d.result === 1).length; const draws = typeDecks.filter(d => d.result === -1).length;
+        const winRate = typeDecks.length > 0 ? Math.round((wins / typeDecks.length) * 100) : 0;
+        const sample = typeDecks[0].cls; const poolStr = 'A:' + sample.counts.A + ' B:' + sample.counts.B + ' C:' + sample.counts.C;
+        detailHtml += '<tr><td>' + type + '</td><td>' + poolStr + '</td><td>' + sample.avgCost.toFixed(1) + '</td><td>' + typeDecks.length + '</td><td>' + winRate + '% (' + wins + '勝' + losses + '敗' + draws + '分)</td></tr>';
+      }); detailHtml += '</tbody></table>'; detail.innerHTML = detailHtml;
+    }
+    function renderResults(reps) {
+      const total = reps.length; if (total === 0) { document.getElementById('res-win').textContent = '0'; document.getElementById('res-lose').textContent = '0'; document.getElementById('res-draw').textContent = '0'; document.getElementById('result-detail').innerHTML = '<div class="empty-state">対戦記録がありません。</div>'; return; }
+      let wins=0, losses=0, draws=0; reps.forEach(r => { const w = r.fin ? r.fin.w : -1; const me = r.mode === 'cpu' || r.mode === 'online'; if (w === -1) draws++; else if (me) { if (w === 0) wins++; else losses++; } else { if (w === 0) wins++; else losses++; } });
+      document.getElementById('res-win').textContent = wins; document.getElementById('res-lose').textContent = losses; document.getElementById('res-draw').textContent = draws;
+      document.getElementById('result-detail').innerHTML = '<p>総対戦: ' + total + ' | 勝率: ' + Math.round((wins/total)*100) + '% | 敗北率: ' + Math.round((losses/total)*100) + '% | 引き分け率: ' + Math.round((draws/total)*100) + '%</p>';
+    }
+    function renderLossAnalysis(reps) {
+      const container = document.getElementById('loss-analysis-container'); const losses = reps.filter(r => { const w = r.fin ? r.fin.w : -1; const me = r.mode === 'cpu' || r.mode === 'online'; return me ? w === 1 : w === 0; });
+      if (reps.length === 0) { container.innerHTML = '<div class="empty-state">対戦記録がありません。</div>'; return; }
+      if (losses.length === 0) { container.innerHTML = '<div class="empty-state">まだ負けなし！完璧な戦績です。</div>'; return; }
+      const loseRate = ((losses.length / reps.length) * 100).toFixed(1); let scoreDiffSum = 0; const opponentCards = {};
+      losses.forEach(r => { const diff = (r.score?.[0]||0) - (r.score?.[1]||0); scoreDiffSum += diff; (r.decks?.[1] || []).forEach(cid => { opponentCards[cid] = (opponentCards[cid]||0) + 1; }); });
+      const avgLossDiff = (scoreDiffSum / losses.length).toFixed(1);
+      let html = '<div class="insight"><b>敗北率:</b> ' + loseRate + '% （' + losses.length + ' / ' + reps.length + ' 試合）<br><b>平均スコア差（敗北時）:</b> ' + avgLossDiff + ' 点（自分 − 相手）<br><b>推奨改善:</b> ' + inferTopLossReason(losses) + '</div>';
+      const oppRows = CARDS.map(c => ({...c, count: opponentCards[c.id] || 0})).sort((a, b) => b.count - a.count).filter(c => c.count > 0);
+      if (oppRows.length > 0) {
+        html += '<h3 style="font-size:15px;margin-top:16px;">負けた相手がよく使ったカード</h3><table><thead><tr><th>カード名</th><th>プール</th><th>登場回数</th></tr></thead><tbody>';
+        oppRows.forEach(c => { html += '<tr><td>' + c.n + '</td><td><span class="tag pool' + c.p + '">' + POOL_NAME[c.p] + '</span></td><td>' + c.count + '</td></tr>'; });
+        html += '</tbody></table>';
+      }
+      container.innerHTML = html;
+    }
+    function inferTopLossReason(losses) {
+      if (losses.length === 0) return 'データなし';
+      const bigLosses = losses.filter(r => { const diff = (r.score?.[0]||0) - (r.score?.[1]||0); return diff <= -3; });
+      if (bigLosses.length > losses.length / 2) return '大差での敗北（スコア差3点以上）が多い。数値底上げカードを検討してください。';
+      const closeLosses = losses.filter(r => { const diff = (r.score?.[0]||0) - (r.score?.[1]||0); return diff === -1 || diff === 0; });
+      if (closeLosses.length > 0) return '接戦での敗北が目立つ。引き分け持ち越しカード（アイギス・テミス等）の採用を検討してください。';
+      return 'バランスの取れた敗北パターン。デッキ全体の見直しが必要です。';
+    }
+    function showLossDetails() { document.getElementById('loss-analysis-container').scrollIntoView({ behavior: 'smooth' }); }
+    function renderRecentDecks(reps) {
+      const container = document.getElementById('recent-decks-container'); if (reps.length === 0) { container.innerHTML = '<div class="empty-state">対戦記録がありません。</div>'; return; }
+      const recent = reps.slice(-10).reverse(); let html = '<div class="deck-list">';
+      recent.forEach(r => { const myDeck = r.decks?.[0] || []; const cls = classifyDeck(myDeck); const w = r.fin ? r.fin.w : -1; const me = r.mode === 'cpu' || r.mode === 'online'; const result = w === -1 ? '引分' : (me ? (w === 0 ? '勝' : '負') : (w === 0 ? '勝' : '負')); const resultCls = w === -1 ? 'draw' : (me ? (w === 0 ? 'win' : 'lose') : (w === 0 ? 'win' : 'lose')); const date = new Date(r.t || 0); const dateStr = isNaN(date) ? '-' : (date.getMonth()+1) + '/' + date.getDate() + ' ' + String(date.getHours()).padStart(2,'0') + ':' + String(date.getMinutes()).padStart(2,'0'); const typeStr = typeof cls === 'string' ? cls : cls.type;
+        html += '<div class="deck-item"><div class="deck-cards">' + myDeck.map(cid => '<span class="card-chip ' + poolOf(cid) + '"><span class="num">' + CARD_BY_ID[cid]?.num + '</span>' + CARD_BY_ID[cid]?.n + '</span>').join('') + '</div><div class="deck-stats"><div><b>' + typeStr + '</b></div><div><span class="tag ' + resultCls + '">' + result + '</span> ' + dateStr + '</div></div></div>';
+      }); html += '</div>'; container.innerHTML = html;
+    }
+    document.addEventListener('DOMContentLoaded', loadAll);
   </script>
 </body>
 </html>
