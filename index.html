@@ -734,6 +734,15 @@ img{-webkit-user-drag:none;user-drag:none}
 /* スクロールバーを非表示(スクロール操作は有効のまま) */
 *{scrollbar-width:none!important;-ms-overflow-style:none!important}
 *::-webkit-scrollbar{display:none!important;width:0!important;height:0!important;background:transparent!important}
+.lb-r{position:relative}
+.ib.hbg{width:36px;padding:0;display:inline-flex;align-items:center;justify-content:center}
+.hbl,.hbl::before,.hbl::after{display:block;width:16px;height:2px;background:#f3e8d2;border-radius:1px}
+.hbl{position:relative}.hbl::before,.hbl::after{content:"";position:absolute;left:0}.hbl::before{top:-5px}.hbl::after{top:5px}
+.hmenu{position:absolute;right:0;top:36px;z-index:30;min-width:150px;display:flex;flex-direction:column;gap:2px;padding:6px;background:rgba(20,14,9,.97);border:1px solid #6a5238;border-radius:12px;box-shadow:0 8px 22px rgba(0,0,0,.55)}
+.hmenu[hidden]{display:none}
+.hmi{position:relative;height:38px;padding:0 16px;text-align:left;background:transparent;border:0;border-radius:8px;color:#f3e8d2;font-size:13px;cursor:pointer}
+.hmi:hover,.hmi:focus-visible{background:rgba(240,197,85,.16)}.hmi:focus-visible{outline:2px solid #f0c555}
+.hmi.nb::after{content:"";position:absolute;right:12px;top:50%;margin-top:-4px;width:8px;height:8px;border-radius:50%;background:#e8452e}
 </style>
 <div id="stage"></div>
 <div id="rot" hidden><p style="font:800 20px 'Shippori Mincho B1',serif">スマホを横向きにしてください</p><p style="font-size:13px;color:#b8a68a">この画面は横向きで遊ぶように作っています。</p><button id="rotok" class="btn" style="background:#261c14;color:#f1e8d6">このまま遊ぶ</button></div>
@@ -1328,6 +1337,10 @@ TM.upd=(noAct)=>{
   if(left<=0&&!noAct){const f=TM.fn;TM.stop();if(f)f()}
 };
 function show(html,cls='',style=''){if(TM.on&&!TM.keep)TM.stop();if(TM.sw){clearTimeout(TM.sw);TM.sw=null}TM.keep=false;hideTip();SFX.clear();const a=ANIM;ANIM=false;$s.innerHTML=`<div class="scr ${cls}${a?' anim':''}" style="${style}">${MEA}${html}</div>`;$s.appendChild(TIP);$s.appendChild(GUIDE);$s.appendChild(NETB);$s.appendChild(TOAST);$s.appendChild(TMB);applyHL();if(TM.on)TM.attach()}
+/* ===== ハンバーガーメニュー(タイトル右上) ===== */
+function hmSet(o){const b=document.querySelector('.hbg'),m=document.querySelector('.hmenu');if(!b||!m)return;m.hidden=!o;b.setAttribute('aria-expanded',o?'true':'false')}
+document.addEventListener('click',e=>{const m=document.querySelector('.hmenu');if(!m||m.hidden||e.target.closest('.hbg'))return;hmSet(false)});
+document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;const m=document.querySelector('.hmenu');if(m&&!m.hidden){hmSet(false);const b=document.querySelector('.hbg');if(b)b.focus()}});
 function on(act,fn){$s.querySelectorAll(`[data-act="${act}"]`).forEach(el=>el.addEventListener('click',()=>fn(el)))}
 function modal(html){const m=document.createElement('div');m.className='modal';m.innerHTML=`<div class="panel mp" role="dialog" aria-modal="true">${html}</div>`;$s.querySelector('.scr').appendChild(m);return m}
 const backH=(cls='')=>`<div class="back ${cls}" style="background-image:url(${BACKS[BACK]})" aria-hidden="true"></div>`;
@@ -1360,7 +1373,7 @@ function renderTitle(){
       <button class="lb-prof" data-act="ms" aria-label="ミッション・装備"><img class="pav" src="${avSrc(MS.eq.av)}" alt=""><span class="lpt"><b>${titleH(MS.eq.title)}</b><span>達成 ${dn} / ${MIS.length}</span></span></button>
       <button class="rkchip" data-act="rkpg" aria-label="ランク"><small>RANK</small><b>${rkLv(MS.rp||0)}</b></button>
       <div class="tl lb-brand"><h1><span class="en">NEMESIS</span><span class="jp">ネメシス</span></h1><div style="display:flex;gap:6px;align-self:flex-start;align-items:center">${seasonH()}${onlH()}</div></div>
-      <div class="lb-r"><span class="dcoin"><i></i><b>${MS.coins||0}</b> ドラクマ</span><button class="ib skb${MS.lb.d!==skToday()?' nb':''}" data-act="skopen">スタンプ</button><button class="ib" data-act="rules">ルール</button><button class="ib" data-act="snd" aria-label="音の設定">音</button><button class="ib" data-act="xfer" aria-label="データ引継ぎ">引継ぎ</button></div>
+      <div class="lb-r"><span class="dcoin"><i></i><b>${MS.coins||0}</b> ドラクマ</span><button class="ib hbg skb${MS.lb.d!==skToday()?' nb':''}" data-act="hbg" aria-label="メニュー" aria-haspopup="true" aria-expanded="false" aria-controls="hmenu"><span class="hbl" aria-hidden="true"></span></button><div class="hmenu" id="hmenu" role="menu" hidden><button class="hmi${MS.lb.d!==skToday()?' nb':''}" role="menuitem" data-act="skopen">スタンプ</button><button class="hmi" role="menuitem" data-act="rules">ルール</button><button class="hmi" role="menuitem" data-act="snd">音</button><button class="hmi" role="menuitem" data-act="xfer">引継ぎ</button></div></div>
     </div>
     <div class="lb-mid">
       <div class="lb-feat">
@@ -1417,7 +1430,7 @@ function renderTitle(){
       const ld=()=>{if(sp._l)return;sp._l=1;SFX.play('confirm');const t=sp.querySelector('.tap');if(t){t.outerHTML=`<div class="ldg"><div class="ldb"><i></i></div><span>読み込み中<span class="dots"></span></span><small>${TIPS[Math.floor(Math.random()*TIPS.length)]}</small></div>`}setTimeout(go,1500)};
       sp.addEventListener('click',ld);sp.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')ld()});sp.tabIndex=0;
       $s.querySelector('.scr').appendChild(sp);setTimeout(()=>sp.focus(),50)}
-    on('gacha',renderGacha);on('god',renderGods);on('kgp',()=>renderKg());on('ms',()=>renderMissions());on('dex',()=>renderDex());on('snd',sndModal);on('rcn',renderRecent);on('rkpg',renderRank);on('xfer',xferModal);
+    on('gacha',renderGacha);on('god',renderGods);on('kgp',()=>renderKg());on('ms',()=>renderMissions());on('dex',()=>renderDex());on('snd',sndModal);on('rcn',renderRecent);on('rkpg',renderRank);on('xfer',xferModal);on('hbg',()=>{const m=document.querySelector('.hmenu');hmSet(!!m&&m.hidden)});
     on('rules',()=>{const m=modal(`<h3 class="ttl" style="font-size:17px">ルールの要点</h3><ul>
      <li>デッキは全27枚(A・B・Cのプール各9枚)から5枚。数値の合計は22〜25、数値1〜3のカードは2枚まで。</li>
      <li>両者のデッキを同時に公開したあと、各自が1枚を、デッキにない別のカードに入れ替えられます(プールは問わず、任意。相手には見えません)。入れ替え後も、合計22〜25と数値1〜3は2枚までの条件を守ります。</li>
