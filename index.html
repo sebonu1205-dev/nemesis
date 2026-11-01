@@ -127,6 +127,27 @@ h1,h2,h3,p{margin:0}
 .rkbig{font:800 64px/1 'Shippori Mincho B1',serif;color:#f0c555;text-shadow:0 2px 0 #7a5518,0 0 18px rgba(240,197,85,.45)}
 .rkrow{display:flex;align-items:center;gap:10px;padding:4px 10px;border:1px solid #4a3826;border-radius:9px;background:rgba(20,14,9,.6)}
 .rkrow.got{opacity:.6}
+.rkst{display:inline-flex;flex-wrap:wrap;align-items:center;gap:2px 5px;line-height:1.1}.rkst small,.rkst .rkss{white-space:nowrap}.rkst small{font-size:10px;letter-spacing:.06em;color:#b8a68a}.rkst .rkss{color:#f0c555;font-size:var(--s,13px);letter-spacing:1px;text-shadow:0 0 6px rgba(240,197,85,.45)}
+.sk-card{position:relative;background:linear-gradient(160deg,#ecdcb8,#d9c28f);border:2px solid #8a6a3a;border-radius:12px;padding:10px 10px 8px;box-shadow:inset 0 0 0 3px rgba(122,86,36,.18),0 4px 14px rgba(0,0,0,.45);color:#3a2610}
+.sk-card h4{margin:0 0 6px;font:800 13px 'Shippori Mincho B1',serif;letter-spacing:.08em;color:#6a4a1c;display:flex;justify-content:space-between;align-items:center}
+.sk-card h4 small{font:600 10.5px 'Zen Kaku Gothic New',sans-serif;letter-spacing:0;color:#7a5a2c}
+.sk-row{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.sk-slot{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;padding:5px 2px 6px;min-height:104px;background:rgba(255,248,226,.55);border:1.5px dashed #9a7a46;border-radius:9px;text-align:center}
+.sk-slot .sk-n{font:800 10.5px 'Zen Kaku Gothic New',sans-serif;color:#6a4a1c}
+.sk-slot .sk-it{display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;justify-content:center}
+.sk-slot .sk-r{display:flex;flex-direction:column;align-items:center;line-height:1.15}
+.sk-slot .sk-r b{font:800 13px 'Shippori Mincho B1',serif;color:#3a2610}
+.sk-slot .sk-r small{font-size:8.5px;color:#7a5a2c;white-space:nowrap}
+.sk-slot.big{background:linear-gradient(180deg,rgba(255,236,170,.85),rgba(240,200,110,.6));border:2px solid #b8862c}
+.sk-slot.now{border:2px solid #d9482e;box-shadow:0 0 0 2px rgba(217,72,46,.2);animation:skpulse 1.4s ease-in-out infinite}
+.sk-slot.on .sk-it{opacity:.8}
+.sk-coin{display:inline-block;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe9a0,#e6b34a 55%,#a9761a);border:1.5px solid #7a5416}
+.sk-st{position:absolute;right:1px;bottom:1px;width:36px;height:36px;border-radius:50%;border:2.5px double #b3402a;color:#b3402a;display:flex;align-items:center;justify-content:center;font:800 17px 'Shippori Mincho B1',serif;transform:rotate(-12deg);opacity:.9;background:rgba(255,240,220,.25);pointer-events:none}
+.sk-st.pop{animation:skst .55s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes skst{0%{transform:scale(2.8) rotate(-34deg);opacity:0}60%{transform:scale(.88) rotate(-10deg);opacity:1}100%{transform:scale(1) rotate(-12deg);opacity:.9}}
+@keyframes skpulse{0%,100%{box-shadow:0 0 0 2px rgba(217,72,46,.2)}50%{box-shadow:0 0 0 5px rgba(217,72,46,.38)}}
+.ib.skb{position:relative}.ib.skb.nb::after{content:"";position:absolute;right:-2px;top:-2px;width:9px;height:9px;border-radius:50%;background:#e8452e;border:2px solid #1a110a}
+@media (prefers-reduced-motion:reduce){.sk-slot.now,.sk-st.pop{animation:none}}
 .rkrow.rksec{border-style:dashed;border-color:#8a6a3a}.rkq{flex:none;width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:rgba(240,197,85,.12);border:1px dashed #d9a93f;color:#f0c555;font:800 18px 'Shippori Mincho B1',serif}.rkrow.nx{border-color:#f0c555;box-shadow:0 0 8px rgba(240,197,85,.4)}
 .rkrow .rkn{width:46px;font:800 15px 'Shippori Mincho B1',serif;color:#f0c555}
 .rkrow .back.mini,.rkrow img{width:34px!important;height:34px!important;flex:none}
@@ -1180,6 +1201,48 @@ async function seasonClaim(){
     const m=modal(`<h3 class="ttl" style="font-size:18px">シーズン報酬</h3>${got.map(g=>`<div class="row" style="justify-content:space-between;margin-top:6px"><span style="font-size:15px">${titleH(g.t)}</span><span class="sub" style="color:#f0c555">ドラクマ +${g.c}</span></div>`).join('')}<p class="sub" style="margin-top:8px">称号は、ミッション・装備の「称号」から付けられます。</p><div class="row" style="justify-content:flex-end"><button class="btn gold" data-act="x">受け取りました</button></div>`);
     m.querySelector('[data-act="x"]').onclick=()=>{m.remove();try{renderTitle()}catch(e){}}}
   catch(e){}}
+/* ===== ログインボーナス(スタンプカード・7日で1周) ===== */
+/* 1日目〜7日目の報酬。ドラクマ・星屑・ダイヤの原石は端末で、ボットチケット(tk)はサーバー(nm_login.sql)が付けます */
+const SK=[[{k:'coin',n:30}],[{k:'dust',n:5}],[{k:'tk',n:1}],[{k:'coin',n:50}],[{k:'dust',n:10}],[{k:'tk',n:1}],[{k:'gem',n:1},{k:'coin',n:50}]];
+const SK_NM={coin:'ドラクマ',dust:'星屑',tk:'ボットチケット',gem:'ダイヤの原石'};
+const skToday=()=>new Date(Date.now()+324e5).toISOString().slice(0,10);
+const skTk=px=>`<svg width="${px}" height="${px}" viewBox="0 0 48 48" aria-hidden="true"><path d="M5 12h38a3 3 0 0 1 3 3v6a4 4 0 0 0 0 8v6a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3v-6a4 4 0 0 0 0-8v-6a3 3 0 0 1 3-3z" fill="#e6b34a" stroke="#6a4a14" stroke-width="2"/><path d="M33 14v20" stroke="#6a4a14" stroke-width="1.6" stroke-dasharray="3 3"/><path d="M18 16.5l2.3 4.8 5.2.7-3.8 3.6.9 5.2-4.6-2.5-4.6 2.5.9-5.2-3.8-3.6 5.2-.7z" fill="#6a4a14"/></svg>`;
+const skIc=(k,px)=>k==='coin'?`<i class="sk-coin" style="width:${px}px;height:${px}px"></i>`:k==='tk'?skTk(px):kgi(k,px);
+const skItem=it=>`<div class="sk-r">${skIc(it.k,26)}<b>${it.k==='coin'?it.n:'×'+it.n}</b><small>${SK_NM[it.k]}</small></div>`;
+function skCard(stamps,now,next){
+  return `<div class="sk-card"><h4><span>ログインボーナス スタンプカード</span><small>7個そろうと、新しいカードになります</small></h4><div class="sk-row">${SK.map((its,i)=>{const n=i+1,on=n<=stamps;
+    return `<div class="sk-slot${n===7?' big':''}${on?' on':''}${n===next?' now':''}"><span class="sk-n">${n===7?'7日目 ★':n+'日目'}</span><div class="sk-it">${its.map(skItem).join('')}</div>${on?`<span class="sk-st${n===now?' pop':''}">済</span>`:''}</div>`}).join('')}</div></div>`}
+function skModal(info){
+  return new Promise(res=>{
+    const t=MS.lb.t,cl=MS.lb.d===skToday(),st=info?info.day:(cl?((t-1)%7)+1:t%7);
+    const rw=info?SK[info.day-1].map(it=>`${SK_NM[it.k]}${it.k==='tk'?' ×'+num0(info.tk):(it.k==='coin'?' +'+it.n:' ×'+it.n)}`).join(' ・ '):'';
+    const m=modal(`<h3 class="ttl" style="font-size:18px">${info?'ログインボーナス':'スタンプカード'}</h3>
+      ${info?`<p class="sub" style="margin:0;color:#f0c555;font-weight:700;font-size:13px">${info.day}個目のスタンプ! ${esc(rw)} を手に入れました</p>`:`<p class="sub" style="margin:0">${cl?'今日のスタンプは押してあります。明日もログインしてください。':'通信できなかったため、今日のスタンプはまだです。'}</p>`}
+      ${skCard(st,info?info.day:0,st<7?st+1:0)}
+      <div class="row" style="justify-content:flex-end"><button class="btn gold" data-act="x">${info?'受け取る':'閉じる'}</button></div>`);
+    m.querySelector('.mp').style.maxWidth='720px';
+    if(info)setTimeout(()=>{if(m.isConnected)SFX.play('gsr')},450);
+    m.querySelector('[data-act="x"]').onclick=()=>{m.remove();try{if(document.querySelector('.lobby'))renderTitle()}catch(e){}res()};
+  })}
+const SKB={busy:false};
+async function loginBonus(manual){
+  const d=skToday();
+  if(MS.lb.d===d){if(manual)await skModal(null);return}
+  if(SKB.busy)return;SKB.busy=true;
+  try{
+    const j=await Promise.race([rpc('nm_login_bonus',{},'p'),new Promise((_,no)=>setTimeout(()=>no(new Error('timeout')),9000))]);
+    if(!j||!j.ok)throw new Error('bad');
+    const t=Math.max(0,Math.floor(+j.total)||0),td=/^\d{4}-\d{2}-\d{2}$/.test(j.today)?j.today:d;
+    if(j.claimed){
+      const day=Math.min(7,Math.max(1,Math.floor(+j.day)||(((t-1)%7)+1)));
+      for(const it of SK[day-1]){if(it.k==='coin')MS.coins=(MS.coins||0)+it.n;else if(it.k==='dust')MS.dust+=it.n;else if(it.k==='gem')MS.gem+=it.n}
+      MS.lb={t,d:td};saveMS();SKB.busy=false;
+      await skModal({day,tk:num0(j.tickets)});
+    }else{MS.lb={t,d:td};saveMS();SKB.busy=false;if(manual)await skModal(null)}
+  }catch(e){
+    if(manual&&!(e&&e.fatal==='NOSQL'))toast('<b>ログインボーナスを受け取れませんでした</b>通信できるときに、もう一度お試しください<span></span>');
+  }finally{SKB.busy=false}
+}
 /* ===== オンライン人数 ===== */
 const ONL={n:null,cid:'',bad:0};
 try{ONL.cid=localStorage.getItem('nm_cid')||'';if(!/^[a-z0-9]{12,32}$/.test(ONL.cid)){ONL.cid=Array.from(crypto.getRandomValues(new Uint8Array(10)),b=>(b%36).toString(36)).join('')+Date.now().toString(36);localStorage.setItem('nm_cid',ONL.cid)}}catch(e){ONL.cid=Math.random().toString(36).slice(2)+Date.now().toString(36)}
@@ -1190,7 +1253,7 @@ async function onlPing(){
     if(!r.ok)throw 0;const n=await r.json();if(!Number.isFinite(n))throw 0;ONL.bad=0;ONL.n=n;
     const e=document.getElementById('onl');if(e){e.hidden=n<1;e.innerHTML=n>0?`<i></i>${n}人がオンライン`:''}}
   catch(e){ONL.bad++}}
-setInterval(onlPing,60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)onlPing()});
+setInterval(onlPing,30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)onlPing()});
 /* ===== データ引継ぎ ===== */
 const XK=['gm1','nm_puz','nick','nm_myd','sfxv','bgmv','nm_rep','nm_cpud','nm_cpuc'];
 const xHash=t=>{let h=2166136261;for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(36)};
@@ -1297,7 +1360,7 @@ function renderTitle(){
       <button class="lb-prof" data-act="ms" aria-label="ミッション・装備"><img class="pav" src="${avSrc(MS.eq.av)}" alt=""><span class="lpt"><b>${titleH(MS.eq.title)}</b><span>達成 ${dn} / ${MIS.length}</span></span></button>
       <button class="rkchip" data-act="rkpg" aria-label="ランク"><small>RANK</small><b>${rkLv(MS.rp||0)}</b></button>
       <div class="tl lb-brand"><h1><span class="en">NEMESIS</span><span class="jp">ネメシス</span></h1><div style="display:flex;gap:6px;align-self:flex-start;align-items:center">${seasonH()}${onlH()}</div></div>
-      <div class="lb-r"><span class="dcoin"><i></i><b>${MS.coins||0}</b> ドラクマ</span><button class="ib" data-act="rules">ルール</button><button class="ib" data-act="snd" aria-label="音の設定">音</button><button class="ib" data-act="xfer" aria-label="データ引継ぎ">引継ぎ</button></div>
+      <div class="lb-r"><span class="dcoin"><i></i><b>${MS.coins||0}</b> ドラクマ</span><button class="ib skb${MS.lb.d!==skToday()?' nb':''}" data-act="skopen">スタンプ</button><button class="ib" data-act="rules">ルール</button><button class="ib" data-act="snd" aria-label="音の設定">音</button><button class="ib" data-act="xfer" aria-label="データ引継ぎ">引継ぎ</button></div>
     </div>
     <div class="lb-mid">
       <div class="lb-feat">
@@ -1363,13 +1426,14 @@ function renderTitle(){
      <li>合計得点が同点のときは、デッキの数値の合計が小さい方の勝ちです。</li>
      <li>ルーム戦・ランダムマッチには制限時間があります(デッキ編成120秒、入れ替え60秒、各ラウンド45秒、ラウンド結果20秒)。時間切れになると自動で選ばれます(入れ替えは「しない」になります)。ラウンド結果は、両者が「次のラウンドへ」を押すか、20秒たつと次へ進みます。</li>
      <li>処理順: スフィンクス・パンドラなどの無効化 → 数値の増減 → 暫定結果 → 勝ち確定・引き分けへの書き換え → 勝利時の効果。</li>
-     <li>ランダムマッチで、しばらく相手が見つからないときは、コンピューターの相手と対戦することがあります。その試合もレートに反映されます(変動は通常の半分。反映されるのは1日8試合まで)。</li></ul>
+     <li>ランダムマッチで、しばらく相手が見つからないときは、ボットと対戦することがあります。その試合もレートに反映されます(変動は通常の半分。反映されるのは1日10試合まで。ボットチケットで追加できます)。</li></ul>
      <div class="row" style="justify-content:flex-end"><button class="btn gold" data-act="close">閉じる</button></div>`);
      m.querySelector('[data-act="close"]').onclick=()=>m.remove()});
     on('tut',startTutorial);on('myd',renderMyDecks);on('rkm',rankModal);
     if(autoRoom)setTimeout(()=>openMode('room'),80);
     if(OPENMODE){const o=OPENMODE;OPENMODE=null;setTimeout(()=>openMode(o),120)}
-    if(!SEASON.cl){SEASON.cl=1;setTimeout(seasonClaim,1500)}
+    on('skopen',()=>{loginBonus(true)});
+    if(!SEASON.cl){SEASON.cl=1;setTimeout(async()=>{try{await loginBonus()}catch(e){}seasonClaim()},900)}
   };
   draw();bind();
 }
@@ -1628,7 +1692,7 @@ function renderPick(i){
     const rest=G.orig[o].filter(c=>!Q.used.includes(c));
     showT(`<div class="hd"><div class="hl"><span class="lbl">ラウンド</span><span style="font:800 22px 'Shippori Mincho B1',serif">${S.round}<span style="font-size:13px;color:#b8a68a"> / 5</span></span></div>${scoreH(P.score,Q.score,i)}${quitBtn}</div>
     <div class="panel col" style="width:176px;gap:6px;overflow:auto;min-height:0">
-      <div class="row" style="flex-wrap:nowrap"><img src="${G.mode==='online'&&G.oppAv?avSrc(G.oppAv):(o===1?IC.helmet:IC.owl)}" width="34" height="34" alt="" style="border-radius:50%"><div><div style="font-weight:700;font-size:14px">${esc(G.names[o])}</div><div class="lbl">${G.les?'れんしゅう':(G.mode==='cpu'?(G.level==='easy'?'やさしい':'ふつう'):titleH(G.oppTi||'プレイヤー'))}</div></div></div>
+      <div class="row" style="flex-wrap:nowrap"><img src="${G.mode==='online'&&G.oppAv?avSrc(G.oppAv):(o===1?IC.helmet:IC.owl)}" width="34" height="34" alt="" style="border-radius:50%"><div><div style="font-weight:700;font-size:14px">${esc(G.names[o])}</div>${G.mode==='online'&&G.oppRk?`<div style="max-width:126px">${rkStarsH(G.oppRk,10)}</div>`:''}<div class="lbl">${G.les?'れんしゅう':(G.mode==='cpu'?(G.level==='easy'?'やさしい':'ふつう'):titleH(G.oppTi||'プレイヤー'))}</div></div></div>
       <div><div class="lbl">手札 ${Q.hand.length}枚</div><div class="row opp" style="gap:3px;margin-top:3px">${Q.hand.map(()=>backH('sm')).join('')}</div></div>
       <div><div class="lbl">公開デッキ(暗い札は使用済み)</div><div class="row" style="gap:5px;margin-top:3px">${G.orig[o].map(k=>thumbH(k,Q.used.includes(k))).join('')}</div></div>
       ${statusChips(o).length?`<div class="row" style="gap:4px">${statusChips(o).map(t=>`<span class="chip">${t}</span>`).join('')}</div>`:''}
@@ -1798,7 +1862,7 @@ const mcoin=m=>m.c||(m.goal>=5?120:80);
 const rwName=r=>r[0]==='back'?`カードの裏「${BKN[r[1]]}」`:r[0]==='av'?`アイコン「${AVN[r[1]]}」`:`称号「${r[1]}」`;
 function loadMS(){let m=null;try{m=JSON.parse(localStorage.getItem('gm1')||'null')}catch(e){}
   m=m&&typeof m==='object'?m:{};m.st=m.st||{};m.done=m.done||{};m.cardsSeen=m.cardsSeen||[];m.dexSeen=m.dexSeen||[];m.lessSeen=m.lessSeen||[];m.eq=Object.assign({back:'std',av:'owl',title:''},m.eq||{});m.own=Object.assign({back:[],av:[],title:[]},m.own||{});m.coins=m.coins||0;
-  m.ct=Object.assign({s:[],g:[],d:[]},m.ct||{});for(const t of['s','g','d'])if(!Array.isArray(m.ct[t]))m.ct[t]=[];m.ceq=m.ceq&&typeof m.ceq==='object'?m.ceq:{};m.cw=m.cw&&typeof m.cw==='object'?m.cw:{};m.dust=Math.max(0,+m.dust||0);m.gem=Math.max(0,+m.gem||0);m.bl=Math.max(0,+m.bl||0);m.gods=m.gods&&typeof m.gods==='object'?m.gods:{};if(m.gv!==2){m.gods={};m.gv=2}m.fw=+m.fw||0;
+  m.ct=Object.assign({s:[],g:[],d:[]},m.ct||{});for(const t of['s','g','d'])if(!Array.isArray(m.ct[t]))m.ct[t]=[];m.ceq=m.ceq&&typeof m.ceq==='object'?m.ceq:{};m.cw=m.cw&&typeof m.cw==='object'?m.cw:{};m.dust=Math.max(0,+m.dust||0);m.gem=Math.max(0,+m.gem||0);m.bl=Math.max(0,+m.bl||0);m.gods=m.gods&&typeof m.gods==='object'?m.gods:{};if(m.gv!==2){m.gods={};m.gv=2}m.fw=+m.fw||0;m.lb=m.lb&&typeof m.lb==='object'?{t:Math.max(0,Math.floor(+m.lb.t)||0),d:/^\d{4}-\d{2}-\d{2}$/.test(m.lb.d)?m.lb.d:''}:{t:0,d:''};
   if(!m.gs)m.gs=1;m.rp=Math.max(0,+m.rp||0);
   if(!m.mg){m.mg=1;for(const x of MIS)if(m.done[x.id]&&m.own[x.rw[0]]&&!m.own[x.rw[0]].includes(x.rw[1]))m.own[x.rw[0]].push(x.rw[1])}
   if(!m.tm){m.tm=1;for(const x of MIS)if(m.done[x.id]&&x.rw[0]==='title'&&!m.own.title.includes(x.rw[1]))m.own.title.push(x.rw[1])}
@@ -2452,7 +2516,7 @@ const netBanner=t=>{NETB.textContent=t||'';NETB.hidden=!t};
 function netOff(){
   const was=NET.active,code=NET.code,R=NET.R,mode=NET.mode,sl=NET.slot,bot=NET.bot;
   if(mode==='random')lockClear();
-  NET.gen++;NET.active=false;wakeOff();if(NET.bot)NET.bot.dead=true;NET.bot=null;NET.botBusy=false;NET.code=null;NET.R=null;NET.mode='';clearTimeout(NET.tm);NET.tm=null;NET.fails=0;NET.oppOn=true;netBanner('');
+  NET.gen++;NET.active=false;wakeOff();if(NET.bot)NET.bot.dead=true;NET.bot=null;NET.botInfo=null;NET.botBusy=false;NET.code=null;NET.R=null;NET.mode='';clearTimeout(NET.tm);NET.tm=null;NET.fails=0;NET.oppOn=true;netBanner('');
   if(was&&code&&!bot){
     NET.leaving=(async()=>{
       try{if(mode==='random'&&R&&R.phase!=='lobby'&&!R.fin&&!R.reported)await rpc('nm_report',{p_room:code,p_result:1,p_forfeit:true},sl)}catch(e){}
@@ -2640,10 +2704,11 @@ function showRate(r){
     el.innerHTML=`<div class="rt"><span class="rl">レート</span><span class="rsub">${t}</span></div>`;
   }
 }
-async function fillRate(el){try{if(!(window.crypto&&crypto.subtle))throw fatal('NOCRYPTO');const j=await rpc('nm_me',{p_name:cn(NICK)},'p');if(el.isConnected)el.textContent=`あなたのレート: ${j.rating}(${j.games}戦 ${j.wins}勝${j.losses}敗${j.draws?j.draws+'分':''}${j.rank?'・'+j.rank+'位':''})`;if(!SEASON.c2){SEASON.c2=1;seasonClaim()}}catch(e){if(el.isConnected)el.textContent=(e&&e.fatal?FATAL_MSG[e.fatal]:'レートを取得できませんでした(通信状況を確かめてください)')}}
+const botLine=j=>(j&&j.bot_left!=null)?`<br><span style="font-size:11.5px;color:#d9c9a8;font-weight:600">本日のボット戦(レート): あと${num0(j.bot_left)}/${num0(j.bot_limit)||10}試合${num0(j.bot_tickets)?` ・ ボットチケット ${num0(j.bot_tickets)}枚`:''}</span>`:'';
+async function fillRate(el){try{if(!(window.crypto&&crypto.subtle))throw fatal('NOCRYPTO');const j=await rpc('nm_me',{p_name:cn(NICK)},'p');if(el.isConnected)el.innerHTML=`あなたのレート: ${num0(j.rating)}(${num0(j.games)}戦 ${num0(j.wins)}勝${num0(j.losses)}敗${j.draws?num0(j.draws)+'分':''}${j.rank?'・'+num0(j.rank)+'位':''})`+botLine(j);if(!SEASON.c2){SEASON.c2=1;seasonClaim()}}catch(e){if(el.isConnected)el.textContent=(e&&e.fatal?FATAL_MSG[e.fatal]:'レートを取得できませんでした(通信状況を確かめてください)')}}
 async function ratedModal(){
   const m=modal(`<h3 class="ttl" style="font-size:17px">レート戦(ランダムマッチ)</h3>
-   <ul style="font-size:12px;line-height:1.55;margin:4px 0 6px;padding-left:18px"><li>勝敗でレート(はじめは1000)が増減します。</li><li>自分より強い相手に勝つと多く増え、負けても減りは小さめ。弱い相手に勝っても増えは小さく、負けると大きく減ります。</li><li>近いレートの人と当たりやすく、待つほど範囲が広がります。</li><li><b>試合の途中で退出すると、負けになります。</b></li><li>相手が見つからないときは、コンピューターの相手と対戦することがあります(レートの変動は半分、1日8試合まで)。</li></ul>
+   <ul style="font-size:12px;line-height:1.55;margin:4px 0 6px;padding-left:18px"><li>勝敗でレート(はじめは1000)が増減します。</li><li>自分より強い相手に勝つと多く増え、負けても減りは小さめ。弱い相手に勝っても増えは小さく、負けると大きく減ります。</li><li>近いレートの人と当たりやすく、待つほど範囲が広がります。</li><li><b>試合の途中で退出すると、負けになります。</b></li><li>相手が見つからないときは、ボットと対戦することがあります(レートの変動は半分、1日10試合まで。ボットチケットで追加できます)。</li></ul>
    <p class="sub" id="myrate" style="color:#f0c555;font-weight:700;margin:0 0 6px">あなたのレート: 確認中…</p>
    <div class="row" style="justify-content:flex-end"><button class="btn" data-act="rk">ランキング</button><button class="btn" data-act="x">閉じる</button><button class="btn gold" data-act="go2">相手を探す</button></div>`);
   m.querySelector('[data-act="x"]').onclick=()=>m.remove();
@@ -2652,7 +2717,7 @@ async function ratedModal(){
   try{
     if(!(window.crypto&&crypto.subtle))throw fatal('NOCRYPTO');
     const j=await rpc('nm_me',{p_name:cn(NICK)},'p');const el=m.querySelector('#myrate');
-    if(el)el.textContent=`あなたのレート: ${j.rating}(${j.games}戦 ${j.wins}勝${j.losses}敗${j.draws?j.draws+'分':''}${j.rank?'・'+j.rank+'位':''})`;
+    if(el)el.innerHTML=`あなたのレート: ${num0(j.rating)}(${num0(j.games)}戦 ${num0(j.wins)}勝${num0(j.losses)}敗${j.draws?num0(j.draws)+'分':''}${j.rank?'・'+num0(j.rank)+'位':''})`+botLine(j);
   }catch(e){const el=m.querySelector('#myrate');if(el)el.textContent=(e&&e.fatal?FATAL_MSG[e.fatal]:'レートを取得できませんでした(通信状況を確かめてください)')}
 }
 async function rankModal(){
@@ -2670,15 +2735,21 @@ const AVSET=['owl','helmet','laurel','lyre','sandals','trident',...GI.filter(g=>
 const TITLE_OK=t=>(typeof t==='string'&&(GTITLES.includes(t)||SEASON_TI.test(t)))?t:'';
 const cleanCT=x=>{const o={};if(x&&typeof x==='object')for(const c of CARDS)if(TRS.includes(x[c.id]))o[c.id]=x[c.id];return o};
 const myCT=()=>{const o={};for(let i=0;i<CARDS.length;i++){const t=tierOf(0,i);if(t)o[CARDS[i].id]=t}return o};
-const helloData=()=>({name:myName(),av:MS.eq.av,ti:MS.eq.title,ct:myCT()});
+const helloData=()=>({name:myName(),av:MS.eq.av,ti:MS.eq.title,ct:myCT(),rk:rkLv(MS.rp||0)});
+const cleanRk=v=>{v=Math.floor(+v);return v>=1&&v<=RK_MAX?v:0};
+const rkStarsH=(lv,sz)=>{lv=cleanRk(lv);if(!lv)return '';const n=Math.floor(lv/10);return `<span class="rkst"${sz?` style="--s:${sz}px"`:''} aria-label="ランク${lv}"><small>RANK ${lv}</small>${n?`<span class="rkss">${'★'.repeat(n)}</span>`:''}</span>`};
 const num0=v=>Math.max(0,Math.floor(+v)||0);
 function statTxt(j,fb){
   if(!j)return fb!=null?`レート <b style="font:800 18px 'Shippori Mincho B1',serif;color:#f0c555">${num0(fb)}</b>`:'戦績を取得できませんでした';
   const g=num0(j.games),w=num0(j.wins),l=num0(j.losses),d=num0(j.draws);
   return `レート <b style="font:800 18px 'Shippori Mincho B1',serif;color:#f0c555">${num0(j.rating)}</b><br>${g?`勝率 <b>${Math.round(w/g*100)}%</b><br><span style="color:#b8a68a">${g}戦 ${w}勝 ${l}敗${d?' '+d+'分':''}</span>`:'<span style="color:#b8a68a">まだ対戦記録なし</span>'}`;
 }
-function profCard(label,name,av,ti,id,body){
-  return `<div class="panel col" style="width:250px;align-items:center;gap:5px;padding:12px 14px;text-align:center"><span class="lbl">${label}</span><img class="pav" style="width:64px;height:64px" src="${avSrc(av)}" alt=""><div style="font:800 20px 'Shippori Mincho B1',serif;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(name)}</div><div style="min-height:20px">${ti?`<span class="chip" style="color:#f0c555;border-color:#d9a93f">${titleH(ti)}</span>`:'<span class="sub">称号なし</span>'}</div><div id="${id}" style="font-size:12px;line-height:1.6;color:#dccfb8;min-height:58px">${body}</div></div>`}
+function profCard(label,name,av,ti,id,body,rk){
+  return `<div class="panel col" style="width:250px;align-items:center;gap:5px;padding:12px 14px;text-align:center"><span class="lbl">${label}</span><img class="pav" style="width:64px;height:64px" src="${avSrc(av)}" alt=""><div style="font:800 20px 'Shippori Mincho B1',serif;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(name)}</div><div style="min-height:16px">${rkStarsH(rk)}</div><div style="min-height:20px">${ti?`<span class="chip" style="color:#f0c555;border-color:#d9a93f">${titleH(ti)}</span>`:'<span class="sub">称号なし</span>'}</div><div id="${id}" style="font-size:12px;line-height:1.6;color:#dccfb8;min-height:58px">${body}</div></div>`}
+function botMsg(){const i=NET.botInfo;if(!i)return 'ボットとマッチングしました';const l=`本日あと${i.left}試合`;
+  if(i.viaTicket)return `ボットとマッチングしました(${l}・ボットチケット使用 残り${i.tickets}枚)`;
+  if(!i.rated)return `ボットとマッチングしました(${l}・今回は練習試合です)`;
+  return `ボットとマッチングしました(${l})`}
 function matchIntro(){
   BGM.set('match');
   const gen=NET.gen,R=NET.R,s=NET.seat,o=1-s,rated=NET.mode==='random',code=NET.code,tok={};
@@ -2687,12 +2758,12 @@ function matchIntro(){
   const body=rated?'<span style="color:#b8a68a">戦績を確認中…</span>':'<span style="color:#b8a68a">ルーム戦<br>(レートは動きません)</span>';
   const alive=()=>NET.active&&NET.gen===gen&&NET.R===R&&R.phase==='build'&&G&&G.mi===tok;
   ANIM=true;
-  show(`<div class="hd"><div class="hl"><span class="ttl">対戦相手が見つかりました</span><span class="sub">${rated?'レート戦':'ルーム戦'}</span></div>${quitBtn}</div>
+  show(`<div class="hd"><div class="hl"><span class="ttl">対戦相手が見つかりました</span><span class="sub">${NET.bot?'ボット戦':rated?'レート戦':'ルーム戦'}</span></div>${quitBtn}</div>
    <div class="center" style="grid-column:1/-1;gap:12px"><div class="row" style="flex-wrap:nowrap;gap:16px;justify-content:center;align-items:stretch">
-   ${profCard('あなた',n2[0],MS.eq.av,MS.eq.title,'mi-me',body)}
+   ${profCard('あなた',n2[0],MS.eq.av,MS.eq.title,'mi-me',body,rkLv(MS.rp||0))}
    <span style="font:800 24px 'Shippori Mincho B1',serif;color:#8a745a;align-self:center">VS</span>
-   ${profCard('対戦相手',n2[1],op.av,op.ti,'mi-op',body)}</div>
-   <div class="sub" id="mi-go" style="font-size:13px;color:#f0c555">まもなくデッキ編成へ(8)</div></div>`,'bgM','grid-template-rows:36px minmax(0,1fr)');
+   ${profCard('対戦相手',n2[1],op.av,op.ti,'mi-op',body,op.rk)}</div>
+   ${NET.bot?`<div id="mi-bot" style="font-size:13px;font-weight:700;color:#8fd0a0;text-shadow:0 1px 3px #000">${esc(botMsg())}</div>`:''}<div class="sub" id="mi-go" style="font-size:13px;color:#f0c555">まもなくデッキ編成へ(8)</div></div>`,'bgM','grid-template-rows:36px minmax(0,1fr)');
   bindQuit();
   const end=Date.now()+MATCH_INTRO_MS;
   const go=()=>{clearInterval(iv);if(alive())buildFor(0)};
@@ -2777,7 +2848,7 @@ function mkBot(gen,me,tk){
     else if(kind==='pc'){B.hpc[data.r]=true;tryReveal(data.r)}
     else if(kind==='pr'){B.hpr[data.r]=data.card;tryResolve(data.r)}
   };
-  B.start=()=>{B.g=NET.R.g;out('hello',{name:prof.name,av:prof.av,ti:prof.ti,ct:botCT()});after(rb(8,28),commitDeck)};
+  B.start=()=>{B.g=NET.R.g;out('hello',{name:prof.name,av:prof.av,ti:prof.ti,ct:botCT(),rk:rkLv(Math.round((prof.games||0)*7))});after(rb(8,28),commitDeck)};
   return B;
 }
 function botCT(){const o={},p=Math.random();if(p<.4)return o;for(const c of CARDS){const r=Math.random();if(r<.22)o[c.id]='s';else if(r<.3)o[c.id]='g';else if(r<.32)o[c.id]='d'}return o}
@@ -2794,12 +2865,30 @@ async function startBot(gen){
   if(gen!==NET.gen)return;
   const bot=mkBot(gen,me,tk);
   NET.bot=bot;NET.code='BOT0';NET.seat=0;NET.after=0;NET.R=newR(0);NET.R.hello[0]=myName();
-  netBanner('');bot.start();
+  NET.botInfo=tk&&tk.left!=null?{left:num0(tk.left),tickets:num0(tk.tickets),rated:!!tk.rated,viaTicket:false}:null;
+  netBanner('');
+  /* 1日の上限に達していて、ボットチケットを持っているとき: 使うかどうかを本人に確認する */
+  if(tk&&tk.ok&&!tk.rated&&tk.can_ticket&&NET.botInfo){
+    const use=await new Promise(res=>{
+      const m=modal(`<h3 class="ttl" style="font-size:17px">ボットチケットを使いますか?</h3><p class="sub" style="line-height:1.6;margin:4px 0 8px">本日のボットとのレート戦は、${num0(tk.limit)||10}試合に達しています。<br>ボットチケットを<b>1枚</b>使うと、この試合をレート戦にできます(所持 ${num0(tk.tickets)}枚)。<br>使わない場合は、レートが動かない練習試合になります。</p><div class="row" style="justify-content:flex-end"><button class="btn" data-act="no">使わない(練習試合)</button><button class="btn gold" data-act="yes">チケットを使う(レート戦)</button></div>`);
+      m.querySelector('[data-act="no"]').onclick=()=>{m.remove();res(false)};
+      m.querySelector('[data-act="yes"]').onclick=()=>{m.remove();res(true)};
+    });
+    if(gen!==NET.gen||NET.bot!==bot)return;
+    if(use){
+      try{const u=await rpc('nm_bot_use_ticket',{p_ticket:tk.ticket});
+        if(u&&u.ok){bot.rated=true;NET.botInfo.rated=true;NET.botInfo.viaTicket=true;NET.botInfo.tickets=num0(u.tickets)}
+        else toast('<b>チケットを使えませんでした</b>練習試合になります<span></span>')}
+      catch(e){if(gen===NET.gen)toast('<b>チケットを使えませんでした</b>練習試合になります<span></span>')}
+      if(gen!==NET.gen||NET.bot!==bot)return;
+    }
+  }
+  bot.start();
 }
 /* --- 受信したメッセージの処理 --- */
 async function handle(m){
   const R=NET.R;if(!R)return;const d=m.data||{},s=NET.seat,o=1-s;
-  if(m.kind==='hello'){if(R.hello[o]==null){R.hello[o]=cn(d.name)||(o?'ゲスト':'ホスト');R.pi[o]={av:AVSET.includes(d.av)?d.av:'owl',ti:TITLE_OK(d.ti),ct:cleanCT(d.ct)}}return advance()}
+  if(m.kind==='hello'){if(R.hello[o]==null){R.hello[o]=cn(d.name)||(o?'ゲスト':'ホスト');R.pi[o]={av:AVSET.includes(d.av)?d.av:'owl',ti:TITLE_OK(d.ti),ct:cleanCT(d.ct),rk:cleanRk(d.rk)}}return advance()}
   if(d.g!==R.g){if(d.g>R.g)R.fut.push(m);return}
   switch(m.kind){
   case 'dc':if(R.dk[o]==null&&typeof d.h==='string'&&d.h.length===64)R.dk[o]=d.h;break;
@@ -2955,7 +3044,7 @@ function onNet(m){
   case 'rdy':if(G&&G.resTok&&G.resR===m.r){const h=document.getElementById('rdhint');if(h)h.textContent='相手は準備OKです';if(G.resGo)G.resGo()}break;
   case 'opp':if(!m.on)SFX.play('blip');netBanner(m.on?'':'相手の接続が切れました。戻るのを待っています…');break;
   case 'opp_again':if(G){G.oppAgain=true;const h=document.getElementById('againhint');if(h)h.textContent='相手が「もう一度」を希望しています'}break;
-  case 'build':{newOnline(m.names);G.rated=NET.mode==='random';const op=(NET.R&&NET.R.pi[1-NET.seat])||{};G.oppAv=op.av;G.oppTi=op.ti;G.tier=op.ct||{};SFX.play('ding');if(m.first)matchIntro();else buildFor(0);break}
+  case 'build':{newOnline(m.names);G.rated=NET.mode==='random';const op=(NET.R&&NET.R.pi[1-NET.seat])||{};G.oppAv=op.av;G.oppTi=op.ti;G.oppRk=op.rk||0;G.tier=op.ct||{};SFX.play('ding');if(m.first)matchIntro();else buildFor(0);break}
   case 'reveal':G.names=m.names;G.orig=[m.orig[0].slice(),m.orig[1].slice()];G.decks=[m.orig[0].slice(),m.orig[1].slice()];renderSwap(0);break;
   case 'turn':G.S=mkS(m.view);G.decks[0]=m.view.me.deck.slice();G.log=[];G.picks=[null,null];G.fin=null;G.wantFin=false;nextPick(0);break;
   case 'result':G.S=mkS(m.view);G.log.push(m.L);renderResult(m.L);break;
