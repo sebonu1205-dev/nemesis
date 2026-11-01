@@ -47,7 +47,11 @@
     .card-chip.A { color: #7fb0d8; border-color: #2a5f8f; }
     .card-chip.B { color: #a9c46a; border-color: #5d7a34; }
     .card-chip.C { color: #ee9566; border-color: #b4532a; }
+    .round-log { font-size: 11px; color: #b8a68a; margin: 4px 0; }
+    .round-log b { color: #f0c555; }
   </style>
+</head>
+<body>
   <script type="module">
   // Import the functions you need from the SDKs you need
   import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
@@ -71,8 +75,6 @@
   const app = initializeApp(firebaseConfig);
   const analytics = getAnalytics(app);
 </script>
-</head>
-<body>
   <h1>ネメシス NEMESIS — 戦略分析ダッシュボード</h1>
   <div class="container">
     <div style="margin-bottom: 16px; text-align: center;">
@@ -119,49 +121,58 @@
       <div id="recent-decks-container"><div class="empty-state">読み込み中...</div></div>
     </div>
 
+    <div class="section">
+      <h2><span>📝 最近の対戦ログ詳細（直近5試合）</span></h2>
+      <div id="recent-logs-container"><div class="empty-state">読み込み中...</div></div>
+    </div>
+
     <div style="margin-top: 40px; text-align: center; color: #8a745a; font-size: 12px;">
       <p>データは localStorage (nm_rep, gm1) から読み取ります。サーバーには送信されません。</p>
     </div>
   </div>
 
   <script>
+    /* ===== 全27カード定義 (index.html の CARDS 配列と同期) ===== */
     const CARDS = [
-      {id:'joker',n:'サテュロス',p:'A',num:1},
-      {id:'hunter',n:'アルテミス',p:'A',num:4},
-      {id:'shield',n:'アイギス',p:'A',num:5},
-      {id:'seal',n:'パンドラ',p:'A',num:8},
-      {id:'general',n:'アキレウス',p:'A',num:9},
-      {id:'perseus',n:'ペルセウス',p:'A',num:2},
-      {id:'hera',n:'ヘラクレス',p:'A',num:7},
-      {id:'teseus',n:'テセウス',p:'A',num:3},
-      {id:'bellero',n:'ベレロフォン',p:'A',num:6},
-      {id:'awaken',n:'プロメテウス',p:'B',num:1},
-      {id:'chase',n:'アタランテ',p:'B',num:3},
-      {id:'veteran',n:'オデュッセウス',p:'B',num:4},
-      {id:'weaken',n:'メドゥーサ',p:'B',num:5},
-      {id:'wall',n:'ヘパイストス',p:'B',num:10},
-      {id:'icarus',n:'イカロス',p:'B',num:7},
-      {id:'narc',n:'ナルキッソス',p:'B',num:2},
-      {id:'daedalus',n:'ダイダロス',p:'B',num:6},
-      {id:'apollo',n:'アポロン',p:'B',num:8},
-      {id:'comeback',n:'モイライ',p:'C',num:1},
-      {id:'ambush',n:'トロイの木馬',p:'C',num:3},
-      {id:'offset',n:'テミス',p:'C',num:4},
-      {id:'check',n:'スフィンクス',p:'C',num:9},
-      {id:'champ',n:'ゼウス',p:'C',num:10},
-      {id:'hermes',n:'ヘルメス',p:'C',num:5},
-      {id:'hades',n:'ハデス',p:'C',num:8},
-      {id:'penel',n:'ペネロペ',p:'C',num:2},
-      {id:'dionysus',n:'ディオニュソス',p:'C',num:6}
+      {id:'joker',   n:'サテュロス',   p:'A', num:1},
+      {id:'hunter',  n:'アルテミス',   p:'A', num:4},
+      {id:'shield',  n:'アイギス',     p:'A', num:5},
+      {id:'seal',    n:'パンドラ',     p:'A', num:8},
+      {id:'general', n:'アキレウス',   p:'A', num:9},
+      {id:'awaken',  n:'プロメテウス',  p:'B', num:1},
+      {id:'chase',   n:'アタランテ',   p:'B', num:3},
+      {id:'veteran', n:'オデュッセウス',p:'B', num:4},
+      {id:'weaken',  n:'メドゥーサ',   p:'B', num:5},
+      {id:'wall',    n:'ヘパイストス', p:'B', num:10},
+      {id:'comeback',n:'モイライ',     p:'C', num:1},
+      {id:'ambush',  n:'トロイの木馬', p:'C', num:3},
+      {id:'offset',  n:'テミス',       p:'C', num:4},
+      {id:'check',   n:'スフィンクス', p:'C', num:9},
+      {id:'champ',   n:'ゼウス',       p:'C', num:10},
+      {id:'perseus', n:'ペルセウス',   p:'A', num:2},
+      {id:'hera',    n:'ヘラクレス',   p:'A', num:7},
+      {id:'icarus',  n:'イカロス',     p:'B', num:7},
+      {id:'narc',    n:'ナルキッソス', p:'B', num:2},
+      {id:'hermes',  n:'ヘルメス',     p:'C', num:5},
+      {id:'hades',   n:'ハデス',       p:'C', num:8},
+      {id:'teseus',  n:'テセウス',     p:'A', num:3},
+      {id:'bellero', n:'ベレロフォン', p:'A', num:6},
+      {id:'daedalus',n:'ダイダロス',   p:'B', num:6},
+      {id:'apollo',  n:'アポロン',     p:'B', num:8},
+      {id:'penel',   n:'ペネロペ',     p:'C', num:2},
+      {id:'dionysus',n:'ディオニュソス',p:'C', num:6}
     ];
-    const CARD_BY_ID = {}; CARDS.forEach(c => { CARD_BY_ID[c.id] = c; });
+    const CARD_BY_ID = {}; CARDS.forEach((c, idx) => { CARD_BY_ID[idx] = c; c.idx = idx; });
     const POOL_NAME = { A: '条件勝ち', B: '数値操作', C: '結果の書き換え' };
-    function poolOf(id) { return CARD_BY_ID[id]?.p || '?'; }
+    function poolOf(idx) { return CARD_BY_ID[idx]?.p || '?'; }
+
+    /* ==ランク計算 (index.html と同じロジック)== */
     const RK_MAX=100;
     function rkNeed(l){return 11+Math.floor(l/4);}
     function rkCum(l){let c=0;for(let i=1;i<l;i++)c+=rkNeed(i);return c;}
     function rkLv(p){p=Math.max(0,+p||0);let l=1;while(l<RK_MAX&&p>=rkCum(l+1))l++;return l;}
 
+    /* ===== データ読み込み ===== */
     function loadAll() {
       let reps = []; try { reps = JSON.parse(localStorage.getItem('nm_rep') || '[]'); } catch(e) {}
       if (!Array.isArray(reps)) reps = [];
@@ -173,12 +184,15 @@
       renderResults(reps);
       renderLossAnalysis(reps);
       renderRecentDecks(reps);
+      renderRecentLogs(reps);
     }
     function clearData() {
       if (!confirm('localStorage の試合記録(nm_rep)をクリアしますか？')) return;
       localStorage.removeItem('nm_rep');
       loadAll();
     }
+
+    /* ===== サマリー ===== */
     function renderSummary(reps, gm1) {
       const total = reps.length; let wins=0, losses=0, draws=0; let scoreDiffSum = 0;
       reps.forEach(r => {
@@ -198,21 +212,25 @@
       document.getElementById('st-rank').textContent = lv;
       document.getElementById('st-rank-sub').textContent = 'ドラクマ: ' + coins;
     }
+
+    /* ===== カード使用頻度 ===== */
     function renderCardFrequency(reps) {
       const container = document.getElementById('card-freq-container'); const usage = {};
-      reps.forEach(r => { (r.decks?.[0] || []).forEach(cid => { usage[cid] = (usage[cid]||0) + 1; }); });
+      reps.forEach(r => { (r.decks?.[0] || []).forEach(idx => { usage[idx] = (usage[idx]||0) + 1; }); });
       if (reps.length === 0) { container.innerHTML = '<div class="empty-state">対戦記録がありません。</div>'; return; }
-      const rows = CARDS.map(c => ({...c, count: usage[c.id] || 0})).sort((a, b) => b.count - a.count);
-      let html = '<table><thead><tr><th>順位</th><th>カード名</th><th>プール</th><th>使用数</th><th>使用率</th></tr></thead><tbody>';
+      const rows = CARDS.map((c, idx) => ({...c, idx, count: usage[idx] || 0})).sort((a, b) => b.count - a.count);
+      let html = '<table><thead><tr><th>順位</th><th>カード名</th><th>プール</th><th>数値</th><th>使用数</th><th>使用率</th></tr></thead><tbody>';
       rows.forEach((c, i) => { const pct = reps.length > 0 ? ((c.count / reps.length) * 100).toFixed(1) : 0;
-        html += '<tr><td>' + (i + 1) + '</td><td>' + c.n + '</td><td><span class="tag pool' + c.p + '">' + POOL_NAME[c.p] + '</span></td><td>' + c.count + '</td><td>' + pct + '%</td></tr>';
+        html += '<tr><td>' + (i + 1) + '</td><td>' + c.n + '</td><td><span class="tag pool' + c.p + '">' + POOL_NAME[c.p] + '</span></td><td>' + c.num + '</td><td>' + c.count + '</td><td>' + pct + '%</td></tr>';
       });
       html += '</tbody></table>'; container.innerHTML = html;
     }
+
+    /* ===== デッキ構成タイプ ===== */
     function classifyDeck(deck) {
       if (!deck || deck.length === 0) return '不明';
       const counts = {A:0, B:0, C:0}; let costSum = 0;
-      deck.forEach(cid => { const c = CARD_BY_ID[cid]; if (!c) return; counts[c.p]++; costSum += c.num; });
+      deck.forEach(idx => { const c = CARD_BY_ID[idx]; if (!c) return; counts[c.p]++; costSum += c.num; });
       const avgCost = costSum / deck.length;
       let type = 'バランス型';
       if (counts.A >= 3) type = '条件勝ち重視';
@@ -239,24 +257,28 @@
         detailHtml += '<tr><td>' + type + '</td><td>' + poolStr + '</td><td>' + sample.avgCost.toFixed(1) + '</td><td>' + typeDecks.length + '</td><td>' + winRate + '% (' + wins + '勝' + losses + '敗' + draws + '分)</td></tr>';
       }); detailHtml += '</tbody></table>'; detail.innerHTML = detailHtml;
     }
+
+    /* ===== 勝敗 ===== */
     function renderResults(reps) {
       const total = reps.length; if (total === 0) { document.getElementById('res-win').textContent = '0'; document.getElementById('res-lose').textContent = '0'; document.getElementById('res-draw').textContent = '0'; document.getElementById('result-detail').innerHTML = '<div class="empty-state">対戦記録がありません。</div>'; return; }
       let wins=0, losses=0, draws=0; reps.forEach(r => { const w = r.fin ? r.fin.w : -1; const me = r.mode === 'cpu' || r.mode === 'online'; if (w === -1) draws++; else if (me) { if (w === 0) wins++; else losses++; } else { if (w === 0) wins++; else losses++; } });
       document.getElementById('res-win').textContent = wins; document.getElementById('res-lose').textContent = losses; document.getElementById('res-draw').textContent = draws;
       document.getElementById('result-detail').innerHTML = '<p>総対戦: ' + total + ' | 勝率: ' + Math.round((wins/total)*100) + '% | 敗北率: ' + Math.round((losses/total)*100) + '% | 引き分け率: ' + Math.round((draws/total)*100) + '%</p>';
     }
+
+    /* ===== 負け方分析 ===== */
     function renderLossAnalysis(reps) {
       const container = document.getElementById('loss-analysis-container'); const losses = reps.filter(r => { const w = r.fin ? r.fin.w : -1; const me = r.mode === 'cpu' || r.mode === 'online'; return me ? w === 1 : w === 0; });
       if (reps.length === 0) { container.innerHTML = '<div class="empty-state">対戦記録がありません。</div>'; return; }
       if (losses.length === 0) { container.innerHTML = '<div class="empty-state">まだ負けなし！完璧な戦績です。</div>'; return; }
       const loseRate = ((losses.length / reps.length) * 100).toFixed(1); let scoreDiffSum = 0; const opponentCards = {};
-      losses.forEach(r => { const diff = (r.score?.[0]||0) - (r.score?.[1]||0); scoreDiffSum += diff; (r.decks?.[1] || []).forEach(cid => { opponentCards[cid] = (opponentCards[cid]||0) + 1; }); });
+      losses.forEach(r => { const diff = (r.score?.[0]||0) - (r.score?.[1]||0); scoreDiffSum += diff; (r.decks?.[1] || []).forEach(idx => { opponentCards[idx] = (opponentCards[idx]||0) + 1; }); });
       const avgLossDiff = (scoreDiffSum / losses.length).toFixed(1);
       let html = '<div class="insight"><b>敗北率:</b> ' + loseRate + '% （' + losses.length + ' / ' + reps.length + ' 試合）<br><b>平均スコア差（敗北時）:</b> ' + avgLossDiff + ' 点（自分 − 相手）<br><b>推奨改善:</b> ' + inferTopLossReason(losses) + '</div>';
-      const oppRows = CARDS.map(c => ({...c, count: opponentCards[c.id] || 0})).sort((a, b) => b.count - a.count).filter(c => c.count > 0);
+      const oppRows = CARDS.map((c, idx) => ({...c, idx, count: opponentCards[idx] || 0})).sort((a, b) => b.count - a.count).filter(c => c.count > 0);
       if (oppRows.length > 0) {
-        html += '<h3 style="font-size:15px;margin-top:16px;">負けた相手がよく使ったカード</h3><table><thead><tr><th>カード名</th><th>プール</th><th>登場回数</th></tr></thead><tbody>';
-        oppRows.forEach(c => { html += '<tr><td>' + c.n + '</td><td><span class="tag pool' + c.p + '">' + POOL_NAME[c.p] + '</span></td><td>' + c.count + '</td></tr>'; });
+        html += '<h3 style="font-size:15px;margin-top:16px;">負けた相手がよく使ったカード</h3><table><thead><tr><th>カード名</th><th>プール</th><th>数値</th><th>登場回数</th></tr></thead><tbody>';
+        oppRows.forEach(c => { html += '<tr><td>' + c.n + '</td><td><span class="tag pool' + c.p + '">' + POOL_NAME[c.p] + '</span></td><td>' + c.num + '</td><td>' + c.count + '</td></tr>'; });
         html += '</tbody></table>';
       }
       container.innerHTML = html;
@@ -270,13 +292,59 @@
       return 'バランスの取れた敗北パターン。デッキ全体の見直しが必要です。';
     }
     function showLossDetails() { document.getElementById('loss-analysis-container').scrollIntoView({ behavior: 'smooth' }); }
+
+    /* ===== 最近のデッキ ===== */
     function renderRecentDecks(reps) {
       const container = document.getElementById('recent-decks-container'); if (reps.length === 0) { container.innerHTML = '<div class="empty-state">対戦記録がありません。</div>'; return; }
       const recent = reps.slice(-10).reverse(); let html = '<div class="deck-list">';
       recent.forEach(r => { const myDeck = r.decks?.[0] || []; const cls = classifyDeck(myDeck); const w = r.fin ? r.fin.w : -1; const me = r.mode === 'cpu' || r.mode === 'online'; const result = w === -1 ? '引分' : (me ? (w === 0 ? '勝' : '負') : (w === 0 ? '勝' : '負')); const resultCls = w === -1 ? 'draw' : (me ? (w === 0 ? 'win' : 'lose') : (w === 0 ? 'win' : 'lose')); const date = new Date(r.t || 0); const dateStr = isNaN(date) ? '-' : (date.getMonth()+1) + '/' + date.getDate() + ' ' + String(date.getHours()).padStart(2,'0') + ':' + String(date.getMinutes()).padStart(2,'0'); const typeStr = typeof cls === 'string' ? cls : cls.type;
-        html += '<div class="deck-item"><div class="deck-cards">' + myDeck.map(cid => '<span class="card-chip ' + poolOf(cid) + '"><span class="num">' + CARD_BY_ID[cid]?.num + '</span>' + CARD_BY_ID[cid]?.n + '</span>').join('') + '</div><div class="deck-stats"><div><b>' + typeStr + '</b></div><div><span class="tag ' + resultCls + '">' + result + '</span> ' + dateStr + '</div></div></div>';
+        html += '<div class="deck-item"><div class="deck-cards">' + myDeck.map(idx => '<span class="card-chip ' + poolOf(idx) + '"><span class="num">' + CARD_BY_ID[idx]?.num + '</span>' + CARD_BY_ID[idx]?.n + '</span>').join('') + '</div><div class="deck-stats"><div><b>' + typeStr + '</b></div><div><span class="tag ' + resultCls + '">' + result + '</span> ' + dateStr + '</div></div></div>';
       }); html += '</div>'; container.innerHTML = html;
     }
+
+    /* ===== 最近の対戦ログ詳細 ===== */
+    function renderRecentLogs(reps) {
+      const container = document.getElementById('recent-logs-container'); if (reps.length === 0) { container.innerHTML = '<div class="empty-state">対戦記録がありません。</div>'; return; }
+      const recent = reps.slice(-5).reverse(); let html = '';
+      recent.forEach((r, ri) => {
+        const w = r.fin ? r.fin.w : -1; const me = r.mode === 'cpu' || r.mode === 'online';
+        const result = w === -1 ? '引き分け' : (me ? (w === 0 ? 'あなたの勝ち' : 'あなたの負け') : (w === 0 ? r.names[0] + 'の勝ち' : r.names[1] + 'の勝ち'));
+        const resultCls = w === -1 ? 'draw' : (me ? (w === 0 ? 'win' : 'lose') : (w === 0 ? 'win' : 'lose'));
+        const date = new Date(r.t || 0); const dateStr = isNaN(date) ? '-' : (date.getMonth()+1) + '/' + date.getDate() + ' ' + String(date.getHours()).padStart(2,'0') + ':' + String(date.getMinutes()).padStart(2,'0');
+        html += '<div style="margin-bottom: 20px; padding: 15px; background: rgba(20,14,9,0.6); border: 1px solid #5a4630; border-radius: 8px;">';
+        html += '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">';
+        html += '<span style="font-weight: bold; color: #f0c555;">' + r.names[0] + ' vs ' + r.names[1] + '</span>';
+        html += '<span style="font-size: 11px; color: #8a745a;">' + dateStr + ' (' + r.mode + ')</span>';
+        html += '<span class="tag ' + resultCls + '">' + result + ' (' + r.score[0] + '-' + r.score[1] + ')</span>';
+        html += '</div>';
+        html += '<div style="font-size: 11px; color: #d9c9a8; margin-bottom: 8px;">';
+        html += '<b>自分のデッキ:</b> ' + (r.decks?.[0] || []).map(idx => CARD_BY_ID[idx]?.n || '?').join('、') + '<br>';
+        html += '<b>相手のデッキ:</b> ' + (r.decks?.[1] || []).map(idx => CARD_BY_ID[idx]?.n || '?').join('、');
+        html += '</div>';
+        html += '<div style="max-height: 200px; overflow-y: auto; border-top: 1px solid #5a4630; padding-top: 8px;">';
+        html += '<div style="font-size: 10px; color: #8a745a; margin-bottom: 4px;">ラウンド詳細:</div>';
+        (r.log || []).forEach((round, li) => {
+          const myCardIdx = round.cards?.[0]; const oppCardIdx = round.cards?.[1];
+          const myVal = round.n?.[0]; const oppVal = round.n?.[1];
+          const rw = round.w; const rsc = round.sc || 0;
+          const roundResult = rw === -1 ? '引分' : (rw === 0 ? '勝' : '負');
+          const roundResultCls = rw === -1 ? 'draw' : (rw === 0 ? 'win' : 'lose');
+          html += '<div class="round-log">';
+          html += '<span style="color: #f0c555;">R' + (li + 1) + ':</span> ';
+          html += '<span style="color: #8fd0a0;">' + CARD_BY_ID[myCardIdx]?.n + '(' + myVal + ')</span> ';
+          html += '<span style="color: #ee7b6d;">vs ' + CARD_BY_ID[oppCardIdx]?.n + '(' + oppVal + ')</span> ';
+          html += '<span class="tag ' + roundResultCls + '">' + roundResult + '</span> ';
+          html += '<span>+' + rsc + '点</span>';
+          if (round.notes && round.notes.length > 0) {
+            html += ' <span style="font-size: 10px; color: #b8a68a;">(' + round.notes.join('、') + ')</span>';
+          }
+          html += '</div>';
+        });
+        html += '</div></div>';
+      });
+      container.innerHTML = html;
+    }
+
     document.addEventListener('DOMContentLoaded', loadAll);
   </script>
 </body>
