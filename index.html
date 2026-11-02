@@ -22,6 +22,7 @@ h1,h2,h3,p{margin:0}
 #stage{position:absolute;left:50%;top:50%;width:844px;height:390px;margin:-195px 0 0 -422px;overflow:hidden;transform-origin:50% 50%;background:#110c08}
 .scr{position:absolute;inset:0;padding:8px 14px 10px;display:grid;gap:0 10px}
 .bgT{background:linear-gradient(rgba(12,9,6,.28),rgba(12,9,6,.28)),var(--bgT) center/140% auto #110c08}
+.bgU{background:linear-gradient(rgba(12,9,6,.3),rgba(12,9,6,.3)),var(--bgU) center/cover #110c08}
 .bgH{background:linear-gradient(rgba(12,9,6,.72),rgba(12,9,6,.72)),var(--bgH) center/cover #110c08}
 .bgA{background:var(--bgA) center/cover #efe3c8}
 .bgM{background:linear-gradient(rgba(13,9,6,.3),rgba(13,9,6,.3)),var(--bgM) center/cover #110c08}
@@ -192,6 +193,7 @@ h1,h2,h3,p{margin:0}
 .lb-mid{flex:1;min-height:0;display:flex;justify-content:space-between;gap:10px}
 .lb-feat{width:250px;flex:none;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1.1fr 1fr 1fr 1fr .62fr;gap:7px}
 .lt.rcb{grid-column:1/-1;flex-direction:row;gap:10px;padding:0 12px}.lt.rcb .ln{font-size:13px}.lt.rcb small{font-size:10px;color:#b8a68a}
+.lt2.rc2{display:grid}.lt2.rc2 .lt{background:rgba(20,14,9,.88)}
 .lt2{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:7px;min-height:0}.lt2 .lt{background:linear-gradient(100deg,rgba(60,38,14,.94),rgba(110,76,24,.92))}.kgmini{display:block;width:26px;height:34px;border-radius:4px;border:2px solid #f0c040;background:linear-gradient(135deg,#fff0b0,#d9a21e 40%,#ffe27a 60%,#a8730c);box-shadow:0 0 8px rgba(240,190,60,.7)}
 .lt.wide{grid-column:1/-1;flex-direction:row;gap:14px;justify-content:flex-start;padding:0 16px;background:linear-gradient(100deg,rgba(60,38,14,.94),rgba(110,76,24,.92))}
 .lt.wide .lx{display:flex;flex-direction:column;align-items:flex-start;gap:2px}.lt.wide .ln{font-size:19px;letter-spacing:.08em;color:#f0c555}.lt.wide small{font-size:10.5px;color:#d9c9a8}
@@ -748,6 +750,15 @@ img{-webkit-user-drag:none;user-drag:none}
 .hmi{position:relative;height:38px;padding:0 16px;text-align:left;background:transparent;border:0;border-radius:8px;color:#f3e8d2;font-size:13px;cursor:pointer}
 .hmi:hover,.hmi:focus-visible{background:rgba(240,197,85,.16)}.hmi:focus-visible{outline:2px solid #f0c555}
 .hmi.nb::after{content:"";position:absolute;right:12px;top:50%;margin-top:-4px;width:8px;height:8px;border-radius:50%;background:#e8452e}
+.shl{display:grid;grid-template-columns:1fr 1fr;gap:5px 8px;min-height:0;overflow:auto;flex:1;align-content:start}
+.shr{display:flex;align-items:center;gap:8px;padding:3px 8px;border:1px solid #3a2c20;border-radius:10px;background:rgba(20,14,9,.5)}
+.shr.na{opacity:.55}
+.shr .itic{width:38px;height:38px}.shr .itic .ico{transform:scale(.85)}.shr .back.mini{width:26px;height:37px;border:0;border-radius:3px}
+.shbg{width:46px;height:28px;border-radius:5px;background-size:cover;background-position:center;border:1px solid #6a5238}
+.shr .btn{flex:none;height:32px;padding:0 12px;font-size:12px;white-space:nowrap}
+.shr .btn+.btn{margin-left:-4px}
+.seg[aria-label="装備の種類"] button{padding:0 7px;font-size:11.5px;white-space:nowrap}
+.shs{grid-column:1/-1;font:700 11px/1 inherit;color:#8fd0a0;margin:3px 2px 0}.shr .itx .sub{font-size:10px}
 .itl{display:flex;flex-direction:column;gap:4px;max-height:250px;overflow:auto}
 .iti{display:flex;align-items:center;gap:10px;padding:5px 10px;border:1px solid #3a2c20;border-radius:10px;background:rgba(20,14,9,.5)}
 .iti.off{opacity:.55}
@@ -1208,22 +1219,24 @@ function tipRot(){const e=document.getElementById('wtip');if(!e)return;const t=e
   const go=()=>{n=(n+1)%TIPS.length;t.classList.add('o');setTimeout(()=>{if(!e.isConnected)return;t.textContent=TIPS[n];t.classList.remove('o')},250)};
   const arm=()=>{clearInterval(iv);iv=setInterval(()=>{if(!e.isConnected){clearInterval(iv);return}go()},9000)};
   b.addEventListener('click',()=>{SFX.play('click');go();arm()});arm()}
-/* ===== シーズン(3週間・A/B/C期間は1週ずつ・月曜0時[日本時間]に切り替え / ランダムマッチのレートで順位) ===== */
-const SEASON={EP:Date.UTC(2026,10,1,15,0,0),WK:604800000,N:3,MIN:20,PMIN:10,RW:{1:3000,2:2000,3:1500},PRW:{1:500,2:300,3:200}};
-const SEASON_PN=['A','B','C'];
-const seasonInfo=()=>{const n=Date.now(),SL=SEASON.WK*SEASON.N,k=Math.floor((n-SEASON.EP)/SL)+1,no=Math.max(0,k),end=SEASON.EP+no*SL,st=end-SL,pi=no>=1?Math.min(SEASON.N-1,Math.floor((n-st)/SEASON.WK)):0,pend=no>=1?st+(pi+1)*SEASON.WK:SEASON.EP;return{no,end,left:Math.max(0,end-n),pi,p:SEASON_PN[pi],pend,pleft:Math.max(0,pend-n)}};
+/* ===== シーズン(3週間・A/B/C期は1週ずつ・総合順位あり) ===== */
+const SEASON={EP:Date.UTC(2026,10,1,15,0,0),WK:604800000,SW:1814400000,MIN:20,PMIN:7,CAP:{c:20000,g:5,t:10}};
+/* 1シーズン=3週間。1週目=A期、2週目=B期、3週目=C期 */
+const seasonInfo=()=>{const n=Date.now(),pi=Math.floor((n-SEASON.EP)/SEASON.WK),k=Math.floor((n-SEASON.EP)/SEASON.SW)+1,no=Math.max(0,k),end=SEASON.EP+Math.max(0,k)*SEASON.SW,pend=SEASON.EP+Math.max(0,pi+1)*SEASON.WK;return{no,end,left:Math.max(0,end-n),per:pi>=0?'ABC'[pi%3]:'',pleft:Math.max(0,pend-n)}};
 const seasonLeft=ms=>{const d=Math.floor(ms/864e5),h=Math.floor(ms%864e5/36e5);return d>0?`${d}日${h}時間`:`${Math.max(1,h)}時間`};
-const seasonH=()=>{const i=seasonInfo();return `<span class="szn" id="szn">${i.no>=1?`第${i.no}シーズン ・ ${i.p}期間 残り${seasonLeft(i.pleft)}`:`シーズン開幕まで ${seasonLeft(i.left)}`}</span>`};
-const SEASON_TI=/^第\d{1,3}シーズン [123]位$/;
+const seasonH=()=>{const i=seasonInfo();return `<span class="szn" id="szn">${i.no>=1?`第${i.no}シーズン ${i.per}期 ・ 残り${seasonLeft(i.pleft)}`:`シーズン開幕まで ${seasonLeft(i.left)}`}</span>`};
+const SEASON_TI=/^第\d{1,3}シーズン(?: 総合| [ABC]期)? [123]位$/;
 const titleH=t=>{if(!t)return '称号なし';const m=SEASON_TI.test(t)?t.slice(-2,-1):'';return m?`<span class="tls tls${m}">${esc(t)}</span>`:esc(t)};
+const skName=(k,r)=>k==='T'?`総合${r}位`:`${k}期${r}位`;
 async function seasonClaim(){
   try{if(!getSS('p'))return;const j=await rpc('nm_claim_season',{},'p');if(!Array.isArray(j)||!j.length)return;
-    let coins=0,hasS=false;const got=[];
-    for(const x of j){const r=+x.rank,sn=+x.season,pd=x.period==null?'':String(x.period);if(!(r>=1&&r<=3)||!(sn>=1&&sn<=999))continue;
-      if(pd){if(pd!=='A'&&pd!=='B')continue;got.push({t:`第${sn}シーズン ${pd}期間 ${r}位`,r,c:SEASON.PRW[r],p:1});coins+=SEASON.PRW[r]}
-      else{const t=`第${sn}シーズン ${r}位`;if(!MS.own.title.includes(t))MS.own.title.push(t);hasS=true;coins+=SEASON.RW[r];got.push({t,r,c:SEASON.RW[r]})}}
-    if(!got.length)return;MS.coins=(MS.coins||0)+coins;saveMS();SFX.play('gsr');
-    const m=modal(`<h3 class="ttl" style="font-size:18px">${hasS?'シーズン報酬':'期間報酬'}</h3>${got.map(g=>`<div class="row" style="justify-content:space-between;margin-top:6px"><span style="font-size:15px">${g.p?esc(g.t):titleH(g.t)}</span><span class="sub" style="color:#f0c555">ドラクマ +${g.c}</span></div>`).join('')}${hasS?'<p class="sub" style="margin-top:8px">称号は、ミッション・装備の「称号」から付けられます。</p>':''}<div class="row" style="justify-content:flex-end"><button class="btn gold" data-act="x">受け取りました</button></div>`);
+    let coins=0,gem=0,tk=0;const got=[];const cl=(v,m)=>Math.max(0,Math.min(m,Math.floor(+v)||0));
+    for(const x of j){const r=+x.rank,sn=+x.season,kd=String(x.kind||'T');if(!(r>=1&&r<=10)||!(sn>=1&&sn<=999)||!/^[ABCT]$/.test(kd))continue;
+      const c=cl(x.coins,SEASON.CAP.c),g=cl(x.gem,SEASON.CAP.g),t=cl(x.tk,SEASON.CAP.t);
+      const ti=r<=3?`第${sn}シーズン ${kd==='T'?'総合':kd+'期'} ${r}位`:'';if(ti&&!MS.own.title.includes(ti))MS.own.title.push(ti);
+      coins+=c;gem+=g;tk+=t;got.push({ti,l:`第${sn}シーズン ${skName(kd,r)}`,c,g,t})}
+    if(!got.length)return;MS.coins=(MS.coins||0)+coins;MS.gem+=gem;saveMS();SFX.play('gsr');
+    const m=modal(`<h3 class="ttl" style="font-size:18px">シーズン報酬</h3><div style="max-height:46vh;overflow:auto">${got.map(g=>`<div class="row" style="justify-content:space-between;margin-top:6px;gap:8px"><span style="font-size:15px">${g.ti?titleH(g.ti):esc(g.l)}</span><span class="sub" style="color:#f0c555;text-align:right">ドラクマ +${g.c}${g.g?` ・ ダイヤの原石 +${g.g}`:''}${g.t?` ・ ボットチケット +${g.t}`:''}</span></div>`).join('')}</div><p class="sub" style="margin-top:8px">称号は、ミッション・装備の「称号」から付けられます。</p><div class="row" style="justify-content:flex-end"><button class="btn gold" data-act="x">受け取りました</button></div>`);
     m.querySelector('[data-act="x"]').onclick=()=>{m.remove();try{renderTitle()}catch(e){}}}
   catch(e){}}
 /* ===== ログインボーナス(スタンプカード・7日で1周) ===== */
@@ -1231,7 +1244,7 @@ async function seasonClaim(){
 const SK=[[{k:'coin',n:30}],[{k:'dust',n:5}],[{k:'tk',n:1}],[{k:'coin',n:50}],[{k:'dust',n:10}],[{k:'tk',n:1}],[{k:'gem',n:1},{k:'coin',n:50}]];
 const SK_NM={coin:'ドラクマ',dust:'星屑',tk:'ボットチケット',gem:'ダイヤの原石'};
 const skToday=()=>new Date(Date.now()+324e5).toISOString().slice(0,10);
-const skTk=px=>`<svg width="${px}" height="${px}" viewBox="0 0 48 48" aria-hidden="true"><path d="M5 12h38a3 3 0 0 1 3 3v6a4 4 0 0 0 0 8v6a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3v-6a4 4 0 0 0 0-8v-6a3 3 0 0 1 3-3z" fill="#e6b34a" stroke="#6a4a14" stroke-width="2"/><path d="M33 14v20" stroke="#6a4a14" stroke-width="1.6" stroke-dasharray="3 3"/><path d="M18 16.5l2.3 4.8 5.2.7-3.8 3.6.9 5.2-4.6-2.5-4.6 2.5.9-5.2-3.8-3.6 5.2-.7z" fill="#6a4a14"/></svg>`;
+const skTk=px=>`<img src="img/item/tk.webp" alt="" style="width:${px}px;height:${px}px;object-fit:contain;vertical-align:middle">`;
 const skIc=(k,px)=>k==='coin'?`<i class="sk-coin" style="width:${px}px;height:${px}px"></i>`:k==='tk'?skTk(px):kgi(k,px);
 const skItem=it=>`<div class="sk-r">${skIc(it.k,26)}<b>${it.k==='coin'?it.n:'×'+it.n}</b><small>${SK_NM[it.k]}</small></div>`;
 function skCard(stamps,now,next){
@@ -1406,7 +1419,7 @@ function renderTitle(){
       <button class="lb-prof" data-act="ms" aria-label="ミッション・装備"><img class="pav" src="${avSrc(MS.eq.av)}" alt=""><span class="lpt"><b>${titleH(MS.eq.title)}</b><span>達成 ${dn} / ${MIS.length}</span></span></button>
       <button class="rkchip" data-act="rkpg" aria-label="ランク"><small>RANK</small><b>${rkLv(MS.rp||0)}</b></button>
       <div class="tl lb-brand"><h1><span class="en">NEMESIS</span><span class="jp">ネメシス</span></h1><div style="display:flex;gap:6px;align-self:flex-start;align-items:center">${seasonH()}${onlH()}</div></div>
-      <div class="lb-r"><span class="dcoin"><i></i><b>${MS.coins||0}</b> ドラクマ</span><button class="ib hbg skb${MS.lb.d!==skToday()?' nb':''}" data-act="hbg" aria-label="メニュー" aria-haspopup="true" aria-expanded="false" aria-controls="hmenu"><span class="hbl" aria-hidden="true"></span></button><div class="hmenu" id="hmenu" role="menu" hidden><button class="hmi${MS.lb.d!==skToday()?' nb':''}" role="menuitem" data-act="skopen">スタンプ</button><button class="hmi" role="menuitem" data-act="items">アイテム</button><button class="hmi" role="menuitem" data-act="rules">ルール</button><button class="hmi" role="menuitem" data-act="snd">音</button><button class="hmi" role="menuitem" data-act="xfer">引継ぎ</button></div></div>
+      <div class="lb-r"><span class="dcoin"><i></i><b>${MS.coins||0}</b> ドラクマ</span><button class="ib hbg skb${MS.lb.d!==skToday()?' nb':''}" data-act="hbg" aria-label="メニュー" aria-haspopup="true" aria-expanded="false" aria-controls="hmenu"><span class="hbl" aria-hidden="true"></span></button><div class="hmenu" id="hmenu" role="menu" hidden><button class="hmi${MS.lb.d!==skToday()?' nb':''}" role="menuitem" data-act="skopen">スタンプ</button><button class="hmi" role="menuitem" data-act="shop">ショップ</button><button class="hmi" role="menuitem" data-act="items">アイテム</button><button class="hmi" role="menuitem" data-act="rules">ルール</button><button class="hmi" role="menuitem" data-act="snd">音</button><button class="hmi" role="menuitem" data-act="xfer">引継ぎ</button></div></div>
     </div>
     <div class="lb-mid">
       <div class="lb-feat">
@@ -1417,7 +1430,7 @@ function renderTitle(){
         ${tile('puz',gl('詰'),'今日のお題'+(pzOk?' ✓':''),pzOk?'':' nb')}
         ${tile('tut',gl('学'),'チュートリアル')}
         ${tile('rkm',gl('冠'),'ランキング')}
-        <button class="lt rcb" data-act="rcn"><span class="ln">最近の試合を見る</span><small>${REP.list().length?REP.list().length+'試合 ・ リプレイ':'リプレイ'}</small></button>
+        <div class="lt2 rc2"><button class="lt" data-act="shop"><span class="ln" style="font-size:13px;color:#f0c555">ショップ</span></button><button class="lt" data-act="rcn"><span class="ln" style="font-size:12px">最近の試合</span><small style="font-size:9.5px;color:#b8a68a">${REP.list().length?REP.list().length+'試合 ・ リプレイ':'リプレイ'}</small></button></div>
       </div>
       <div class="lb-modes">
         ${mc('rand','ランダムマッチ','レート戦 ・ 世界のだれかと対戦',' gold')}
@@ -1463,7 +1476,7 @@ function renderTitle(){
       const ld=()=>{if(sp._l)return;sp._l=1;SFX.play('confirm');const t=sp.querySelector('.tap');if(t){t.outerHTML=`<div class="ldg"><div class="ldb"><i></i></div><span>読み込み中<span class="dots"></span></span><small>${TIPS[Math.floor(Math.random()*TIPS.length)]}</small></div>`}setTimeout(go,1500)};
       sp.addEventListener('click',ld);sp.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')ld()});sp.tabIndex=0;
       $s.querySelector('.scr').appendChild(sp);setTimeout(()=>sp.focus(),50)}
-    on('gacha',renderGacha);on('god',renderGods);on('kgp',()=>renderKg());on('ms',()=>renderMissions());on('dex',()=>renderDex());on('snd',sndModal);on('rcn',renderRecent);on('rkpg',renderRank);on('xfer',xferModal);on('items',itemsModal);on('hbg',()=>{const m=document.querySelector('.hmenu');hmSet(!!m&&m.hidden)});
+    on('gacha',renderGacha);on('god',renderGods);on('kgp',()=>renderKg());on('ms',()=>renderMissions());on('dex',()=>renderDex());on('snd',sndModal);on('rcn',renderRecent);on('rkpg',renderRank);on('xfer',xferModal);on('items',itemsModal);on('shop',()=>renderShop());on('hbg',()=>{const m=document.querySelector('.hmenu');hmSet(!!m&&m.hidden)});
     on('rules',()=>{const m=modal(`<h3 class="ttl" style="font-size:17px">ルールの要点</h3><ul>
      <li>デッキは全27枚(A・B・Cのプール各9枚)から5枚。数値の合計は22〜25、数値1〜3のカードは2枚まで。</li>
      <li>両者のデッキを同時に公開したあと、各自が1枚を、デッキにない別のカードに入れ替えられます(プールは問わず、任意。相手には見えません)。入れ替え後も、合計22〜25と数値1〜3は2枚までの条件を守ります。</li>
@@ -1574,9 +1587,9 @@ function pass(i,next,why){
 }
 const showT=(h,c,st)=>{if(TM.on)TM.keep=true;show(h,c,st)};
 /* ---- マイデッキ(3つまで。この端末のブラウザに保存) ---- */
-const MYD_N=3;
+const mydN=()=>3+Math.max(0,Math.min(2,(typeof MS!=='undefined'&&MS.xd)|0));
 const MYD={
-  list(){let a=null;try{a=JSON.parse(localStorage.getItem('nm_myd'))}catch(e){}if(!Array.isArray(a))a=[];const r=[];for(let i=0;i<MYD_N;i++){const x=a[i];r.push(x&&Array.isArray(x.k)&&legal(x.k)?{n:String(x.n||('マイデッキ'+(i+1))).slice(0,8),k:x.k.slice().sort((p,q)=>p-q)}:null)}return r},
+  list(){let a=null;try{a=JSON.parse(localStorage.getItem('nm_myd'))}catch(e){}if(!Array.isArray(a))a=[];const r=[];for(let i=0;i<mydN();i++){const x=a[i];r.push(x&&Array.isArray(x.k)&&legal(x.k)?{n:String(x.n||('マイデッキ'+(i+1))).slice(0,8),k:x.k.slice().sort((p,q)=>p-q)}:null)}return r},
   save(a){try{localStorage.setItem('nm_myd',JSON.stringify(a))}catch(e){}}
 };
 const mydChips=(k,c=3)=>`<div style="display:grid;grid-template-columns:repeat(${c},72px);gap:5px;justify-content:${c>3?'flex-start':'center'};margin-top:4px">${k.slice().sort((a,b)=>CARDS[a].num-CARDS[b].num).map(i=>thumbH(i)).join('')}</div>`;
@@ -1585,10 +1598,10 @@ function renderMyDecks(){
   const draw=()=>{
     if(first){ANIM=true;first=false}
     const L=MYD.list();
-    show(`<div class="hd"><div class="hl"><span class="ttl">マイデッキ</span><span class="sub">よく使うデッキを${MYD_N}つまで保存できます。対戦前のデッキ編成で「マイデッキから選ぶ」から呼び出せます。</span></div><button class="btn" data-act="home" style="height:28px;padding:0 14px">戻る</button></div>
-    <div class="row" style="gap:12px;align-items:stretch;flex-wrap:nowrap;grid-column:1/-1;min-height:0">
-    ${L.map((x,i)=>`<div class="panel col" style="flex:1;min-width:0;gap:8px;justify-content:space-between">
-      <div class="col" style="gap:6px"><div class="row" style="justify-content:space-between;flex-wrap:nowrap"><b style="font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${x?esc(x.n):'マイデッキ'+(i+1)}</b><span class="chip" style="font-size:11px">${i+1} / ${MYD_N}</span></div>
+    show(`<div class="hd"><div class="hl"><span class="ttl">マイデッキ</span><span class="sub">よく使うデッキを${mydN()}つまで保存できます。対戦前のデッキ編成で「マイデッキから選ぶ」から呼び出せます。</span></div><button class="btn" data-act="home" style="height:28px;padding:0 14px">戻る</button></div>
+    <div class="row" style="gap:12px;align-items:stretch;flex-wrap:nowrap;grid-column:1/-1;min-height:0;overflow-x:auto">
+    ${L.map((x,i)=>`<div class="panel col" style="flex:${L.length>3?'1 0 232px':'1'};min-width:0;gap:8px;justify-content:space-between">
+      <div class="col" style="gap:6px"><div class="row" style="justify-content:space-between;flex-wrap:nowrap"><b style="font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${x?esc(x.n):'マイデッキ'+(i+1)}</b><span class="chip" style="font-size:11px">${i+1} / ${mydN()}</span></div>
       ${x?`${mydChips(x.k)}<div class="sub" style="font-size:12px">数値の合計 <b>${sumDeck(x.k)}</b></div>`:'<div class="sub" style="padding:22px 0;text-align:center;color:#8a745a">まだ作られていません</div>'}</div>
       <div class="row" style="gap:6px;flex-wrap:nowrap"><button class="btn gold" data-act="mde" data-i="${i}" style="flex:1;padding:0;font-size:12px">${x?'編集':'つくる'}</button>${x?`<button class="btn" data-act="mdn" data-i="${i}" style="flex:1;padding:0;font-size:12px">名前</button><button class="btn" data-act="mdx" data-i="${i}" style="flex:1;padding:0;font-size:12px">削除</button>`:''}</div>
     </div>`).join('')}</div>`,'bgH','grid-template-rows:36px minmax(0,1fr);gap:8px 12px');
@@ -1695,7 +1708,7 @@ function renderSwap(i){
         <div style="font-size:11px;color:#e6b34a;min-height:16px;padding-left:4px">${changed?`${CARDS[me[G.swPos]].n}を${CARDS[G.swCard].n}に入れ替える予定`:''}</div></div>
     </div>
     <div class="panel col" style="width:300px;gap:6px">${right}
-      <div class="row" style="margin-top:auto;flex-wrap:nowrap"><button class="btn" style="flex:1;padding:0" data-act="keep">入れ替えない</button><button class="btn gold" style="flex:1.2;padding:0" data-act="fix" ${changed&&!G.tut?'':'disabled'}>${changed?esc(CARDS[G.swCard].n)+'に入れ替える':'入れ替える'}</button></div></div>`,'bgT','grid-template-columns:1fr 300px;grid-template-rows:38px minmax(0,1fr)');
+      <div class="row" style="margin-top:auto;flex-wrap:nowrap"><button class="btn" style="flex:1;padding:0" data-act="keep">入れ替えない</button><button class="btn gold" style="flex:1.2;padding:0" data-act="fix" ${changed&&!G.tut?'':'disabled'}>${changed?esc(CARDS[G.swCard].n)+'に入れ替える':'入れ替える'}</button></div></div>`,btl(),'grid-template-columns:1fr 300px;grid-template-rows:38px minmax(0,1fr)');
     bindQuit();
     if(first)for(let n=0;n<5;n++)SFX.at(250+n*130,'flip');
     on('pos',el=>{const p=+el.dataset.i;G.swPos=G.swPos===p?null:p;G.swCard=null;draw();if(G.tut&&G.swPos!=null)tut('swapPos')});
@@ -1758,7 +1771,7 @@ function renderPick(i){
         <div style="font-size:11px;line-height:1.5;color:#b8a68a;border-top:1px dashed #5a4630;padding-top:4px">${ch.num<=5?'勝利時: '+esc(ch.wt):'勝利時の効果なし(数値6〜10)'}</div>`:`<div style="font-size:12px;line-height:1.5;color:#b8a68a">手札から1枚選ぶと、効果の全文が出ます。</div>`}
       <div class="col" style="margin-top:auto;gap:6px"><div class="row" style="gap:4px">${mine.length?mine.map(t=>`<span class="chip">${t}</span>`).join(''):'<span class="chip">持ち越しの効果なし</span>'}</div>
       <button class="btn gold" data-act="fix" ${ch?'':'disabled'}>${ch?esc(ch.n)+'を出す':'カードを選ぶ'}</button></div>
-    </div>`,'bgT','grid-template-columns:176px 1fr 190px;grid-template-rows:38px minmax(0,1fr)');
+    </div>`,btl(),'grid-template-columns:176px 1fr 190px;grid-template-rows:38px minmax(0,1fr)');
     bindQuit();
     if(intro&&(G.mode!=='duo'||i===0))roundIntro(S);
     on('play',el=>{const k=+el.dataset.i;if(G.tut&&k!==TUT_R[S.round-1].me){tut('wrong');return}if(G.les&&k!==G.les.k){lesEv('wrong');return}G.fresh=G.chosen!==k;G.chosen=k;draw();G.fresh=false;if(G.tut)tut('chosen');if(G.les)lesEv('chosen')});
@@ -1810,7 +1823,7 @@ function renderResult(L){
      <div class="panel" style="flex:1;min-height:0;display:flex;flex-direction:column"><div class="lbl" style="margin-bottom:4px;display:flex;justify-content:space-between"><span>処理の内訳</span><span id="rdhint" style="color:#e6b34a"></span></div>${tagsH(L)}<ul class="notes">${L.notes.length?L.notes.map((t,n)=>`<li style="--i:${Math.min(n,7)}">${esc(t)}</li>`).join(''):'<li>効果は働きません。数値で決まりました。</li>'}</ul></div>
      <div class="row" style="flex-wrap:nowrap"><div class="banner rb ${kind}" style="flex:1;--bd:${Math.min(1.9+L.notes.length*.3,3.6)}s"><img src="${icon}" alt="">${msg}</div><button class="btn gold" data-act="next" style="width:148px">${G.les?(G.les.n+1<SC[CARDS[G.les.k].id].opts.length?'次の相手の札へ':'体験を終える'):(last?(G.tut?'まとめへ':'最終結果へ'):'次のラウンドへ')}</button></div>
    </div>
-   <div style="grid-column:3">${cardCol(1)}</div>`,'bgT','grid-template-columns:132px 1fr 132px;grid-template-rows:34px minmax(0,1fr);gap:0 14px');
+   <div style="grid-column:3">${cardCol(1)}</div>`,btl(),'grid-template-columns:132px 1fr 132px;grid-template-rows:34px minmax(0,1fr);gap:0 14px');
   SFX.at(550,'flip');SFX.at(950,'flip');SFX.at(1450,'pop');SFX.at(1850,'pop');SFX.at(1950,'clash');
   {const sc=$s.querySelector('.scr'),cl=document.createElement('div');cl.className='clash';cl.innerHTML='<i class="sw"></i><i class="sw s2"></i><i class="fl"></i>';sc.appendChild(cl);setTimeout(()=>cl.remove(),3000);
    if(L.w!==-1)SFX.at(2400,'coin');
@@ -1907,7 +1920,7 @@ const MIS=[
 const mcoin=m=>m.c||(m.goal>=5?120:80);
 const rwName=r=>r[0]==='back'?`カードの裏「${BKN[r[1]]}」`:r[0]==='av'?`アイコン「${AVN[r[1]]}」`:`称号「${r[1]}」`;
 function loadMS(){let m=null;try{m=JSON.parse(localStorage.getItem('gm1')||'null')}catch(e){}
-  m=m&&typeof m==='object'?m:{};m.st=m.st||{};m.done=m.done||{};m.cardsSeen=m.cardsSeen||[];m.dexSeen=m.dexSeen||[];m.lessSeen=m.lessSeen||[];m.eq=Object.assign({back:'std',av:'owl',title:''},m.eq||{});m.own=Object.assign({back:[],av:[],title:[]},m.own||{});m.coins=m.coins||0;
+  m=m&&typeof m==='object'?m:{};m.st=m.st||{};m.done=m.done||{};m.cardsSeen=m.cardsSeen||[];m.dexSeen=m.dexSeen||[];m.lessSeen=m.lessSeen||[];m.eq=Object.assign({back:'std',av:'owl',title:'',bg:''},m.eq||{});m.own=Object.assign({back:[],av:[],title:[],bg:[]},m.own||{});if(!Array.isArray(m.own.bg))m.own.bg=[];m.xd=Math.max(0,Math.min(2,Math.floor(+m.xd)||0));m.sh=m.sh&&typeof m.sh==='object'?m.sh:{};m.coins=m.coins||0;
   m.ct=Object.assign({s:[],g:[],d:[]},m.ct||{});for(const t of['s','g','d'])if(!Array.isArray(m.ct[t]))m.ct[t]=[];m.ceq=m.ceq&&typeof m.ceq==='object'?m.ceq:{};m.cw=m.cw&&typeof m.cw==='object'?m.cw:{};m.dust=Math.max(0,+m.dust||0);m.gem=Math.max(0,+m.gem||0);m.bl=Math.max(0,+m.bl||0);m.gods=m.gods&&typeof m.gods==='object'?m.gods:{};if(m.gv!==2){m.gods={};m.gv=2}m.fw=+m.fw||0;m.lb=m.lb&&typeof m.lb==='object'?{t:Math.max(0,Math.floor(+m.lb.t)||0),d:/^\d{4}-\d{2}-\d{2}$/.test(m.lb.d)?m.lb.d:''}:{t:0,d:''};
   if(!m.gs)m.gs=1;m.rp=Math.max(0,+m.rp||0);
   if(!m.mg){m.mg=1;for(const x of MIS)if(m.done[x.id]&&m.own[x.rw[0]]&&!m.own[x.rw[0]].includes(x.rw[1]))m.own[x.rw[0]].push(x.rw[1])}
@@ -1916,8 +1929,8 @@ function loadMS(){let m=null;try{m=JSON.parse(localStorage.getItem('gm1')||'null
 const MS=loadMS();
 const saveMS=()=>{try{localStorage.setItem('gm1',JSON.stringify(MS))}catch(e){}};
 const mProg=m=>Math.min(m.goal,m.f(MS.st));
-function unlocked(kind,key){if(MS.own[kind]&&MS.own[kind].includes(key))return true;if(kind==='back')return key==='std';if(kind==='av')return key==='owl'||key==='helmet';return key===''}
-if(!unlocked('back',MS.eq.back))MS.eq.back='std';if(!unlocked('av',MS.eq.av))MS.eq.av='owl';if(!unlocked('title',MS.eq.title))MS.eq.title='';
+function unlocked(kind,key){if(MS.own[kind]&&MS.own[kind].includes(key))return true;if(kind==='back')return key==='std';if(kind==='bg')return key==='';if(kind==='av')return key==='owl'||key==='helmet';return key===''}
+if(!unlocked('back',MS.eq.back))MS.eq.back='std';if(!unlocked('av',MS.eq.av))MS.eq.av='owl';if(!unlocked('title',MS.eq.title))MS.eq.title='';if(!unlocked('bg',MS.eq.bg))MS.eq.bg='';
 BACK=MS.eq.back;
 const TOAST=document.createElement('div');TOAST.id='toast';TOAST.hidden=true;TOAST.setAttribute('role','status');
 let toastQ=[],toastBusy=false;
@@ -2039,6 +2052,11 @@ Object.assign(BACKS,GIMG.B);Object.assign(AVX,GIMG.A);
 /* ランク専用の景品(ガチャには出ない)。差し替えるときは、この RKIMG の中身(data URL)を入れ替える */
 const RKIMG={"B": {"scale": "img/rank/B_scale.webp", "fleece": "img/rank/B_fleece.webp", "styx": "img/rank/B_styx.webp", "bolt": "img/rank/B_bolt.webp", "maze": "img/rank/B_maze.webp", "map": "img/rank/B_map.webp"}, "A": {"thread": "img/rank/A_thread.webp", "cerberus": "img/rank/A_cerberus.webp", "apple": "img/rank/A_apple.webp", "minotaur": "img/rank/A_minotaur.webp", "caduceus": "img/rank/A_caduceus.webp", "lantern": "img/rank/A_lantern.webp"}};
 Object.assign(BACKS,RKIMG.B);Object.assign(AVX,RKIMG.A);
+Object.assign(BACKS,{sh1:'img/back/sh_1.webp',sh2:'img/back/sh_2.webp',sh3:'img/back/sh_3.webp',sh4:'img/back/sh_4.webp'});
+const SHOP_BK=['sh1','sh2','sh3','sh4'];
+const BGS={b1:{n:'月桂樹の森',i:'img/bg/btl_1.webp'},b2:{n:'エーゲ海',i:'img/bg/btl_2.webp'},b3:{n:'夕焼けの神殿',i:'img/bg/btl_3.webp'},b4:{n:'星空の祭壇',i:'img/bg/btl_4.webp'}};
+Object.assign(BKN,{sh1:'月桂樹',sh2:'エーゲ海',sh3:'夕焼け',sh4:'星座'});
+const btl=()=>{const b=MS.eq.bg;if(b&&BGS[b]&&unlocked('bg',b)){document.documentElement.style.setProperty('--bgU',`url(${BGS[b].i})`);return 'bgT bgU'}return 'bgT'};
 Object.assign(BKN,{map:'旅路の地図',maze:'迷宮',bolt:'雷光',styx:'冥府の川',fleece:'黄金の羊毛',scale:'ネメシスの天秤'});
 Object.assign(AVN,{lantern:'ランタン',caduceus:'蛇の杖',minotaur:'ミノタウロス',apple:'金の林檎',cerberus:'ケルベロス',thread:'運命の糸'});
 const LEGACY_T=['迷える旅人','壺の住人','風読み','神殿の常連','運命の寵児','オリンポスの客'];
@@ -2234,15 +2252,16 @@ function renderMissions(tab0){
     const dn=MIS.filter(m=>MS.done[m.id]).length;
     const thumb=r=>r[0]==='back'?`<div class="back mini" style="background-image:url(${BACKS[r[1]]});border:0;border-radius:0"></div>`:r[0]==='av'?`<img src="${avSrc(r[1])}" alt="">`:`<span class="tt">称号</span>`;
     const row=m=>{const ok=MS.done[m.id],p=mProg(m);return `<div class="ms${ok?' ok':''}"><span class="mr"><i style="display:block;width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe9a0,#c9922c);border:2px solid #7a5518"></i></span><span class="mt"><b>${esc(m.n)}${ok?' <em>達成</em>':''}</b><i>${esc(m.d)}</i><span class="mrw">報酬: ${mcoin(m)} ドラクマ${m.rw[0]==='title'?` + 称号「${esc(m.rw[1])}」`:''}</span>${m.goal>1&&!ok?`<span class="bar"><u style="width:${p/m.goal*100}%"></u></span>`:''}</span><span class="mc">${ok?'✓':p+' / '+m.goal}</span></div>`};
-    const lockHint=(kind,key)=>{if(kind==='title'){const m=MIS.find(x=>x.rw[0]==='title'&&x.rw[1]===key);return m?`ミッション「${m.n}」で手に入ります(${m.d})`:''}const rl=rkLvOf(kind,key);if(rl)return `ランクLv.${rl}で手に入ります`;return GI.some(g=>g.k===kind&&g.id===key)?'ガチャで入手できます':''};
+    const lockHint=(kind,key)=>{if(kind==='title'){const m=MIS.find(x=>x.rw[0]==='title'&&x.rw[1]===key);return m?`ミッション「${m.n}」で手に入ります(${m.d})`:''}const rl=rkLvOf(kind,key);if(rl)return `ランクLv.${rl}で手に入ります`;if(kind==='bg'||SHOP_BK.includes(key))return 'ショップで買えます';return GI.some(g=>g.k===kind&&g.id===key)?'ガチャで入手できます':''};
     let grid='';
     if(tab==='back')grid=`<div class="eqg">${Object.keys(BKN).filter(k=>!(RK_SECRET.includes(k)&&!unlocked('back',k))).map(k=>{const u=unlocked('back',k),on=MS.eq.back===k;return `<button class="eqb${u?'':' lk'}" data-act="eq" data-k="${k}" aria-pressed="${on}" aria-label="${BKN[k]}${u?'':'(未解放)'}"><div class="back mini" style="background-image:url(${BACKS[k]});border:0;border-radius:0"></div><span>${BKN[k]}${u?'':' 🔒'}</span></button>`}).join('')}</div>`;
+    else if(tab==='bg')grid=`<div class="eqg" style="grid-template-columns:repeat(2,1fr)">${['',...Object.keys(BGS)].map(k=>{const u=unlocked('bg',k),on=MS.eq.bg===k;return `<button class="eqb${u?'':' lk'}" data-act="eq" data-k="${k}" aria-pressed="${on}"><div class="shbg" style="${k?`background-image:url(${BGS[k].i})`:'background:#241a10'}"></div><span>${k?BGS[k].n:'標準(なし)'}${u?'':' 🔒'}</span></button>`}).join('')}</div>`;
     else if(tab==='av')grid=`<div class="eqg av">${Object.keys(AVN).filter(k=>!(RK_SECRET.includes(k)&&!unlocked('av',k))).map(k=>{const u=unlocked('av',k),on=MS.eq.av===k;return `<button class="eqb${u?'':' lk'}" data-act="eq" data-k="${k}" aria-pressed="${on}" aria-label="${AVN[k]}${u?'':'(未解放)'}"><img src="${avSrc(k)}" alt=""><span>${AVN[k]}${u?'':' 🔒'}</span></button>`}).join('')}</div>`;
     else grid=`<div class="eqt">${['',...GTITLES,...LEGACY_T.filter(t=>MS.own.title.includes(t)),...MS.own.title.filter(t=>SEASON_TI.test(t)).sort()].map(k=>{const u=unlocked('title',k),on=MS.eq.title===k;return `<button class="eqb tl2${u?'':' lk'}" data-act="eq" data-k="${esc(k)}" aria-pressed="${on}">${k===''?'なし':titleH(k)}${u?'':' 🔒'}</button>`}).join('')}</div>`;
-    show(`<div class="hd"><div class="hl"><span class="ttl">ミッション・装備</span><span class="sub">達成でドラクマと称号。カードの裏・アイコンはガチャ。(${dn} / ${MIS.length})</span></div><button class="btn" data-act="home" style="height:28px;padding:0 14px">戻る</button></div>
+    show(`<div class="hd"><div class="hl"><span class="ttl">ミッション・装備</span><span class="sub">達成でドラクマと称号。カードの裏・対戦背景はショップ、アイコンはガチャ。(${dn} / ${MIS.length})</span></div><button class="btn" data-act="home" style="height:28px;padding:0 14px">戻る</button></div>
     <div class="panel col" style="gap:5px;overflow:auto;min-height:0" id="mlist">${MIS.map(row).join('')}</div>
     <div class="panel col" style="width:290px;gap:8px;min-height:0;overflow:hidden">
-      <div class="seg" role="group" aria-label="装備の種類" style="align-self:flex-start"><button data-act="tab" data-v="back" aria-pressed="${tab==='back'}">カードの裏</button><button data-act="tab" data-v="av" aria-pressed="${tab==='av'}">アイコン</button><button data-act="tab" data-v="title" aria-pressed="${tab==='title'}">称号</button></div>
+      <div class="seg" role="group" aria-label="装備の種類" style="align-self:flex-start"><button data-act="tab" data-v="back" aria-pressed="${tab==='back'}">カードの裏</button><button data-act="tab" data-v="av" aria-pressed="${tab==='av'}">アイコン</button><button data-act="tab" data-v="bg" aria-pressed="${tab==='bg'}">対戦背景</button><button data-act="tab" data-v="title" aria-pressed="${tab==='title'}">称号</button></div>
       <div style="overflow:auto;min-height:0;flex:1">${grid}</div>
       <div style="font-size:11.5px;line-height:1.55;color:#e6b34a;min-height:34px">${esc(hint)}</div>
     </div>`,'bgT','grid-template-columns:1fr 290px;grid-template-rows:38px minmax(0,1fr)');
@@ -2256,6 +2275,77 @@ function renderMissions(tab0){
   draw();
 }
 
+
+
+/* ===== ショップ ===== */
+const SHOP={DK:[700,1000],BG:700,BK:500,BL:{p:150,lim:2},TK:{p:100,lim:3},DS:{p:10,lim:20},
+  SELL:{ds:{v:2,lim:100},tk:{v:20,lim:3},bl:{v:40,lim:2},gem:{v:300}}};
+const shDay=()=>{const d=skToday();if(!MS.sh||MS.sh.d!==d)MS.sh={d};return MS.sh};
+const shN=k=>Math.max(0,Math.floor(+shDay()[k])||0);
+const shAdd=(k,n)=>{shDay()[k]=shN(k)+n};
+const shDeckIcon='<span class="ico">札</span>';
+async function renderShop(tab0,msg0){
+  let tab=tab0||'buy',msg=msg0||'',tk=null,busy=false,first=true;
+  const num=v=>Math.max(0,Math.floor(+v)||0);
+  const refreshTk=async()=>{if(!getSS('p')){tk={t:0,b:0,s:0,off:1};return}
+    try{const j=await rpc('nm_shop_ticket',{p_act:'info'},'p');if(j&&j.ok)tk={t:num(j.tickets),b:num(j.bought),s:num(j.sold)};else tk={t:0,b:0,s:0,err:1}}catch(e){tk={t:0,b:0,s:0,err:1}}};
+  const tkApi=async act=>{try{const j=await rpc('nm_shop_ticket',{p_act:act},'p');if(j&&j.ok)tk={t:num(j.tickets),b:num(j.bought),s:num(j.sold)};return j||{ok:false}}catch(e){return{ok:false,err:'net'}}};
+  const draw=()=>{
+    if(first){ANIM=true;first=false}
+    shDay();
+    const c=MS.coins||0,left=(k,lim)=>Math.max(0,lim-shN(k));
+    const row=(ic,nm,ds,btns,na)=>`<div class="shr${na?' na':''}"><span class="itic">${ic}</span><span class="itx"><b>${nm}</b><span class="sub">${ds}</span></span>${btns}</div>`;
+    const bt=(act,k,label,dis)=>`<button class="btn${dis?'':' gold'}" data-act="${act}" data-k="${k}"${dis?' disabled':''}>${label}</button>`;
+    const tkOk=tk&&!tk.err&&!tk.off;
+    let h='';
+    if(tab==='buy'){
+      const nd=mydN(),nxt=nd<5?SHOP.DK[nd-3]:0;
+      h+=`<div class="shs">買い切り</div>`;
+      h+=row(shDeckIcon,'マイデッキの枠',`いま${nd}つ(最大5つ)。${nd<5?`次は${nd+1}つ目の枠。`:'これ以上は増やせません。'}`,nd<5?bt('buy','dk',`${nxt} ドラクマ`,c<nxt):'<span class="itn" style="font-size:12px;color:#8fd0a0">最大</span>',nd>=5);
+      for(const k of Object.keys(BGS)){const own=MS.own.bg.includes(k);h+=row(`<div class="shbg" style="background-image:url(${BGS[k].i})"></div>`,`対戦背景「${BGS[k].n}」`,'対戦中の背景。装備は「ミッション・装備」から。',own?'<span class="itn" style="font-size:12px;color:#8fd0a0">購入済み</span>':bt('buy','bg:'+k,`${SHOP.BG} ドラクマ`,c<SHOP.BG),own)}
+      for(const k of SHOP_BK){const own=MS.own.back.includes(k);h+=row(`<div class="back mini" style="background-image:url(${BACKS[k]})"></div>`,`カードの裏「${BKN[k]}」`,'装備は「ミッション・装備」から。',own?'<span class="itn" style="font-size:12px;color:#8fd0a0">購入済み</span>':bt('buy','bk:'+k,`${SHOP.BK} ドラクマ`,c<SHOP.BK),own)}
+      h+=`<div class="shs">何度でも買える(1日の上限あり)</div>`;
+      const lb=left('bbl',SHOP.BL.lim),ld=left('bds',SHOP.DS.lim),lt=tkOk?Math.max(0,SHOP.TK.lim-tk.b):0;
+      h+=row(kgi('bl',30),'加護の印',`本日あと${lb}個`,bt('buy','bl',`${SHOP.BL.p} ドラクマ`,c<SHOP.BL.p||!lb),!lb);
+      h+=row(skTk(30),'ボットチケット',tk?(tkOk?`本日あと${lt}枚 ・ 持っている数 ${tk.t}`:'サーバーにつながらないため、いまは買えません'):'確認中…',bt('buy','tk',`${SHOP.TK.p} ドラクマ`,c<SHOP.TK.p||!lt||!tkOk),!lt||!tkOk);
+      h+=row(kgi('dust',30),'星屑',`本日あと${ld}個`,bt('buy','ds',`${SHOP.DS.p} ドラクマ`,c<SHOP.DS.p||!ld),!ld);
+    }else{
+      const S=SHOP.SELL,ld=left('sds',S.ds.lim),lb=left('sbl',S.bl.lim),lt=tkOk?Math.max(0,S.tk.lim-tk.s):0;
+      h+=row(kgi('dust',30),'星屑',`1個 ${S.ds.v} ドラクマ ・ 持っている数 ${MS.dust} ・ 本日あと${ld}個まで`,bt('sell','ds',`1個`,MS.dust<1||!ld)+bt('sell','ds10',`10個`,MS.dust<10||ld<10),!MS.dust||!ld);
+      h+=row(skTk(30),'ボットチケット',tk?(tkOk?`1枚 ${S.tk.v} ドラクマ ・ 持っている数 ${tk.t} ・ 本日あと${lt}枚まで`:'サーバーにつながらないため、いまは売れません'):'確認中…',bt('sell','tk','1枚',!tkOk||tk.t<1||!lt),!tkOk||!tk.t||!lt);
+      h+=row(kgi('bl',30),'加護の印',`1個 ${S.bl.v} ドラクマ ・ 持っている数 ${MS.bl} ・ 本日あと${lb}個まで`,bt('sell','bl','1個',MS.bl<1||!lb),!MS.bl||!lb);
+      h+=row(kgi('gem',30),'ダイヤの原石',`1個 ${S.gem.v} ドラクマ ・ 持っている数 ${MS.gem} ・ 数が少ないのでよく考えて`,bt('sell','gem','1個',MS.gem<1),!MS.gem);
+    }
+    show(`<div class="hd"><div class="hl"><span class="ttl">ショップ</span><span class="sub">ドラクマで買い物と売却ができます</span></div><div class="row" style="gap:10px;flex-wrap:nowrap"><span class="dcoin"><i></i><b>${c}</b> ドラクマ</span><button class="btn" data-act="home" style="height:28px;padding:0 14px">戻る</button></div></div>
+    <div class="panel col" style="grid-column:1/-1;min-height:0;gap:6px;overflow:hidden"><div class="row" style="justify-content:space-between;flex-wrap:nowrap"><div class="seg" role="group" aria-label="ショップ" ><button data-act="tab" data-v="buy" aria-pressed="${tab==='buy'}">買う</button><button data-act="tab" data-v="sell" aria-pressed="${tab==='sell'}">売る</button></div><span style="font-size:12px;color:#e6b34a;text-align:right;min-height:16px">${esc(msg)}</span></div><div class="shl" id="shl">${h}</div></div>`,'bgH','grid-template-rows:36px minmax(0,1fr);gap:8px 12px');
+    on('home',renderTitle);
+    on('tab',el=>{tab=el.dataset.v;msg='';draw()});
+    on('buy',el=>doBuy(el.dataset.k));
+    on('sell',el=>doSell(el.dataset.k));
+  };
+  const keep=()=>{const e=document.getElementById('shl'),y=e?e.scrollTop:0;draw();const e2=document.getElementById('shl');if(e2)e2.scrollTop=y};
+  const ok=(m)=>{SFX.play('ding');msg=m;saveMS();keep()};
+  const doBuy=async k=>{if(busy)return;busy=true;try{
+    const pay=n=>{if((MS.coins||0)<n)return false;MS.coins-=n;return true};
+    if(k==='dk'){const n=mydN();if(n>=5)return;const p=SHOP.DK[n-3];if(!pay(p))return;MS.xd=n-2;ok(`マイデッキの枠が${n+1}つになりました`)}
+    else if(k.startsWith('bg:')){const id=k.slice(3);if(!BGS[id]||MS.own.bg.includes(id)||!pay(SHOP.BG))return;MS.own.bg.push(id);ok(`対戦背景「${BGS[id].n}」を買いました。「ミッション・装備」で付けられます`)}
+    else if(k.startsWith('bk:')){const id=k.slice(3);if(!SHOP_BK.includes(id)||MS.own.back.includes(id)||!pay(SHOP.BK))return;MS.own.back.push(id);ok(`カードの裏「${BKN[id]}」を買いました。「ミッション・装備」で付けられます`)}
+    else if(k==='bl'){if(!shN||SHOP.BL.lim-shN('bbl')<1||!pay(SHOP.BL.p))return;MS.bl++;shAdd('bbl',1);ok('加護の印を1個買いました')}
+    else if(k==='ds'){if(SHOP.DS.lim-shN('bds')<1||!pay(SHOP.DS.p))return;MS.dust++;shAdd('bds',1);ok('星屑を1個買いました')}
+    else if(k==='tk'){if((MS.coins||0)<SHOP.TK.p)return;MS.coins-=SHOP.TK.p;saveMS();const j=await tkApi('buy');
+      if(j&&j.ok)ok('ボットチケットを1枚買いました');else{MS.coins+=SHOP.TK.p;msg=j&&j.err==='limit'?'ボットチケットは本日の上限です':'買えませんでした(通信状況を確かめてください)';ok(msg)}}
+  }finally{busy=false}};
+  const doSell=async k=>{if(busy)return;busy=true;try{
+    const S=SHOP.SELL;
+    if(k==='ds'||k==='ds10'){const n=k==='ds'?1:10;if(MS.dust<n||S.ds.lim-shN('sds')<n)return;MS.dust-=n;shAdd('sds',n);MS.coins=(MS.coins||0)+n*S.ds.v;ok(`星屑${n}個を売って ${n*S.ds.v} ドラクマ`)}
+    else if(k==='bl'){if(MS.bl<1||S.bl.lim-shN('sbl')<1)return;MS.bl--;shAdd('sbl',1);MS.coins=(MS.coins||0)+S.bl.v;ok(`加護の印を売って ${S.bl.v} ドラクマ`)}
+    else if(k==='gem'){if(MS.gem<1)return;if(!await new Promise(res=>{const m=modal(`<h3 class="ttl" style="font-size:17px">ダイヤの原石を売りますか?</h3><p class="sub">1個 ${S.gem.v} ドラクマになります。ダイヤの見た目を作るのに使うアイテムです。</p><div class="row" style="justify-content:flex-end"><button class="btn" data-act="n">やめる</button><button class="btn gold" data-act="y">売る</button></div>`);m.querySelector('[data-act="n"]').onclick=()=>{m.remove();res(false)};m.querySelector('[data-act="y"]').onclick=()=>{m.remove();res(true)}}))return;
+      if(MS.gem<1)return;MS.gem--;MS.coins=(MS.coins||0)+S.gem.v;ok(`ダイヤの原石を売って ${S.gem.v} ドラクマ`)}
+    else if(k==='tk'){const j=await tkApi('sell');if(j&&j.ok){MS.coins=(MS.coins||0)+S.tk.v;ok(`ボットチケットを売って ${S.tk.v} ドラクマ`)}else{msg=j&&j.err==='limit'?'ボットチケットの売却は本日の上限です':j&&j.err==='none'?'ボットチケットがありません':'売れませんでした(通信状況を確かめてください)';keep()}}
+  }finally{busy=false}};
+  draw();
+  await refreshTk();if(document.querySelector('#shl'))keep();
+}
 
 /* おすすめデッキ・図鑑 */
 const PRESETS=[
@@ -2768,13 +2858,20 @@ async function ratedModal(){
 }
 async function rankModal(){
   const si=seasonInfo();
-  const m=modal(`<h3 class="ttl" style="font-size:17px">ランキング ${si.no>=1?'・ 第'+si.no+'シーズン':'(開幕前)'}</h3><p class="sub" style="margin:0;line-height:1.5">${si.no>=1?`${si.p}期間 残り${seasonLeft(si.pleft)}(シーズン残り${seasonLeft(si.left)}) ・ ランダムマッチで順位を競います。A・B期間の終わりに1〜3位へドラクマ(500 / 300 / 200、${SEASON.PMIN}試合以上)。シーズン終了で1〜3位に称号とドラクマ(3,000 / 2,000 / 1,500、${SEASON.MIN}試合以上)。レートはシーズンが替わる月曜0時に全員1000へ戻ります。`:`第1シーズンは ${seasonLeft(si.left)}後に始まります。`}</p><div id="rklist" class="sub" style="max-height:190px;overflow:auto;font-size:12px">読み込み中…</div><div id="rklast" class="sub" style="font-size:11.5px;margin-top:2px"></div><div class="row" style="justify-content:flex-end"><button class="btn gold" data-act="x">閉じる</button></div>`);
+  const m=modal(`<h3 class="ttl" style="font-size:17px">ランキング ${si.no>=1?'・ 第'+si.no+'シーズン '+si.per+'期':'(開幕前)'}</h3><p class="sub" style="margin:0;line-height:1.5;font-size:11.5px">${si.no>=1?`3週間で1シーズン(A期・B期・C期)。${si.per}期は残り${seasonLeft(si.pleft)}、シーズン終了まで${seasonLeft(si.left)}。`:`第1シーズンは ${seasonLeft(si.left)}後に始まります。`}</p><div class="row" style="gap:6px;margin:2px 0"><button class="btn gold" data-rk="t" style="padding:4px 12px;font-size:12px">総合</button><button class="btn" data-rk="w" style="padding:4px 12px;font-size:12px">今週(${si.per||'-'}期)</button></div><div id="rkrule" class="sub" style="font-size:11px;line-height:1.45;margin:0"></div><div id="rklist" class="sub" style="flex:none;min-height:70px;max-height:112px;overflow:auto;font-size:12px">読み込み中…</div><div id="rklast" class="sub" style="font-size:11.5px;margin-top:2px;line-height:1.5"></div><div class="row" style="justify-content:flex-end"><button class="btn gold" data-act="x">閉じる</button></div>`);
   m.querySelector('[data-act="x"]').onclick=()=>m.remove();
-  try{
-    const j=await rpc('nm_top',{},'p');const el=m.querySelector('#rklist');if(!el)return;
-    el.innerHTML=j.length?`<table><thead><tr><th>順位</th><th>なまえ</th><th>レート</th><th>戦績</th></tr></thead><tbody>${j.map((x,i)=>{const ok=x.games>=SEASON.MIN;return `<tr${ok?'':' style="opacity:.55"'}><td>${ok?(j.filter((y,k)=>k<i&&y.games>=SEASON.MIN).length+1):'-'}</td><td>${esc(x.name)}</td><td>${x.rating}</td><td>${x.games}戦${x.wins}勝${ok?'':' (あと'+(SEASON.MIN-x.games)+')'}</td></tr>`}).join('')}</tbody></table>`:'まだ試合の記録がありません。';
-  }catch(e){const el=m.querySelector('#rklist');if(el)el.textContent=e&&e.fatal?FATAL_MSG[e.fatal]:'取得できませんでした'}
-  try{const k=await rpc('nm_season_info',{},'p');const el=m.querySelector('#rklast');if(el&&k&&k.last&&k.last.top&&k.last.top.length)el.innerHTML=`前シーズン(第${k.last.season}): `+k.last.top.map(x=>`${x.rank}位 ${esc(x.name)}`).join(' ・ ')}catch(e){}
+  const load=async w=>{const el=m.querySelector('#rklist');if(!el)return;el.textContent='読み込み中…';m.querySelector('#rkrule').innerHTML=w?`その週に${SEASON.PMIN}試合以上で対象。上昇レート1〜3位に、${si.per}期の称号とドラクマ(700 / 500 / 300)。`:`${SEASON.MIN}試合以上で対象。終了時のレート1〜10位に報酬(1位: ドラクマ1,000・ダイヤの原石3・ボットチケット5 ほか)。1〜3位は称号。レートは次のシーズンで全員1000に戻ります。`;
+    m.querySelectorAll('[data-rk]').forEach(b=>b.classList.toggle('gold',b.dataset.rk===(w?'w':'t')));
+    try{
+      if(w){const j=await rpc('nm_top_week',{},'p');if(!el.isConnected)return;
+        el.innerHTML=j.length?`<table><thead><tr><th>順位</th><th>なまえ</th><th>上昇</th><th>試合</th></tr></thead><tbody>${j.map((x,i)=>{const ok=x.games>=SEASON.PMIN&&x.gain>0;return `<tr${ok?'':' style="opacity:.55"'}><td>${ok?(j.filter((y,k)=>k<i&&y.games>=SEASON.PMIN&&y.gain>0).length+1):'-'}</td><td>${esc(x.name)}</td><td>${x.gain>0?'+':''}${x.gain}</td><td>${x.games}戦${x.games>=SEASON.PMIN?'':' (あと'+(SEASON.PMIN-x.games)+')'}</td></tr>`}).join('')}</tbody></table>`:'今週はまだ試合の記録がありません。';
+      }else{const j=await rpc('nm_top',{},'p');if(!el.isConnected)return;
+        el.innerHTML=j.length?`<table><thead><tr><th>順位</th><th>なまえ</th><th>レート</th><th>戦績</th></tr></thead><tbody>${j.map((x,i)=>{const ok=x.games>=SEASON.MIN;return `<tr${ok?'':' style="opacity:.55"'}><td>${ok?(j.filter((y,k)=>k<i&&y.games>=SEASON.MIN).length+1):'-'}</td><td>${esc(x.name)}</td><td>${x.rating}</td><td>${x.games}戦${x.wins}勝${ok?'':' (あと'+(SEASON.MIN-x.games)+')'}</td></tr>`}).join('')}</tbody></table>`:'まだ試合の記録がありません。';}
+    }catch(e){const el2=m.querySelector('#rklist');if(el2)el2.textContent=e&&e.fatal?FATAL_MSG[e.fatal]:'取得できませんでした'}};
+  m.querySelectorAll('[data-rk]').forEach(b=>b.onclick=()=>load(b.dataset.rk==='w'));
+  load(false);
+  try{const k=await rpc('nm_season_info',{},'p');const el=m.querySelector('#rklast');if(el&&k&&k.last&&k.last.tops){const t=k.last.tops,nm=a=>Array.isArray(a)&&a.length?a.slice(0,3).map(x=>`${x.rank}位 ${esc(x.name)}`).join(' / '):'-';
+    el.innerHTML=`前シーズン(第${+k.last.season||0}) 総合: ${nm(t.T)}<br>A期: ${nm(t.A)}<br>B期: ${nm(t.B)}<br>C期: ${nm(t.C)}`}}catch(e){}
 }
 /* 対戦相手の紹介(マッチング直後) */
 const AVSET=['owl','helmet','laurel','lyre','sandals','trident',...GI.filter(g=>g.k==='av').map(g=>g.id),...Object.values(RK_REW).filter(r=>r[0]==='av').map(r=>r[1])];
