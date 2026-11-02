@@ -748,6 +748,12 @@ img{-webkit-user-drag:none;user-drag:none}
 .hmi{position:relative;height:38px;padding:0 16px;text-align:left;background:transparent;border:0;border-radius:8px;color:#f3e8d2;font-size:13px;cursor:pointer}
 .hmi:hover,.hmi:focus-visible{background:rgba(240,197,85,.16)}.hmi:focus-visible{outline:2px solid #f0c555}
 .hmi.nb::after{content:"";position:absolute;right:12px;top:50%;margin-top:-4px;width:8px;height:8px;border-radius:50%;background:#e8452e}
+.itl{display:flex;flex-direction:column;gap:4px;max-height:250px;overflow:auto}
+.iti{display:flex;align-items:center;gap:10px;padding:5px 10px;border:1px solid #3a2c20;border-radius:10px;background:rgba(20,14,9,.5)}
+.iti.off{opacity:.55}
+.itic{flex:none;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center}
+.itx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}.itx b{font-size:13px}.itx .sub{font-size:10.5px;line-height:1.35}
+.itn{flex:none;min-width:48px;text-align:right;font-size:17px;font-weight:700;color:#f0c555}
 </style>
 </head>
 <body>
@@ -1202,24 +1208,22 @@ function tipRot(){const e=document.getElementById('wtip');if(!e)return;const t=e
   const go=()=>{n=(n+1)%TIPS.length;t.classList.add('o');setTimeout(()=>{if(!e.isConnected)return;t.textContent=TIPS[n];t.classList.remove('o')},250)};
   const arm=()=>{clearInterval(iv);iv=setInterval(()=>{if(!e.isConnected){clearInterval(iv);return}go()},9000)};
   b.addEventListener('click',()=>{SFX.play('click');go();arm()});arm()}
-/* ===== シーズン(1週間・月曜0時[日本時間]に切り替え / ランダムマッチのレートで順位) ===== */
-const SEASON={EP:Date.UTC(2026,10,1,15,0,0),WK:604800000,SW:1814400000,MIN:20,PMIN:7,CAP:{c:20000,g:5,t:10}};
-/* 1シーズン=3週間。1週目=A期、2週目=B期、3週目=C期 */
-const seasonInfo=()=>{const n=Date.now(),pi=Math.floor((n-SEASON.EP)/SEASON.WK),k=Math.floor((n-SEASON.EP)/SEASON.SW)+1,no=Math.max(0,k),end=SEASON.EP+Math.max(0,k)*SEASON.SW,pend=SEASON.EP+Math.max(0,pi+1)*SEASON.WK;return{no,end,left:Math.max(0,end-n),per:pi>=0?'ABC'[pi%3]:'',pleft:Math.max(0,pend-n)}};
+/* ===== シーズン(3週間・A/B/C期間は1週ずつ・月曜0時[日本時間]に切り替え / ランダムマッチのレートで順位) ===== */
+const SEASON={EP:Date.UTC(2026,10,1,15,0,0),WK:604800000,N:3,MIN:20,PMIN:10,RW:{1:3000,2:2000,3:1500},PRW:{1:500,2:300,3:200}};
+const SEASON_PN=['A','B','C'];
+const seasonInfo=()=>{const n=Date.now(),SL=SEASON.WK*SEASON.N,k=Math.floor((n-SEASON.EP)/SL)+1,no=Math.max(0,k),end=SEASON.EP+no*SL,st=end-SL,pi=no>=1?Math.min(SEASON.N-1,Math.floor((n-st)/SEASON.WK)):0,pend=no>=1?st+(pi+1)*SEASON.WK:SEASON.EP;return{no,end,left:Math.max(0,end-n),pi,p:SEASON_PN[pi],pend,pleft:Math.max(0,pend-n)}};
 const seasonLeft=ms=>{const d=Math.floor(ms/864e5),h=Math.floor(ms%864e5/36e5);return d>0?`${d}日${h}時間`:`${Math.max(1,h)}時間`};
-const seasonH=()=>{const i=seasonInfo();return `<span class="szn" id="szn">${i.no>=1?`第${i.no}シーズン ${i.per}期 ・ 残り${seasonLeft(i.pleft)}`:`シーズン開幕まで ${seasonLeft(i.left)}`}</span>`};
-const SEASON_TI=/^第\d{1,3}シーズン(?: 総合| [ABC]期)? [123]位$/;
+const seasonH=()=>{const i=seasonInfo();return `<span class="szn" id="szn">${i.no>=1?`第${i.no}シーズン ・ ${i.p}期間 残り${seasonLeft(i.pleft)}`:`シーズン開幕まで ${seasonLeft(i.left)}`}</span>`};
+const SEASON_TI=/^第\d{1,3}シーズン [123]位$/;
 const titleH=t=>{if(!t)return '称号なし';const m=SEASON_TI.test(t)?t.slice(-2,-1):'';return m?`<span class="tls tls${m}">${esc(t)}</span>`:esc(t)};
-const skName=(k,r)=>k==='T'?`総合${r}位`:`${k}期${r}位`;
 async function seasonClaim(){
   try{if(!getSS('p'))return;const j=await rpc('nm_claim_season',{},'p');if(!Array.isArray(j)||!j.length)return;
-    let coins=0,gem=0,tk=0;const got=[];const cl=(v,m)=>Math.max(0,Math.min(m,Math.floor(+v)||0));
-    for(const x of j){const r=+x.rank,sn=+x.season,kd=String(x.kind||'T');if(!(r>=1&&r<=10)||!(sn>=1&&sn<=999)||!/^[ABCT]$/.test(kd))continue;
-      const c=cl(x.coins,SEASON.CAP.c),g=cl(x.gem,SEASON.CAP.g),t=cl(x.tk,SEASON.CAP.t);
-      const ti=r<=3?`第${sn}シーズン ${kd==='T'?'総合':kd+'期'} ${r}位`:'';if(ti&&!MS.own.title.includes(ti))MS.own.title.push(ti);
-      coins+=c;gem+=g;tk+=t;got.push({ti,l:`第${sn}シーズン ${skName(kd,r)}`,c,g,t})}
-    if(!got.length)return;MS.coins=(MS.coins||0)+coins;MS.gem+=gem;saveMS();SFX.play('gsr');
-    const m=modal(`<h3 class="ttl" style="font-size:18px">シーズン報酬</h3><div style="max-height:46vh;overflow:auto">${got.map(g=>`<div class="row" style="justify-content:space-between;margin-top:6px;gap:8px"><span style="font-size:15px">${g.ti?titleH(g.ti):esc(g.l)}</span><span class="sub" style="color:#f0c555;text-align:right">ドラクマ +${g.c}${g.g?` ・ ダイヤの原石 +${g.g}`:''}${g.t?` ・ ボットチケット +${g.t}`:''}</span></div>`).join('')}</div><p class="sub" style="margin-top:8px">称号は、ミッション・装備の「称号」から付けられます。</p><div class="row" style="justify-content:flex-end"><button class="btn gold" data-act="x">受け取りました</button></div>`);
+    let coins=0,hasS=false;const got=[];
+    for(const x of j){const r=+x.rank,sn=+x.season,pd=x.period==null?'':String(x.period);if(!(r>=1&&r<=3)||!(sn>=1&&sn<=999))continue;
+      if(pd){if(pd!=='A'&&pd!=='B')continue;got.push({t:`第${sn}シーズン ${pd}期間 ${r}位`,r,c:SEASON.PRW[r],p:1});coins+=SEASON.PRW[r]}
+      else{const t=`第${sn}シーズン ${r}位`;if(!MS.own.title.includes(t))MS.own.title.push(t);hasS=true;coins+=SEASON.RW[r];got.push({t,r,c:SEASON.RW[r]})}}
+    if(!got.length)return;MS.coins=(MS.coins||0)+coins;saveMS();SFX.play('gsr');
+    const m=modal(`<h3 class="ttl" style="font-size:18px">${hasS?'シーズン報酬':'期間報酬'}</h3>${got.map(g=>`<div class="row" style="justify-content:space-between;margin-top:6px"><span style="font-size:15px">${g.p?esc(g.t):titleH(g.t)}</span><span class="sub" style="color:#f0c555">ドラクマ +${g.c}</span></div>`).join('')}${hasS?'<p class="sub" style="margin-top:8px">称号は、ミッション・装備の「称号」から付けられます。</p>':''}<div class="row" style="justify-content:flex-end"><button class="btn gold" data-act="x">受け取りました</button></div>`);
     m.querySelector('[data-act="x"]').onclick=()=>{m.remove();try{renderTitle()}catch(e){}}}
   catch(e){}}
 /* ===== ログインボーナス(スタンプカード・7日で1周) ===== */
@@ -1349,6 +1353,23 @@ TM.upd=(noAct)=>{
   if(left<=0&&!noAct){const f=TM.fn;TM.stop();if(f)f()}
 };
 function show(html,cls='',style=''){if(TM.on&&!TM.keep)TM.stop();if(TM.sw){clearTimeout(TM.sw);TM.sw=null}TM.keep=false;hideTip();SFX.clear();const a=ANIM;ANIM=false;$s.innerHTML=`<div class="scr ${cls}${a?' anim':''}" style="${style}">${MEA}${html}</div>`;$s.appendChild(TIP);$s.appendChild(GUIDE);$s.appendChild(NETB);$s.appendChild(TOAST);$s.appendChild(TMB);applyHL();if(TM.on)TM.attach()}
+/* ===== アイテム一覧(ハンバーガーメニュー) ===== */
+async function itemsModal(){
+  const num=v=>Math.max(0,Math.floor(+v)||0);
+  const row=(id,ic,nm,ds,n)=>`<div class="iti${n?'':' off'}" role="listitem" id="${id}"><span class="itic">${ic}</span><span class="itx"><b>${nm}</b><span class="sub">${ds}</span></span><span class="itn">${n==null?'…':n.toLocaleString('ja-JP')}</span></div>`;
+  const m=modal(`<h3 class="ttl" style="font-size:17px">アイテム</h3><div class="itl" role="list" aria-label="持っているアイテム">${[
+    row('it-tk',skTk(30),'ボットチケット','ランダムマッチのボット戦を、1日10試合を超えてレート戦にできます。',null),
+    row('it-dust',kgi('dust',32),'星屑',`カードの見た目と交換できます(銀${KG.xS}・金${KG.xG}・原石${KG.xD})。`,num(MS.dust)),
+    row('it-bl',kgi('bl',32),'加護の印',`カードガチャの図鑑で使うと、選んだカードの勝ち数が+${KG.bl}されます。`,num(MS.bl)),
+    row('it-gem',kgi('gem',32),'ダイヤの原石',`ダイヤの見た目を作るのに使います(原石1個・${KG.dp.toLocaleString('ja-JP')}ドラクマ・${KG.need}勝)。`,num(MS.gem))
+  ].join('')}</div><div class="row" style="justify-content:flex-end"><button class="btn gold" data-act="x">閉じる</button></div>`);
+  m.querySelector('[data-act="x"]').onclick=()=>m.remove();
+  /* ボットチケットはサーバーに保管されています。オンラインを使ったことのある端末だけ問い合わせます */
+  const r=m.querySelector('#it-tk'),n=r&&r.querySelector('.itn'),set=v=>{if(!r||!r.isConnected)return;n.textContent=v;r.classList.toggle('off',!+v)};
+  if(!getSS('p')){set(0);return}
+  try{const j=await rpc('nm_me',{p_name:cn(NICK)},'p');set(num(j&&j.bot_tickets))}
+  catch(e){if(r&&r.isConnected){n.textContent='―';r.classList.add('off');r.querySelector('.sub').textContent='サーバーから取得できませんでした(通信状況を確かめてください)。'}}
+}
 /* ===== ハンバーガーメニュー(タイトル右上) ===== */
 function hmSet(o){const b=document.querySelector('.hbg'),m=document.querySelector('.hmenu');if(!b||!m)return;m.hidden=!o;b.setAttribute('aria-expanded',o?'true':'false')}
 document.addEventListener('click',e=>{const m=document.querySelector('.hmenu');if(!m||m.hidden||e.target.closest('.hbg'))return;hmSet(false)});
@@ -1385,7 +1406,7 @@ function renderTitle(){
       <button class="lb-prof" data-act="ms" aria-label="ミッション・装備"><img class="pav" src="${avSrc(MS.eq.av)}" alt=""><span class="lpt"><b>${titleH(MS.eq.title)}</b><span>達成 ${dn} / ${MIS.length}</span></span></button>
       <button class="rkchip" data-act="rkpg" aria-label="ランク"><small>RANK</small><b>${rkLv(MS.rp||0)}</b></button>
       <div class="tl lb-brand"><h1><span class="en">NEMESIS</span><span class="jp">ネメシス</span></h1><div style="display:flex;gap:6px;align-self:flex-start;align-items:center">${seasonH()}${onlH()}</div></div>
-      <div class="lb-r"><span class="dcoin"><i></i><b>${MS.coins||0}</b> ドラクマ</span><button class="ib hbg skb${MS.lb.d!==skToday()?' nb':''}" data-act="hbg" aria-label="メニュー" aria-haspopup="true" aria-expanded="false" aria-controls="hmenu"><span class="hbl" aria-hidden="true"></span></button><div class="hmenu" id="hmenu" role="menu" hidden><button class="hmi${MS.lb.d!==skToday()?' nb':''}" role="menuitem" data-act="skopen">スタンプ</button><button class="hmi" role="menuitem" data-act="rules">ルール</button><button class="hmi" role="menuitem" data-act="snd">音</button><button class="hmi" role="menuitem" data-act="xfer">引継ぎ</button></div></div>
+      <div class="lb-r"><span class="dcoin"><i></i><b>${MS.coins||0}</b> ドラクマ</span><button class="ib hbg skb${MS.lb.d!==skToday()?' nb':''}" data-act="hbg" aria-label="メニュー" aria-haspopup="true" aria-expanded="false" aria-controls="hmenu"><span class="hbl" aria-hidden="true"></span></button><div class="hmenu" id="hmenu" role="menu" hidden><button class="hmi${MS.lb.d!==skToday()?' nb':''}" role="menuitem" data-act="skopen">スタンプ</button><button class="hmi" role="menuitem" data-act="items">アイテム</button><button class="hmi" role="menuitem" data-act="rules">ルール</button><button class="hmi" role="menuitem" data-act="snd">音</button><button class="hmi" role="menuitem" data-act="xfer">引継ぎ</button></div></div>
     </div>
     <div class="lb-mid">
       <div class="lb-feat">
@@ -1442,7 +1463,7 @@ function renderTitle(){
       const ld=()=>{if(sp._l)return;sp._l=1;SFX.play('confirm');const t=sp.querySelector('.tap');if(t){t.outerHTML=`<div class="ldg"><div class="ldb"><i></i></div><span>読み込み中<span class="dots"></span></span><small>${TIPS[Math.floor(Math.random()*TIPS.length)]}</small></div>`}setTimeout(go,1500)};
       sp.addEventListener('click',ld);sp.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')ld()});sp.tabIndex=0;
       $s.querySelector('.scr').appendChild(sp);setTimeout(()=>sp.focus(),50)}
-    on('gacha',renderGacha);on('god',renderGods);on('kgp',()=>renderKg());on('ms',()=>renderMissions());on('dex',()=>renderDex());on('snd',sndModal);on('rcn',renderRecent);on('rkpg',renderRank);on('xfer',xferModal);on('hbg',()=>{const m=document.querySelector('.hmenu');hmSet(!!m&&m.hidden)});
+    on('gacha',renderGacha);on('god',renderGods);on('kgp',()=>renderKg());on('ms',()=>renderMissions());on('dex',()=>renderDex());on('snd',sndModal);on('rcn',renderRecent);on('rkpg',renderRank);on('xfer',xferModal);on('items',itemsModal);on('hbg',()=>{const m=document.querySelector('.hmenu');hmSet(!!m&&m.hidden)});
     on('rules',()=>{const m=modal(`<h3 class="ttl" style="font-size:17px">ルールの要点</h3><ul>
      <li>デッキは全27枚(A・B・Cのプール各9枚)から5枚。数値の合計は22〜25、数値1〜3のカードは2枚まで。</li>
      <li>両者のデッキを同時に公開したあと、各自が1枚を、デッキにない別のカードに入れ替えられます(プールは問わず、任意。相手には見えません)。入れ替え後も、合計22〜25と数値1〜3は2枚までの条件を守ります。</li>
@@ -2747,20 +2768,13 @@ async function ratedModal(){
 }
 async function rankModal(){
   const si=seasonInfo();
-  const m=modal(`<h3 class="ttl" style="font-size:17px">ランキング ${si.no>=1?'・ 第'+si.no+'シーズン '+si.per+'期':'(開幕前)'}</h3><p class="sub" style="margin:0;line-height:1.5;font-size:11.5px">${si.no>=1?`3週間で1シーズン(A期・B期・C期)。${si.per}期は残り${seasonLeft(si.pleft)}、シーズン終了まで${seasonLeft(si.left)}。`:`第1シーズンは ${seasonLeft(si.left)}後に始まります。`}</p><div class="row" style="gap:6px;margin:2px 0"><button class="btn gold" data-rk="t" style="padding:4px 12px;font-size:12px">総合</button><button class="btn" data-rk="w" style="padding:4px 12px;font-size:12px">今週(${si.per||'-'}期)</button></div><div id="rkrule" class="sub" style="font-size:11px;line-height:1.45;margin:0"></div><div id="rklist" class="sub" style="flex:none;min-height:70px;max-height:112px;overflow:auto;font-size:12px">読み込み中…</div><div id="rklast" class="sub" style="font-size:11.5px;margin-top:2px;line-height:1.5"></div><div class="row" style="justify-content:flex-end"><button class="btn gold" data-act="x">閉じる</button></div>`);
+  const m=modal(`<h3 class="ttl" style="font-size:17px">ランキング ${si.no>=1?'・ 第'+si.no+'シーズン':'(開幕前)'}</h3><p class="sub" style="margin:0;line-height:1.5">${si.no>=1?`${si.p}期間 残り${seasonLeft(si.pleft)}(シーズン残り${seasonLeft(si.left)}) ・ ランダムマッチで順位を競います。A・B期間の終わりに1〜3位へドラクマ(500 / 300 / 200、${SEASON.PMIN}試合以上)。シーズン終了で1〜3位に称号とドラクマ(3,000 / 2,000 / 1,500、${SEASON.MIN}試合以上)。レートはシーズンが替わる月曜0時に全員1000へ戻ります。`:`第1シーズンは ${seasonLeft(si.left)}後に始まります。`}</p><div id="rklist" class="sub" style="max-height:190px;overflow:auto;font-size:12px">読み込み中…</div><div id="rklast" class="sub" style="font-size:11.5px;margin-top:2px"></div><div class="row" style="justify-content:flex-end"><button class="btn gold" data-act="x">閉じる</button></div>`);
   m.querySelector('[data-act="x"]').onclick=()=>m.remove();
-  const load=async w=>{const el=m.querySelector('#rklist');if(!el)return;el.textContent='読み込み中…';m.querySelector('#rkrule').innerHTML=w?`その週に${SEASON.PMIN}試合以上で対象。上昇レート1〜3位に、${si.per}期の称号とドラクマ(700 / 500 / 300)。`:`${SEASON.MIN}試合以上で対象。終了時のレート1〜10位に報酬(1位: ドラクマ1,000・ダイヤの原石3・ボットチケット5 ほか)。1〜3位は称号。レートは次のシーズンで全員1000に戻ります。`;
-    m.querySelectorAll('[data-rk]').forEach(b=>b.classList.toggle('gold',b.dataset.rk===(w?'w':'t')));
-    try{
-      if(w){const j=await rpc('nm_top_week',{},'p');if(!el.isConnected)return;
-        el.innerHTML=j.length?`<table><thead><tr><th>順位</th><th>なまえ</th><th>上昇</th><th>試合</th></tr></thead><tbody>${j.map((x,i)=>{const ok=x.games>=SEASON.PMIN&&x.gain>0;return `<tr${ok?'':' style="opacity:.55"'}><td>${ok?(j.filter((y,k)=>k<i&&y.games>=SEASON.PMIN&&y.gain>0).length+1):'-'}</td><td>${esc(x.name)}</td><td>${x.gain>0?'+':''}${x.gain}</td><td>${x.games}戦${x.games>=SEASON.PMIN?'':' (あと'+(SEASON.PMIN-x.games)+')'}</td></tr>`}).join('')}</tbody></table>`:'今週はまだ試合の記録がありません。';
-      }else{const j=await rpc('nm_top',{},'p');if(!el.isConnected)return;
-        el.innerHTML=j.length?`<table><thead><tr><th>順位</th><th>なまえ</th><th>レート</th><th>戦績</th></tr></thead><tbody>${j.map((x,i)=>{const ok=x.games>=SEASON.MIN;return `<tr${ok?'':' style="opacity:.55"'}><td>${ok?(j.filter((y,k)=>k<i&&y.games>=SEASON.MIN).length+1):'-'}</td><td>${esc(x.name)}</td><td>${x.rating}</td><td>${x.games}戦${x.wins}勝${ok?'':' (あと'+(SEASON.MIN-x.games)+')'}</td></tr>`}).join('')}</tbody></table>`:'まだ試合の記録がありません。';}
-    }catch(e){const el2=m.querySelector('#rklist');if(el2)el2.textContent=e&&e.fatal?FATAL_MSG[e.fatal]:'取得できませんでした'}};
-  m.querySelectorAll('[data-rk]').forEach(b=>b.onclick=()=>load(b.dataset.rk==='w'));
-  load(false);
-  try{const k=await rpc('nm_season_info',{},'p');const el=m.querySelector('#rklast');if(el&&k&&k.last&&k.last.tops){const t=k.last.tops,nm=a=>Array.isArray(a)&&a.length?a.slice(0,3).map(x=>`${x.rank}位 ${esc(x.name)}`).join(' / '):'-';
-    el.innerHTML=`前シーズン(第${+k.last.season||0}) 総合: ${nm(t.T)}<br>A期: ${nm(t.A)}<br>B期: ${nm(t.B)}<br>C期: ${nm(t.C)}`}}catch(e){}
+  try{
+    const j=await rpc('nm_top',{},'p');const el=m.querySelector('#rklist');if(!el)return;
+    el.innerHTML=j.length?`<table><thead><tr><th>順位</th><th>なまえ</th><th>レート</th><th>戦績</th></tr></thead><tbody>${j.map((x,i)=>{const ok=x.games>=SEASON.MIN;return `<tr${ok?'':' style="opacity:.55"'}><td>${ok?(j.filter((y,k)=>k<i&&y.games>=SEASON.MIN).length+1):'-'}</td><td>${esc(x.name)}</td><td>${x.rating}</td><td>${x.games}戦${x.wins}勝${ok?'':' (あと'+(SEASON.MIN-x.games)+')'}</td></tr>`}).join('')}</tbody></table>`:'まだ試合の記録がありません。';
+  }catch(e){const el=m.querySelector('#rklist');if(el)el.textContent=e&&e.fatal?FATAL_MSG[e.fatal]:'取得できませんでした'}
+  try{const k=await rpc('nm_season_info',{},'p');const el=m.querySelector('#rklast');if(el&&k&&k.last&&k.last.top&&k.last.top.length)el.innerHTML=`前シーズン(第${k.last.season}): `+k.last.top.map(x=>`${x.rank}位 ${esc(x.name)}`).join(' ・ ')}catch(e){}
 }
 /* 対戦相手の紹介(マッチング直後) */
 const AVSET=['owl','helmet','laurel','lyre','sandals','trident',...GI.filter(g=>g.k==='av').map(g=>g.id),...Object.values(RK_REW).filter(r=>r[0]==='av').map(r=>r[1])];
